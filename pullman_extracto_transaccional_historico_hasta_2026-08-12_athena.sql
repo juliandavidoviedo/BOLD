@@ -1,33 +1,3 @@
--- ============================================================
--- PULLMAN | EXTRACTO TRANSACCIONAL DETALLADO
--- Estilo Mis Carnes Parrilla
--- Motor: Athena / Trino
---
--- Universo Pullman:
---   J7KC6JLFIJ
---   M0ZCT4GSAT
---   IX8YV49KVP
---   45GXPINC22
---   375N178LGP
---
--- Periodo:
---   Desde la primera transacción disponible de cada merchant
---   hasta el 12 de agosto de 2026 inclusive.
---
--- Fuentes:
---   bold_gold_payments.fact_payment
---   bold_gold_accounting.dim_movement_details_payment
---   bold_gold_growth.dim_person
---   bold_gold_payments.fact_partial_payments
---
--- Grano:
---   1 fila por merchant_id + payment_id
---
--- Nota:
---   Se usa límite superior exclusivo < 2026-08-13 para incluir
---   todo el día 12 de agosto.
--- ============================================================
-
 WITH merchant_pullman (merchant_id) AS (
     VALUES
         ('J7KC6JLFIJ'),
@@ -47,7 +17,9 @@ payment_base AS (
     FROM "bold_gold_payments"."fact_payment" p
     INNER JOIN merchant_pullman mp
         ON p."merchant_id" = mp.merchant_id
-    WHERE p."transaction_datetime" < TIMESTAMP '2026-08-13 00:00:00'
+    WHERE
+        p."transaction_datetime" >= TIMESTAMP '2026-06-01 00:00:00'
+        AND p."transaction_datetime" < TIMESTAMP '2026-08-13 00:00:00'
 ),
 
 payment AS (
@@ -108,7 +80,6 @@ partial_payments AS (
 SELECT
     p."merchant_id" AS "MERCHANT ID",
     p."payment_id" AS "ID TRANSACCIÓN",
-
     p."transaction_datetime" AS "FECHA",
     CAST(p."transaction_datetime" AS DATE) AS "DÍA",
     CAST(DATE_TRUNC('month', p."transaction_datetime") AS DATE) AS "MES",
@@ -215,13 +186,9 @@ SELECT
     p."traceability_code" AS "CUS",
 
     CASE
-        WHEN person."name" IS NULL
-         AND person."last_name" IS NULL
-            THEN 'NO DISPONIBLE'
-        WHEN person."name" IS NULL
-            THEN person."last_name"
-        WHEN person."last_name" IS NULL
-            THEN person."name"
+        WHEN person."name" IS NULL AND person."last_name" IS NULL THEN 'NO DISPONIBLE'
+        WHEN person."name" IS NULL THEN person."last_name"
+        WHEN person."last_name" IS NULL THEN person."name"
         ELSE CONCAT(person."name", ' ', person."last_name")
     END AS "REALIZADA POR",
 
@@ -249,32 +216,19 @@ SELECT
     END AS "CANAL DE VENTAS",
 
     p."metadata_payer_payment_reference" AS "REFERENCIA",
-
-    CAST(
-        p."foreign_amount_exchange_rate_value"
-        AS DECIMAL(38,8)
-    ) AS "TASA DE CAMBIO",
-
+    CAST(p."foreign_amount_exchange_rate_value" AS DECIMAL(38,8)) AS "TASA DE CAMBIO",
     p."foreign_amount_currency" AS "MONEDA EXTRANJERA",
-
-    CAST(
-        p."foreign_amount_total"
-        AS DECIMAL(38,2)
-    ) AS "VALOR MONEDA EXTRANJERA",
-
+    CAST(p."foreign_amount_total" AS DECIMAL(38,2)) AS "VALOR MONEDA EXTRANJERA",
     p."card_cardholder_name" AS "NOMBRE DEL PAGADOR",
     p."payer_email" AS "CORREO DEL PAGADOR",
     pp.split_check_id AS "CUENTA DIVIDIDA"
 
 FROM payment p
-
 LEFT JOIN movement m
     ON p."merchant_id" = m."merchant_id"
    AND p."payment_id" = m."transaction_id"
-
 LEFT JOIN person
     ON p."user_id" = person."id"
-
 LEFT JOIN partial_payments pp
     ON p."payment_id" = pp."payment_id"
 
