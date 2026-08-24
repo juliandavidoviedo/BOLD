@@ -58,7 +58,6 @@
         /* Utility classes for toggling views */
         .view-section { display: none; }
         .view-section.active { display: block; animation: fadeIn 0.4s ease-out; }
-        .preserve-text { white-space: pre-wrap; overflow-wrap: anywhere; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Toast Notifications */
@@ -439,39 +438,19 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <p class="text-xs font-bold uppercase text-slate-500 mb-1">Historia del Comercio</p>
-                                <p class="text-sm text-slate-800 preserve-text" id="pc-history">-</p>
+                                <p class="text-sm text-slate-800" id="pc-history">-</p>
                             </div>
                             <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <p class="text-xs font-bold uppercase text-slate-500 mb-1">Dolores / Necesidades</p>
-                                <p class="text-sm text-slate-800 preserve-text" id="pc-pain">-</p>
+                                <p class="text-sm text-slate-800" id="pc-pain">-</p>
                             </div>
                             <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <p class="text-xs font-bold uppercase text-slate-500 mb-1">Modelo de Atención</p>
-                                <p class="text-sm text-slate-800 preserve-text" id="pc-model">-</p>
+                                <p class="text-sm text-slate-800" id="pc-model">-</p>
                             </div>
                             <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <p class="text-xs font-bold uppercase text-slate-500 mb-1">Planes Documentados</p>
-                                <p class="text-sm text-slate-800 preserve-text" id="pc-plans">-</p>
-                            </div>
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                <p class="text-xs font-bold uppercase text-slate-500 mb-1">Negociaciones / Términos</p>
-                                <p class="text-sm text-slate-800 preserve-text" id="pc-negotiations">-</p>
-                            </div>
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                <p class="text-xs font-bold uppercase text-slate-500 mb-1">Reportería Especial</p>
-                                <p class="text-sm text-slate-800 preserve-text" id="pc-reporting">-</p>
-                            </div>
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                <p class="text-xs font-bold uppercase text-slate-500 mb-1">Potencial TPV</p>
-                                <p class="text-sm text-slate-800 preserve-text" id="pc-potential-context">-</p>
-                            </div>
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                <p class="text-xs font-bold uppercase text-slate-500 mb-1">Compromisos Cliente / Bold</p>
-                                <p class="text-sm text-slate-800 preserve-text" id="pc-commitments">-</p>
-                            </div>
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 md:col-span-2">
-                                <p class="text-xs font-bold uppercase text-slate-500 mb-1">Contacto Secundario</p>
-                                <p class="text-sm text-slate-800 preserve-text" id="pc-contact-2">-</p>
+                                <p class="text-sm text-slate-800 line-clamp-3" id="pc-plans">-</p>
                             </div>
                         </div>
                     </div>
@@ -652,7 +631,7 @@
         let currentSection = 'executive-overview'; // Vista inicial
         let myCharts = {}; 
         
-        // Fuente de verdad: pestaña RESPUESTAS_FORM del Sheet conectado al Forms.
+        // Data URL source
         const DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTng2yxItLl-WoIAOfMImXwWwM1eumphKLAVWIPAInQoTgAYH4YpyMoDDddXkFXX7aT9ySWGoOlmvA4/pub?gid=1514470107&single=true&output=csv';
 
         // Filters DOM IDs mapped to object keys
@@ -676,24 +655,25 @@
             loadDataFromSheet();
         });
 
-        // 1. Fetching Logic
+        // 1. Fetching Logic (Secure fetch bypasses some CORS issues with PapaParse direct)
         async function loadDataFromSheet() {
-            showToast('Conectando con RESPUESTAS_FORM...', 'info');
+            showToast('Conectando con Google Sheets...', 'info');
             try {
                 const cacheBuster = new Date().getTime();
-                const response = await fetch(`${DATA_URL}&_t=${cacheBuster}`);
+                const separator = DATA_URL.includes('?') ? '&' : '?';
+                const response = await fetch(`${DATA_URL}${separator}_t=${cacheBuster}`);
 
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                if (!response.ok) throw new Error("Fallo de red");
                 const csvText = await response.text();
 
                 if (csvText.includes('<!DOCTYPE html>') || csvText.includes('<html')) {
-                    throw new Error('Google devolvió HTML en vez de CSV. Revisa permisos de publicación del Sheet.');
+                    throw new Error("Google devolvió un HTML (Posible bloqueo por permisos privados)");
                 }
 
-                parseAndLoadCsv(csvText, 'RESPUESTAS_FORM');
+                parseAndLoadCsv(csvText, 'Google Sheets');
             } catch (error) {
-                console.error('Error cargando RESPUESTAS_FORM:', error.message);
-                showToast('No fue posible cargar RESPUESTAS_FORM desde Sheets. Revisa permisos, gid o carga el CSV manualmente.', 'error');
+                console.error("❌ Error de carga real:", error.message);
+                showToast('No fue posible cargar el Sheet publicado. Revisa permisos o URL CSV.', 'error');
             }
         }
 
@@ -727,13 +707,6 @@
             });
         }
 
-        function handleFileUpload(event) {
-            const file = event.target.files && event.target.files[0];
-            if (!file) return;
-            parseAndLoadCsv(file, file.name);
-            event.target.value = '';
-        }
-
         // --- STREAMING_CHUNK:Data Processing Pipeline ---
         function normalizeSearchText(value) {
             return String(value || '')
@@ -757,54 +730,32 @@
             };
             const norm = (v) => (!v || String(v).trim().toUpperCase() === 'NAN') ? '' : String(v).trim();
             const yes = (v) => ['SI','SÍ','YES','TRUE','1'].includes(norm(v).toUpperCase()) ? 'Sí' : 'No';
-
-            // Forms exports human-readable questions, while the consolidated table uses
-            // technical keys. Normalize both schemas to one stable internal contract.
             const headerKey = value => String(value || '')
                 .replace(/^\uFEFF/, '')
                 .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
                 .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
             const aliases = {
-                'marca temporal': 'timestamp',
                 'comercio a transferir': 'merchant_descriptor',
                 'pagina web': 'pagina_web',
-                'contacto 1 tipo de contacto': 'contacto_1_tipo',
-                'contacto 1 nombre': 'contacto_1_nombre',
-                'contacto 1 cargo': 'contacto_1_cargo',
-                'contacto 1 telefono': 'contacto_1_telefono',
-                'contacto 1 email': 'contacto_1_email',
-                'contacto 1 mejor hora de contacto': 'contacto_1_mejor_hora',
-                'contacto 1 mejor via de contacto': 'contacto_1_mejor_via',
-                'contacto 2 tipo de contacto': 'contacto_2_tipo',
-                'contacto 2 nombre': 'contacto_2_nombre',
-                'contacto 2 cargo': 'contacto_2_cargo',
-                'contacto 2 telefono': 'contacto_2_telefono',
-                'contacto 2 email': 'contacto_2_email',
-                'contacto 2 mejor hora de contacto': 'contacto_2_mejor_hora',
-                'contacto 2 mejor via de contacto': 'contacto_2_mejor_via',
-                'pertenece a grupo empresarial': 'pertenece_grupo_empresarial',
-                'cual grupo empresarial si aplica': 'grupo_empresarial',
-                'tiene multiples sedes': 'tiene_multiples_sedes',
-                'esta a nivel nacional': 'es_nacional',
                 'comentarios cuentanos la historia de este comercio': 'historia_comercio',
                 'como es tu modelo de atencion con este cliente haces reuniones cada cuanto tiempo': 'modelo_atencion',
-                'le envias reporteria especial': 'envia_reporteria_especial',
-                'detalle de reporteria especial': 'detalle_reporteria_especial',
-                'negociaciones y terminos especiales': 'negociaciones_terminos_especiales',
                 'dolores y necesidades del cliente': 'dolores_necesidades',
                 'corto plazo 3 6 meses': 'plan_corto_plazo',
-                'mediano plazo 6 12 meses': 'plan_mediano_plazo',
-                'largo plazo 1 anos': 'plan_largo_plazo',
-                'tpv potencial del cliente podemos profundizarlo y traer mas tpv': 'tpv_potencial_contexto',
-                'temas pendientes compromisos cliente': 'pendientes_cliente',
-                'temas pendientes compromisos bold': 'pendientes_bold'
+                'contacto 1 nombre': 'contacto_1_nombre',
+                'contacto 1 cargo': 'contacto_1_cargo',
+                'contacto 1 email': 'contacto_1_email',
+                'contacto 1 telefono': 'contacto_1_telefono',
+                'contacto 1 mejor via de contacto': 'contacto_1_mejor_via',
+                'contacto 1 mejor hora de contacto': 'contacto_1_mejor_hora'
             };
+
             const normalizeRow = sourceRow => {
                 const row = { ...sourceRow };
                 Object.entries(sourceRow).forEach(([header, value]) => {
                     const canonical = aliases[headerKey(header)];
                     if (canonical && !norm(row[canonical])) row[canonical] = value;
                 });
+
                 const descriptor = norm(row.merchant_descriptor);
                 if (descriptor) {
                     const match = descriptor.match(/^(.*?)\s+[—–-]\s+Merchant\s+([^|]+)(?:\|\s*([^|]+))?(?:\|\s*TL:\s*(.+))?$/i);
@@ -813,10 +764,9 @@
                         if (!norm(row.merchant_id)) row.merchant_id = norm(match[2]).replace(/\s+/g, '').toUpperCase();
                         if (!norm(row.city_code) && match[3]) row.city_code = norm(match[3]);
                         if (!norm(row.team_lead) && match[4]) row.team_lead = norm(match[4]);
-                    } else if (!norm(row.merchant_name)) {
-                        row.merchant_name = descriptor;
                     }
                 }
+
                 return row;
             };
 
@@ -894,15 +844,6 @@
                     // Context
                     historia_comercio: hist, dolores_necesidades: dol, plan_corto_plazo: plan,
                     modelo_atencion: norm(row.modelo_atencion),
-                    plan_mediano_plazo: norm(row.plan_mediano_plazo),
-                    plan_largo_plazo: norm(row.plan_largo_plazo),
-                    pagina_web: norm(row.pagina_web),
-                    envia_reporteria_especial: yes(row.envia_reporteria_especial),
-                    detalle_reporteria_especial: norm(row.detalle_reporteria_especial),
-                    negociaciones_terminos_especiales: norm(row.negociaciones_terminos_especiales),
-                    tpv_potencial_contexto: norm(row.tpv_potencial_contexto),
-                    pendientes_cliente: norm(row.pendientes_cliente),
-                    pendientes_bold: norm(row.pendientes_bold),
                     
                     // Contact Info
                     contacto_1_nombre: norm(row.contacto_1_nombre),
@@ -911,13 +852,6 @@
                     contacto_1_telefono: norm(row.contacto_1_telefono || row.cellphone_comercio),
                     contacto_1_mejor_via: norm(row.contacto_1_mejor_via),
                     contacto_1_mejor_hora: norm(row.contacto_1_mejor_hora),
-                    contacto_2_tipo: norm(row.contacto_2_tipo),
-                    contacto_2_nombre: norm(row.contacto_2_nombre),
-                    contacto_2_cargo: norm(row.contacto_2_cargo),
-                    contacto_2_email: norm(row.contacto_2_email),
-                    contacto_2_telefono: norm(row.contacto_2_telefono),
-                    contacto_2_mejor_via: norm(row.contacto_2_mejor_via),
-                    contacto_2_mejor_hora: norm(row.contacto_2_mejor_hora),
 
                     // Scores
                     healthScore, priorityScore, growthScore,
@@ -974,14 +908,14 @@
         function populateFilters() {
             const buildOptions = (key) => [...new Set(globalData.map(d => d[key]).filter(Boolean))].sort();
             // Llenar sugerencias del buscador
-	const searchDatalist = document.getElementById('search-suggestions');
-	if (searchDatalist) {
-	    const suggestions = [...new Set(globalData.flatMap(d => [
-	        `${d.merchant_name} — ${d.merchant_id}`,
-	        d.merchant_id
-	    ]).filter(Boolean))];
-	    searchDatalist.innerHTML = suggestions.map(item => `<option value="${String(item).replace(/"/g, '&quot;')}"></option>`).join('');
-	}
+const searchDatalist = document.getElementById('search-suggestions');
+if (searchDatalist) {
+    const suggestions = [...new Set(globalData.flatMap(d => [
+        `${d.merchant_name} — ${d.merchant_id}`,
+        d.merchant_id
+    ]).filter(Boolean))];
+    searchDatalist.innerHTML = suggestions.map(item => `<option value="${String(item).replace(/"/g, '&quot;')}"></option>`).join('');
+}
             const lists = {
                 'kam': buildOptions('kam_asignado'),
                 'city': buildOptions('city_code'),
@@ -1214,29 +1148,7 @@
             document.getElementById('pc-history').innerText = d.historia_comercio || 'No documentada.';
             document.getElementById('pc-pain').innerText = d.dolores_necesidades || 'No reportados.';
             document.getElementById('pc-model').innerText = d.modelo_atencion || 'No especificado.';
-            document.getElementById('pc-plans').innerText = [
-                d.plan_corto_plazo && `Corto plazo: ${d.plan_corto_plazo}`,
-                d.plan_mediano_plazo && `Mediano plazo: ${d.plan_mediano_plazo}`,
-                d.plan_largo_plazo && `Largo plazo: ${d.plan_largo_plazo}`
-            ].filter(Boolean).join('\n') || 'Sin planes.';
-            document.getElementById('pc-negotiations').innerText = d.negociaciones_terminos_especiales || 'Sin términos especiales.';
-            document.getElementById('pc-reporting').innerText = [
-                `¿Se envía?: ${d.envia_reporteria_especial || 'No'}`,
-                d.detalle_reporteria_especial
-            ].filter(Boolean).join('\n');
-            document.getElementById('pc-potential-context').innerText = d.tpv_potencial_contexto || 'Sin contexto documentado.';
-            document.getElementById('pc-commitments').innerText = [
-                d.pendientes_cliente && `Cliente: ${d.pendientes_cliente}`,
-                d.pendientes_bold && `Bold: ${d.pendientes_bold}`
-            ].filter(Boolean).join('\n') || 'Sin compromisos documentados.';
-            document.getElementById('pc-contact-2').innerText = [
-                d.contacto_2_nombre,
-                d.contacto_2_cargo || d.contacto_2_tipo,
-                d.contacto_2_email,
-                d.contacto_2_telefono,
-                d.contacto_2_mejor_via && `Vía: ${d.contacto_2_mejor_via}`,
-                d.contacto_2_mejor_hora && `Hora: ${d.contacto_2_mejor_hora}`
-            ].filter(Boolean).join(' · ') || 'No registrado.';
+            document.getElementById('pc-plans').innerText = [d.plan_corto_plazo, d.plan_mediano_plazo].filter(Boolean).join(' | ') || 'Sin planes.';
 
             // Vitals Chart
 createChart('chart-vitals', {
