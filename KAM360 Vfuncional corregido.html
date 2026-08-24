@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bold KAM 360 — Inteligencia de Cuentas SMB → KAM</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/libs/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        bold: {
+                            blue: '#121E6C',
+                            coral: '#FF2847',
+                            magenta: '#E91E63',
+                            light: '#F7F8FB',
+                            gray: '#8A94A6'
+                        }
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px 0 rgba(18, 30, 108, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #F7F8FB; font-family: 'Inter', sans-serif; overflow: hidden; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(18, 30, 108, 0.05);
+            border-radius: 1rem;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+        
+        /* Utility classes for toggling views */
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.4s ease-out; }
+        .preserve-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Toast Notifications */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
+        .toast { background: #121E6C; color: white; padding: 12px 24px; border-radius: 8px; margin-top: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: opacity 0.3s; display: flex; align-items: center; gap: 8px;}
+        
+        /* Multiselect Dropdown Checkboxes - Compact version */
+        .dropdown-check-list { position: relative; }
+        .dropdown-check-list .anchor { position: relative; cursor: pointer; display: inline-block; padding: 6px 24px 6px 10px; border: 1px solid #E2E8F0; border-radius: 0.5rem; background: white; width: 100%; text-align: left; font-size: 0.75rem; font-weight: 500; color: #475569;}
+        .dropdown-check-list .anchor::after { content: ""; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 4px solid #64748B; position: absolute; right: 10px; top: 45%; }
+        .dropdown-check-list .items { padding: 8px; display: none; position: absolute; background: white; border: 1px solid #E2E8F0; border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); width: 180px; max-height: 250px; overflow-y: auto; z-index: 50; top: 110%; left: 0;}
+        .dropdown-check-list.visible .items { display: block; }
+        .dropdown-check-list .items li { list-style: none; padding: 4px 0; font-size: 0.75rem; color: #334155; display: flex; align-items: center; gap: 6px;}
+    </style>
+</head>
+<body class="flex h-screen w-full text-slate-800">
+
+    <aside id="sidebar" class="w-64 bg-bold-blue text-white flex flex-col fixed inset-y-0 left-0 z-40 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300">
+        <div class="p-6 flex items-center justify-between">
+            <div>
+                <h1 class="text-xl font-bold tracking-wider text-white">BOLD</h1>
+                <p class="text-xs text-bold-coral font-medium uppercase tracking-widest mt-1">KAM 360</p>
+            </div>
+            <button id="close-sidebar" class="md:hidden text-gray-300 hover:text-white" onclick="toggleSidebar()">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-2 overflow-y-auto mt-4">
+            <button onclick="navigate('executive-overview')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/20 text-white font-bold transition-all text-sm" data-target="executive-overview">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> <span>Executive Overview</span>
+            </button>
+            <button onclick="navigate('triage-kam')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium" data-target="triage-kam">
+                <i data-lucide="target" class="w-5 h-5"></i> <span>Priorización de Cuentas</span>
+            </button>
+            <button onclick="navigate('perfil-clinico')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium" data-target="perfil-clinico">
+                <i data-lucide="user" class="w-5 h-5"></i> <span>Vista 360</span>
+            </button>
+            <button onclick="navigate('mapa-oportunidades')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium" data-target="mapa-oportunidades">
+                <i data-lucide="map" class="w-5 h-5"></i> <span>Mapa de Oportunidades</span>
+            </button>
+            <button onclick="navigate('calidad-handoff')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium" data-target="calidad-handoff">
+                <i data-lucide="shield-check" class="w-5 h-5"></i> <span>Calidad del Handoff</span>
+            </button>
+            <button onclick="navigate('asistente-kam')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium" data-target="asistente-kam">
+                <i data-lucide="sparkles" class="w-5 h-5"></i> <span>Asistente KAM</span>
+            </button>
+			<button onclick="navigate('glosario-kam')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium" data-target="glosario-kam">
+                <i data-lucide="book-open" class="w-5 h-5"></i> <span>Glosario y Métricas</span>
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-white/10">
+            <div class="bg-white/5 rounded-xl p-4 text-xs text-gray-300">
+                <p class="font-semibold text-white mb-2 uppercase">Configuración Local</p>
+                <label class="cursor-pointer flex items-center gap-2 text-bold-coral hover:text-white transition">
+                    <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                    <span>Cargar CSV Manual</span>
+                    <input type="file" id="csv-upload" accept=".csv" class="hidden" onchange="handleFileUpload(event)">
+                </label>
+            </div>
+        </div>
+    </aside>
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-bold-blue/50 z-30 hidden md:hidden backdrop-blur-sm transition-opacity" onclick="toggleSidebar()"></div>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <header class="bg-white border-b border-slate-200 p-4 flex flex-col gap-3 z-20 shadow-sm shrink-0">
+            <!-- Search and Actions Row -->
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4 w-full md:w-auto">
+                    <button onclick="toggleSidebar()" class="md:hidden text-slate-600 hover:text-bold-blue shrink-0">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                    <div class="relative w-full md:w-64">
+    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+    <!-- Agregamos list="search-suggestions" -->
+    <input type="text" id="global-search" list="search-suggestions" placeholder="Buscar comercio o ID..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-bold-blue/20 transition-all" onkeyup="handleSearch()">
+    <!-- Agregamos el contenedor de sugerencias -->
+    <datalist id="search-suggestions"></datalist>
+</div>
+                </div>
+                
+                <div class="flex items-center gap-2 shrink-0 self-end md:self-auto">
+                    <button onclick="clearFilters()" class="flex items-center gap-2 px-3 py-2 text-slate-500 bg-slate-100 rounded-lg hover:bg-slate-200 transition-all text-xs font-semibold">
+                        <i data-lucide="filter-x" class="w-4 h-4"></i> Limpiar
+                    </button>
+                    <div class="h-6 w-px bg-slate-200 mx-1"></div>
+                    <button onclick="exportPPT()" class="flex items-center gap-2 px-3 py-2 bg-[#D04423]/10 text-[#D04423] rounded-lg hover:bg-[#D04423]/20 transition-all text-xs font-semibold uppercase tracking-wide" title="Exportar Overview">
+                        <i data-lucide="presentation" class="w-4 h-4"></i> PPT
+                    </button>
+                    <button onclick="exportPDF()" class="flex items-center gap-2 px-3 py-2 bg-bold-blue/10 text-bold-blue rounded-lg hover:bg-bold-blue/20 transition-all text-xs font-semibold uppercase tracking-wide" title="Exportar Vista 360">
+                        <i data-lucide="file-down" class="w-4 h-4"></i> PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Wrap-able Filters Row -->
+            <div class="flex flex-wrap items-center gap-2 w-full pt-1">
+                
+                <div class="dropdown-check-list shrink-0 min-w-[120px]"><span class="anchor">KAM</span><ul class="items" id="filter-kam-list"></ul></div>
+                <div class="dropdown-check-list shrink-0 min-w-[120px]"><span class="anchor">Ciudad</span><ul class="items" id="filter-city-list"></ul></div>
+                <div class="dropdown-check-list shrink-0 min-w-[120px]"><span class="anchor">Clasificación</span><ul class="items" id="filter-status-list"></ul></div>
+                <div class="dropdown-check-list shrink-0 min-w-[120px]"><span class="anchor">Grupo Emp.</span><ul class="items" id="filter-grupo-list"></ul></div>
+                <div class="dropdown-check-list shrink-0 min-w-[120px]"><span class="anchor">Múltiples Sedes</span><ul class="items" id="filter-sedes-list"></ul></div>
+                <div class="dropdown-check-list shrink-0 min-w-[120px]"><span class="anchor">Nacional</span><ul class="items" id="filter-nacional-list"></ul></div>
+                <div class="dropdown-check-list shrink-0 min-w-[120px]"><span class="anchor">Est. Handoff</span><ul class="items" id="filter-handoff-list"></ul></div>
+                <div class="dropdown-check-list shrink-0 min-w-[120px]"><span class="anchor">Tendencia TPV</span><ul class="items" id="filter-tendencia-list"></ul></div>
+                <div class="dropdown-check-list shrink-0 min-w-[120px]"><span class="anchor">Prioridad</span><ul class="items" id="filter-prioridad-list"></ul></div>
+                
+            </div>
+        </header>
+
+        <div id="main-scroll-area" class="flex-1 overflow-y-auto p-4 md:p-6 pb-20">
+            
+            <!-- SECTION 1: EXECUTIVE OVERVIEW -->
+            <section id="executive-overview" class="view-section active space-y-6">
+                <div class="flex items-end justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-bold-blue uppercase tracking-tight">Executive Overview</h2>
+                        <p class="text-slate-500 text-sm mt-1">Resumen del portafolio Handoff SMB-KAM</p>
+                    </div>
+                </div>
+
+                <!-- Main KPIs Row 1 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="glass-card p-5 border-l-4 border-bold-blue">
+                        <div class="flex items-center gap-3 text-slate-500 mb-2">
+                            <div class="p-1.5 bg-blue-50 text-bold-blue rounded-md"><i data-lucide="users" class="w-4 h-4"></i></div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider">Total Comercios</span>
+                        </div>
+                        <div class="text-3xl font-bold text-slate-800" id="eo-total-merchants">0</div>
+                    </div>
+                    
+                    <div class="glass-card p-5 border-l-4 border-green-500">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-3 text-slate-500">
+                                <div class="p-1.5 bg-green-50 text-green-600 rounded-md"><i data-lucide="check-circle" class="w-4 h-4"></i></div>
+                                <span class="text-[11px] font-bold uppercase tracking-wider">Avance Handoff</span>
+                            </div>
+                            <span class="text-xl font-bold text-green-600" id="eo-handoff-pct">0%</span>
+                        </div>
+                        <div class="flex justify-between items-end mt-2">
+                            <div><p class="text-[10px] text-slate-400 uppercase">Completos</p><p class="text-lg font-bold text-slate-700" id="eo-handoff-complete">0</p></div>
+                            <div class="text-right"><p class="text-[10px] text-slate-400 uppercase">Pendientes/Parcial</p><p class="text-lg font-bold text-red-500" id="eo-handoff-pending">0</p></div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-5 border-l-4 border-bold-coral">
+                        <div class="flex items-center gap-3 text-slate-500 mb-2">
+                            <div class="p-1.5 bg-coral-50 text-bold-coral rounded-md"><i data-lucide="trending-up" class="w-4 h-4"></i></div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider">TPV M0 Total</span>
+                        </div>
+                        <div class="text-2xl font-bold text-slate-800 truncate" id="eo-tpv-total">$0</div>
+                    </div>
+
+                    <div class="glass-card p-5 border-l-4 border-purple-500">
+                        <div class="flex items-center gap-3 text-slate-500 mb-2">
+                            <div class="p-1.5 bg-purple-50 text-purple-600 rounded-md"><i data-lucide="bar-chart-3" class="w-4 h-4"></i></div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider">TPV Promedio</span>
+                        </div>
+                        <div class="text-2xl font-bold text-slate-800 truncate" id="eo-tpv-avg">$0</div>
+                    </div>
+                </div>
+
+                <!-- Mini KPIs Row 2 (Click to Action) -->
+<div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+    <div onclick="applyQuickFilter('grupo', 'Sí')" class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-center shadow-sm cursor-pointer hover:bg-blue-50 transition-all group">
+        <p class="text-[10px] uppercase text-slate-500 font-bold mb-1 group-hover:text-bold-blue">Grupo Empresarial <i data-lucide="arrow-up-right" class="w-3 h-3 inline float-right opacity-0 group-hover:opacity-100 transition-opacity"></i></p>
+        <p class="text-xl font-bold text-bold-blue" id="eo-kpi-grupo">0</p>
+    </div>
+    <div onclick="applyQuickFilter('sedes', 'Sí')" class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-center shadow-sm cursor-pointer hover:bg-blue-50 transition-all group">
+        <p class="text-[10px] uppercase text-slate-500 font-bold mb-1 group-hover:text-bold-blue">Múltiples Sedes <i data-lucide="arrow-up-right" class="w-3 h-3 inline float-right opacity-0 group-hover:opacity-100 transition-opacity"></i></p>
+        <p class="text-xl font-bold text-bold-blue" id="eo-kpi-sedes">0</p>
+    </div>
+    <div onclick="applyQuickFilter('nacional', 'Sí')" class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-center shadow-sm cursor-pointer hover:bg-blue-50 transition-all group">
+        <p class="text-[10px] uppercase text-slate-500 font-bold mb-1 group-hover:text-bold-blue">Presencia Nacional <i data-lucide="arrow-up-right" class="w-3 h-3 inline float-right opacity-0 group-hover:opacity-100 transition-opacity"></i></p>
+        <p class="text-xl font-bold text-bold-blue" id="eo-kpi-nacional">0</p>
+    </div>
+    <div onclick="applyQuickFilter('tendencia', 'Decreciente')" class="bg-red-50 border border-red-100 rounded-xl p-3 flex flex-col justify-center shadow-sm cursor-pointer hover:bg-red-100 transition-all group">
+        <p class="text-[10px] uppercase text-red-600 font-bold mb-1 group-hover:text-red-800">Tendencia a la Baja <i data-lucide="arrow-up-right" class="w-3 h-3 inline float-right opacity-0 group-hover:opacity-100 transition-opacity"></i></p>
+        <p class="text-xl font-bold text-red-700" id="eo-kpi-decreciente">0</p>
+    </div>
+    <div onclick="applyQuickFilter('prioridad', 'Alta Prioridad')" class="bg-orange-50 border border-orange-100 rounded-xl p-3 flex flex-col justify-center shadow-sm cursor-pointer hover:bg-orange-100 transition-all group">
+        <p class="text-[10px] uppercase text-orange-600 font-bold mb-1 group-hover:text-orange-800">Prioridad Alta <i data-lucide="arrow-up-right" class="w-3 h-3 inline float-right opacity-0 group-hover:opacity-100 transition-opacity"></i></p>
+        <p class="text-xl font-bold text-orange-700" id="eo-kpi-prioridad">0</p>
+    </div>
+</div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="glass-card p-6 lg:col-span-2">
+                        <h3 class="text-sm font-bold text-slate-700 uppercase mb-4">Segmentación por Rango TPV</h3>
+                        <div class="h-64 relative w-full">
+                            <canvas id="chart-tpv-segments"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6">
+                        <h3 class="text-sm font-bold text-slate-700 uppercase mb-4">Top 5 Categorías</h3>
+                        <div class="h-64 relative w-full">
+                            <canvas id="chart-top-categories"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 bg-gradient-to-br from-bold-blue to-[#2A3F99] text-white border-none shadow-lg">
+                    <h3 class="text-sm font-bold uppercase mb-3 flex items-center gap-2"><i data-lucide="bot" class="w-4 h-4"></i> Análisis Ejecutivo Autogenerado</h3>
+                    <p id="eo-ai-summary" class="text-sm leading-relaxed text-blue-50">Generando lectura ejecutiva del portafolio...</p>
+                </div>
+				
+				
+            </section>
+
+            <!-- SECTION 2: PRIORIZACIÓN KAM -->
+            <section id="triage-kam" class="view-section space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-bold-blue uppercase tracking-tight">Priorización de Cuentas</h2>
+                    <p class="text-slate-500 text-sm mt-1">Matriz ampliada de priorización de cuentas comerciales</p>
+                </div>
+
+                <div class="glass-card overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-[11px] uppercase text-slate-500 tracking-wider">
+                                    <th class="p-3 font-semibold">Comercio</th>
+                                    <th class="p-3 font-semibold">KAM</th>
+                                    <th class="p-3 font-semibold">Prioridad</th>
+                                    <th class="p-3 font-semibold">Salud</th>
+                                    <th class="p-3 font-semibold">Growth</th>
+                                    <th class="p-3 font-semibold">Est. Handoff</th>
+                                    <th class="p-3 font-semibold">Tendencia</th>
+                                    <th class="p-3 font-semibold">Grupo Emp.</th>
+                                    <th class="p-3 font-semibold">Sedes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="triage-table-body" class="divide-y divide-slate-100 text-xs">
+                                <!-- JS Inject -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="triage-empty" class="hidden p-12 text-center text-slate-500 bg-slate-50">
+                        <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3 text-slate-300"></i>
+                        <p class="font-medium text-lg">Sin resultados</p>
+                        <p class="text-sm">No se encontraron comercios que coincidan con los filtros aplicados.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: VISTA 360 DEL COMERCIO -->
+            <section id="perfil-clinico" class="view-section space-y-6">
+                <!-- Select Merchant Header -->
+                <div class="glass-card p-4 flex flex-col md:flex-row items-center justify-between gap-4 relative z-0 shadow-md">
+                    <div class="w-full md:w-1/2">
+                        <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block tracking-wider">Seleccionar Comercio a Consultar</label>
+                        <select id="pc-merchant-select" class="w-full p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-bold-blue shadow-sm" onchange="loadClinicalProfile()">
+                            <option value="">-- Buscar y seleccionar comercio --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 bg-slate-50 px-5 py-2 rounded-xl border border-slate-200">
+                        <div class="text-center">
+                            <p class="text-[10px] font-bold uppercase text-slate-500">Salud</p>
+                            <p class="text-xl font-bold text-slate-800 leading-none mt-1" id="pc-health-score">--</p>
+                        </div>
+                        <div class="h-8 w-px bg-slate-300 mx-1"></div>
+                        <div class="text-center">
+                            <p class="text-[10px] font-bold uppercase text-slate-500">Prioridad</p>
+                            <p class="text-xl font-bold text-slate-800 leading-none mt-1" id="pc-priority-score">--</p>
+                        </div>
+                        <div class="h-8 w-px bg-slate-300 mx-1"></div>
+                        <div class="text-center">
+                            <p class="text-[10px] font-bold uppercase text-slate-500">Growth</p>
+                            <p class="text-xl font-bold text-slate-800 leading-none mt-1" id="pc-growth-score">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State Block -->
+                <div id="pc-empty" class="min-h-[60vh] flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50/50 transition-all">
+                    <div class="p-6 bg-white rounded-full shadow-sm mb-6">
+                        <i data-lucide="search-check" class="w-16 h-16 text-slate-300"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-700 mb-2">Ningún comercio seleccionado</h3>
+                    <p class="text-sm text-slate-500 max-w-md text-center mb-6">Utiliza el buscador desplegable en la parte superior para seleccionar un comercio y visualizar su expediente 360, análisis predictivo y contactos.</p>
+                    <button onclick="document.getElementById('pc-merchant-select').focus()" class="px-5 py-2 bg-bold-blue text-white rounded-lg text-sm font-semibold shadow-md hover:bg-blue-800 transition">Buscar Comercio</button>
+                </div>
+
+                <!-- Data Content Block -->
+                <div id="pc-content" class="hidden space-y-6">
+                    <div class="glass-card p-6 border-l-4 border-bold-blue relative overflow-hidden">
+                        <div class="absolute -right-10 -top-10 opacity-5 pointer-events-none">
+                            <i data-lucide="building" class="w-48 h-48"></i>
+                        </div>
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
+                            <div>
+                                <h2 class="text-2xl font-bold text-slate-800 uppercase" id="pc-name">NOMBRE COMERCIO</h2>
+                                <p class="text-sm text-slate-500 mt-1 flex flex-wrap items-center gap-3">
+                                    <span><i data-lucide="hash" class="w-3 h-3 inline mr-1"></i><span id="pc-id">ID</span></span>
+                                    <span><i data-lucide="map-pin" class="w-3 h-3 inline mr-1"></i><span id="pc-city">Ciudad</span></span>
+                                    <span><i data-lucide="tag" class="w-3 h-3 inline mr-1"></i><span id="pc-category">Categoría</span></span>
+                                </p>
+                            </div>
+                            <div class="flex flex-col items-end gap-2">
+                                <span id="pc-status-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-600 shadow-sm border border-slate-200">Estado</span>
+                                <span class="text-[10px] font-bold uppercase text-slate-400" id="pc-handoff-badge">Handoff: --</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contacto y Gestión KAM -->
+                    <div class="glass-card p-6 bg-gradient-to-r from-slate-50 to-white">
+                        <h3 class="text-sm font-bold text-slate-700 uppercase mb-4 flex items-center gap-2"><i data-lucide="contact" class="w-4 h-4 text-bold-blue"></i> Equipo y Gestión de Contacto</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                                <p class="text-[10px] font-bold uppercase text-slate-400 mb-1">Responsable Bold</p>
+                                <p class="text-sm font-bold text-bold-blue" id="pc-kam">-</p>
+                                <p class="text-xs text-slate-500 mt-1 border-t pt-1 border-slate-100">Lead: <span id="pc-lead" class="font-medium">-</span></p>
+                                <p class="text-xs text-slate-500">Manager: <span id="pc-manager" class="font-medium">-</span></p>
+                            </div>
+                            <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                                <p class="text-[10px] font-bold uppercase text-slate-400 mb-1">Contacto del Comercio</p>
+                                <p class="text-sm font-bold text-slate-800" id="pc-contact-name">-</p>
+                                <p class="text-xs text-slate-500 truncate" id="pc-contact-role">-</p>
+                            </div>
+                            <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                                <p class="text-[10px] font-bold uppercase text-slate-400 mb-1">Información de Red</p>
+                                <p class="text-xs text-slate-700 flex items-center gap-2 mb-1 truncate" title="Email"><i data-lucide="mail" class="w-3 h-3 text-slate-400 shrink-0"></i> <span id="pc-contact-email">-</span></p>
+                                <p class="text-xs text-slate-700 flex items-center gap-2" title="Teléfono"><i data-lucide="phone" class="w-3 h-3 text-slate-400 shrink-0"></i> <span id="pc-contact-phone">-</span></p>
+                            </div>
+                            <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                                <p class="text-[10px] font-bold uppercase text-slate-400 mb-1">Logística de Contacto</p>
+                                <p class="text-xs text-slate-700 mb-1">Vía: <strong id="pc-contact-via">-</strong></p>
+                                <p class="text-xs text-slate-700">Hora: <strong id="pc-contact-hora">-</strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vitals -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 glass-card p-6">
+                            <h3 class="text-sm font-bold text-slate-700 uppercase mb-4 flex items-center gap-2"><i data-lucide="bar-chart-2" class="w-4 h-4 text-bold-coral"></i> Métricas Transaccionales (TPV M5-M0)</h3>
+                            <div class="h-64 relative w-full">
+                                <canvas id="chart-vitals"></canvas>
+                            </div>
+                        </div>
+                        <div class="glass-card p-6 flex flex-col justify-center space-y-6 bg-slate-50">
+                            <div>
+                                <p class="text-[11px] font-bold uppercase text-slate-500">Análisis Automático</p>
+                                <div class="mt-3 space-y-4">
+                                    <div class="flex items-start gap-3">
+                                        <div id="diag-trend-icon" class="p-2 rounded-lg bg-white border border-slate-200 shadow-sm shrink-0"></div>
+                                        <div>
+                                            <p class="text-sm font-semibold text-slate-800 leading-none">Tendencia TPV</p>
+                                            <p class="text-xs text-slate-500 mt-1" id="diag-trend-text">-</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2 rounded-lg bg-white border border-slate-200 shadow-sm text-yellow-500 shrink-0"><i data-lucide="alert-triangle" class="w-4 h-4"></i></div>
+                                        <div>
+                                            <p class="text-sm font-semibold text-slate-800 leading-none">Riesgo Comercial</p>
+                                            <p class="text-xs text-slate-500 mt-1" id="diag-risk-text">-</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pt-4 border-t border-slate-200">
+                                <p class="text-[11px] font-bold uppercase text-slate-500 mb-2">Plan de Acción Sugerido</p>
+                                <ul class="text-xs text-slate-700 space-y-2 list-disc pl-4" id="pc-treatment-list">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contexto -->
+                    <div class="glass-card p-6">
+                        <h3 class="text-sm font-bold text-slate-700 uppercase mb-4 flex items-center gap-2"><i data-lucide="clipboard-list" class="w-4 h-4"></i> Contexto Comercial de Handoff</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <p class="text-xs font-bold uppercase text-slate-500 mb-1">Historia del Comercio</p>
+                                <p class="text-sm text-slate-800 preserve-text" id="pc-history">-</p>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <p class="text-xs font-bold uppercase text-slate-500 mb-1">Dolores / Necesidades</p>
+                                <p class="text-sm text-slate-800 preserve-text" id="pc-pain">-</p>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <p class="text-xs font-bold uppercase text-slate-500 mb-1">Modelo de Atención</p>
+                                <p class="text-sm text-slate-800 preserve-text" id="pc-model">-</p>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <p class="text-xs font-bold uppercase text-slate-500 mb-1">Planes Documentados</p>
+                                <p class="text-sm text-slate-800 preserve-text" id="pc-plans">-</p>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <p class="text-xs font-bold uppercase text-slate-500 mb-1">Negociaciones / Términos</p>
+                                <p class="text-sm text-slate-800 preserve-text" id="pc-negotiations">-</p>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <p class="text-xs font-bold uppercase text-slate-500 mb-1">Reportería Especial</p>
+                                <p class="text-sm text-slate-800 preserve-text" id="pc-reporting">-</p>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <p class="text-xs font-bold uppercase text-slate-500 mb-1">Potencial TPV</p>
+                                <p class="text-sm text-slate-800 preserve-text" id="pc-potential-context">-</p>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <p class="text-xs font-bold uppercase text-slate-500 mb-1">Compromisos Cliente / Bold</p>
+                                <p class="text-sm text-slate-800 preserve-text" id="pc-commitments">-</p>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 md:col-span-2">
+                                <p class="text-xs font-bold uppercase text-slate-500 mb-1">Contacto Secundario</p>
+                                <p class="text-sm text-slate-800 preserve-text" id="pc-contact-2">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4: MAPA DE OPORTUNIDADES -->
+            <section id="mapa-oportunidades" class="view-section space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-bold-blue uppercase tracking-tight">Mapa de Oportunidades</h2>
+                    <p class="text-slate-500 text-sm mt-1">Distribución y potencial de profundización</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-card p-6">
+                        <h3 class="text-sm font-bold text-slate-700 uppercase mb-4">Matriz: Salud vs Potencial TPV</h3>
+                        <div class="h-80 relative w-full flex items-center justify-center bg-slate-50 rounded-xl border border-slate-100 p-2">
+                            <canvas id="chart-matrix"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6">
+                        <h3 class="text-sm font-bold text-slate-700 uppercase mb-4">Distribución por KAM Asignado</h3>
+                        <div class="h-80 relative w-full">
+                            <canvas id="chart-kam-dist"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 5: CALIDAD DEL HANDOFF -->
+            <section id="calidad-handoff" class="view-section space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-bold-blue uppercase tracking-tight">Calidad del Handoff</h2>
+                    <p class="text-slate-500 text-sm mt-1">Auditoría de completitud de datos transferidos desde SMB</p>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-sm font-bold text-slate-700 uppercase mb-6 border-b pb-2">Completitud de Campos Cualitativos</h3>
+                    <div class="space-y-6" id="ch-progress-bars"></div>
+                </div>
+
+                <div class="glass-card p-6 bg-slate-800 text-white border-none shadow-lg">
+                    <h3 class="text-sm font-bold uppercase mb-3 flex items-center gap-2 text-yellow-400"><i data-lucide="lightbulb" class="w-4 h-4"></i> Recomendaciones de Auditoría</h3>
+                    <ul class="text-sm space-y-2 list-disc pl-5 text-slate-300" id="ch-recommendations">
+                        <li>Cargando auditoría...</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SECTION 6: ASISTENTE LOCAL KAM -->
+            <section id="asistente-kam" class="view-section space-y-6">
+                <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-bold-blue uppercase tracking-tight">Asistente de Gestión</h2>
+                        <p class="text-slate-500 text-sm mt-1">Motor local de consulta sobre la base cargada (Sin conexión a API externa en V1).</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 glass-card p-6">
+                        <h3 class="text-sm font-bold text-slate-700 uppercase mb-3 flex items-center gap-2"><i data-lucide="message-circle" class="w-4 h-4"></i> Consulta Asistida</h3>
+                        <textarea id="assistant-question" class="w-full h-28 p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-bold-blue/20" placeholder="Ej: ¿Qué cuentas debe contactar primero el KAM? ¿Qué comercios tienen tendencia a la baja? o escribe el nombre del comercio."></textarea>
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            <button onclick="askAssistant()" class="px-4 py-2 bg-bold-blue text-white rounded-lg text-sm font-semibold hover:bg-blue-800 transition shadow-sm"><i data-lucide="sparkles" class="w-4 h-4 inline mr-2"></i>Generar Respuesta</button>
+                            <button onclick="assistantAnswer('prioridad')" class="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-200">Top Prioridad</button>
+                            <button onclick="assistantAnswer('caida')" class="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-200">Riesgo Caída</button>
+                            <button onclick="assistantAnswer('potencial')" class="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-200">Alto Potencial</button>
+                            <button onclick="assistantAnswer('resumen')" class="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-200">Resumen Comercio</button>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 bg-slate-800 text-white border-none flex flex-col justify-center shadow-lg">
+                        <h3 class="text-sm font-bold uppercase mb-3 flex items-center gap-2 text-bold-coral"><i data-lucide="cpu" class="w-4 h-4"></i> Exportar Prompt a Gemini</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-4">Usa este botón para copiar el contexto estructurado de los comercios filtrados y pégalo en Google Gemini para un análisis avanzado por IA.</p>
+                        <button onclick="copyGeminiPrompt()" class="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold uppercase tracking-wide flex items-center justify-center gap-2 transition"><i data-lucide="copy" class="w-4 h-4"></i> Copiar Prompt Base</button>
+                    </div>
+                </div>
+
+                <div id="assistant-answer" class="glass-card p-6 min-h-[200px]">
+                    <div class="text-center text-slate-400 py-8">
+                        <i data-lucide="terminal-square" class="w-10 h-10 mx-auto mb-3 opacity-50"></i>
+                        <p class="font-medium text-slate-500">Haz una pregunta para iniciar</p>
+                        <p class="text-xs mt-1">El asistente analizará localmente la base de datos aplicando los filtros actuales.</p>
+                    </div>
+                </div>
+            </section>
+			<!-- SECTION 7: GLOSARIO Y MÉTRICAS -->
+            <section id="glosario-kam" class="view-section space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-bold-blue uppercase tracking-tight">Glosario y Metodología</h2>
+                    <p class="text-slate-500 text-sm mt-1">Diccionario de datos, fórmulas y guía de lectura para la toma de decisiones.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <!-- Columna Izquierda: Scores -->
+                    <div class="space-y-6">
+                        <div class="glass-card p-6 border-t-4 border-green-500">
+                            <h3 class="text-lg font-bold text-slate-800 uppercase mb-2 flex items-center gap-2"><i data-lucide="activity" class="w-5 h-5 text-green-500"></i> Score de Salud (Health Score)</h3>
+                            <p class="text-sm text-slate-600 mb-3">Mide el riesgo de *churn* (abandono) o caída transaccional del comercio en una escala de 0 a 100. Se calcula automáticamente si no viene provisto por la base de datos.</p>
+                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                                <p class="text-xs font-mono text-slate-500 mb-2">Fórmula algorítmica:</p>
+                                <ul class="text-sm text-slate-700 space-y-2 list-disc pl-4">
+                                    <li><strong>Base:</strong> 40 puntos asegurados.</li>
+                                    <li><strong>Volumen (Max 40 pts):</strong> Relación entre el TPV del mes actual (M0) y su TPV Histórico Máximo.</li>
+                                    <li><strong>Tendencia (20 pts):</strong> Se otorgan si la tendencia de M0 vs M5 es estable o creciente.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6 border-t-4 border-bold-blue">
+                            <h3 class="text-lg font-bold text-slate-800 uppercase mb-2 flex items-center gap-2"><i data-lucide="trending-up" class="w-5 h-5 text-bold-blue"></i> Score de Growth (Crecimiento)</h3>
+                            <p class="text-sm text-slate-600 mb-3">Evalúa el potencial de profundización de la cuenta (upselling/cross-selling). Entre mayor sea el puntaje, más factible es expandir la facturación con Bold.</p>
+                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                                <p class="text-xs font-mono text-slate-500 mb-2">Fórmula algorítmica:</p>
+                                <ul class="text-sm text-slate-700 space-y-2 list-disc pl-4">
+                                    <li><strong>Base:</strong> 30 puntos asegurados.</li>
+                                    <li><strong>Potencial (Max 35 pts extras):</strong> Relación matemática calculando qué tan grande es su <em>TPV Potencial</em> reportado versus su facturación máxima lograda con nosotros.</li>
+                                </ul>
+                                <p class="text-xs text-slate-500 mt-2 italic">* Se complementa cualitativamente si el comercio tiene "Múltiples sedes" o "Presencia Nacional".</p>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6 border-t-4 border-orange-500">
+                            <h3 class="text-lg font-bold text-slate-800 uppercase mb-2 flex items-center gap-2"><i data-lucide="alert-circle" class="w-5 h-5 text-orange-500"></i> Score de Prioridad</h3>
+                            <p class="text-sm text-slate-600 mb-2">Indica la urgencia de atención por parte del KAM, con un máximo de 100 puntos. Todo comercio por encima de 60 puntos se etiqueta como <strong>"Alta Prioridad"</strong>.</p>
+                            <p class="text-sm text-slate-600">Se calcula otorgando una base de 50 puntos, más un factor ponderado que evalúa qué tan cerca está su TPV Máximo de los $50.000.000 COP.</p>
+                        </div>
+                    </div>
+
+                    <!-- Columna Derecha: Matriz y Conceptos -->
+                    <div class="space-y-6">
+                        <div class="glass-card p-6 bg-slate-800 text-white border-none shadow-lg">
+                            <h3 class="text-lg font-bold uppercase mb-4 flex items-center gap-2 text-bold-coral"><i data-lucide="map" class="w-5 h-5"></i> ¿Cómo leer la Matriz de Oportunidades?</h3>
+                            <p class="text-sm text-slate-300 mb-4">El gráfico de dispersión (burbujas) es una herramienta visual estratégica. Se divide conceptualmente en cuatro cuadrantes de acción:</p>
+                            
+                            <div class="space-y-4">
+                                <div class="bg-white/10 p-3 rounded-lg border border-white/5">
+                                    <h4 class="font-bold text-sm text-green-400">1. Eje X (Horizontal) - Salud</h4>
+                                    <p class="text-xs text-slate-300 mt-1">A la izquierda (0-50) están los comercios en riesgo de caída. A la derecha (51-100) están los comercios sanos y estables.</p>
+                                </div>
+                                <div class="bg-white/10 p-3 rounded-lg border border-white/5">
+                                    <h4 class="font-bold text-sm text-blue-400">2. Eje Y (Vertical) - TPV Máximo</h4>
+                                    <p class="text-xs text-slate-300 mt-1">Muestra el techo histórico de facturación. Los que están más arriba representan las cuentas de mayor valor económico para Bold.</p>
+                                </div>
+                                <div class="bg-white/10 p-3 rounded-lg border border-white/5">
+                                    <h4 class="font-bold text-sm text-yellow-400">3. Tamaño y Color de Burbuja</h4>
+                                    <p class="text-xs text-slate-300 mt-1">El <strong>tamaño</strong> indica la facturación actual (M0). El <strong>color</strong> refuerza la salud (Verde=Bien, Azul=Estable, Rojo=Riesgo).</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 p-3 bg-red-900/50 border border-red-500/30 rounded-lg">
+                                <p class="text-xs font-bold text-red-300 uppercase mb-1">🔥 Zona Crítica de Acción</p>
+                                <p class="text-xs text-slate-300">Busca burbujas grandes en la parte superior izquierda. Son comercios de altísimo valor histórico que actualmente están enfermos (bajo Score de Salud). Requieren contacto inmediato.</p>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6">
+                            <h3 class="text-lg font-bold text-slate-800 uppercase mb-3 border-b pb-2">Términos Transaccionales</h3>
+                            <ul class="text-sm text-slate-700 space-y-3">
+                                <li><strong>TPV (Total Payment Volume):</strong> Volumen total de dinero procesado a través de los canales de pago de Bold.</li>
+                                <li><strong>M0 (Mes Actual):</strong> Corresponde al mes en curso.</li>
+                                <li><strong>M1 a M5:</strong> Histórico de los 5 meses anteriores al actual.</li>
+                                <li><strong>TPV Máximo:</strong> El pico más alto de facturación mensual registrado por el comercio.</li>
+                                <li><strong>Handoff Completo:</strong> Ocurre cuando el Team Lead (SMB) documentó satisfactoriamente los dolores, planes y la historia del comercio.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        let globalData = [];
+        let filteredData = [];
+        let currentSection = 'executive-overview'; // Vista inicial
+        let myCharts = {}; 
+        
+        // Data URL source
+        const DATA_URL = 'https://docs.google.com/spreadsheets/d/1-wRhlcE9HBP97c6aVme3Bt7FmT0KXpbdr4g02A7g5Dg/export?format=csv&gid=948881589';
+
+        // Filters DOM IDs mapped to object keys
+        const filterMaps = {
+            'kam': 'filter-kam-list',
+            'city': 'filter-city-list',
+            'status': 'filter-status-list',
+            'grupo': 'filter-grupo-list',
+            'sedes': 'filter-sedes-list',
+            'nacional': 'filter-nacional-list',
+            'handoff': 'filter-handoff-list',
+            'tendencia': 'filter-tendencia-list',
+            'prioridad': 'filter-prioridad-list'
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Chart.register(ChartDataLabels);
+            lucide.createIcons();
+            setupDropdowns();
+            navigate('executive-overview'); // Forzar vista inicial explícita
+            loadDataFromSheet();
+        });
+
+        // 1. Fetching Logic (Secure fetch bypasses some CORS issues with PapaParse direct)
+        async function loadDataFromSheet() {
+    showToast('Conectando con Google Sheets...', 'info');
+    try {
+        // Creamos un "rompe-caché" añadiendo la hora exacta en milisegundos al enlace
+        const cacheBuster = new Date().getTime();
+        const urlSinCache = `${DATA_URL}&_t=${cacheBuster}`; 
+
+        // Usamos la nueva URL en el fetch
+        const response = await fetch(urlSinCache); 
+        
+        if (!response.ok) throw new Error("Fallo de red");
+        const csvText = await response.text();
+     
+                
+                if (csvText.includes('<!DOCTYPE html>') || csvText.includes('<html')) {
+                    throw new Error("Google devolvió un HTML (Posible bloqueo por permisos privados)");
+                }
+
+                parseAndLoadCsv(csvText, 'Google Sheets');
+            } catch (error) {
+                console.error("❌ Error de carga real:", error.message);
+                showToast(`Permisos de Sheet bloqueados. Generando datos demo locales.`, 'error');
+                generateMockData();
+            }
+        }
+
+        function parseAndLoadCsv(source, sourceName) {
+            Papa.parse(source, {
+                header: true,
+                skipEmptyLines: 'greedy',
+                encoding: 'UTF-8',
+                transformHeader: header => String(header || '').replace(/^\uFEFF/, '').trim(),
+                complete: function(results) {
+                    const fatalErrors = results.errors.filter(e => e.type === 'Quotes' || e.type === 'Delimiter');
+                    if (fatalErrors.length) {
+                        console.error('Errores de CSV:', fatalErrors);
+                        showToast(`El CSV tiene ${fatalErrors.length} error(es) de formato.`, 'error');
+                        return;
+                    }
+                    if (!results.data || !results.data.length) {
+                        showToast('CSV vacío o sin filas reconocibles.', 'error');
+                        return;
+                    }
+                    globalData = processData(results.data);
+                    filteredData = [...globalData];
+                    populateFilters();
+                    renderApp();
+                    showToast(`Cargados ${globalData.length} comercios desde ${sourceName}.`, 'success');
+                },
+                error: error => {
+                    console.error('Error leyendo CSV:', error);
+                    showToast('No fue posible leer el archivo CSV.', 'error');
+                }
+            });
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            parseAndLoadCsv(file, file.name);
+            event.target.value = '';
+        }
+
+        // --- STREAMING_CHUNK:Data Processing Pipeline ---
+        function processData(rawData) {
+            const parseMoney = (v) => {
+                if(!v) return 0;
+                if(typeof v === 'number') return v;
+                let s = String(v).replace(/\$/g, '').replace(/COP/gi, '').replace(/\s/g, '').trim();
+                if(s.includes('.') && !s.includes(',')) s = s.replace(/\./g, '');
+                else if(s.includes('.') && s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+                else s = s.replace(/,/g, '');
+                const n = parseFloat(s);
+                return isNaN(n) ? 0 : n;
+            };
+            const norm = (v) => (!v || String(v).trim().toUpperCase() === 'NAN') ? '' : String(v).trim();
+            const yes = (v) => ['SI','SÍ','YES','TRUE','1'].includes(norm(v).toUpperCase()) ? 'Sí' : 'No';
+
+            // Forms exports human-readable questions, while the consolidated table uses
+            // technical keys. Normalize both schemas to one stable internal contract.
+            const headerKey = value => String(value || '')
+                .replace(/^\uFEFF/, '')
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+            const aliases = {
+                'marca temporal': 'timestamp',
+                'comercio a transferir': 'merchant_descriptor',
+                'pagina web': 'pagina_web',
+                'contacto 1 tipo de contacto': 'contacto_1_tipo',
+                'contacto 1 nombre': 'contacto_1_nombre',
+                'contacto 1 cargo': 'contacto_1_cargo',
+                'contacto 1 telefono': 'contacto_1_telefono',
+                'contacto 1 email': 'contacto_1_email',
+                'contacto 1 mejor hora de contacto': 'contacto_1_mejor_hora',
+                'contacto 1 mejor via de contacto': 'contacto_1_mejor_via',
+                'contacto 2 tipo de contacto': 'contacto_2_tipo',
+                'contacto 2 nombre': 'contacto_2_nombre',
+                'contacto 2 cargo': 'contacto_2_cargo',
+                'contacto 2 telefono': 'contacto_2_telefono',
+                'contacto 2 email': 'contacto_2_email',
+                'contacto 2 mejor hora de contacto': 'contacto_2_mejor_hora',
+                'contacto 2 mejor via de contacto': 'contacto_2_mejor_via',
+                'pertenece a grupo empresarial': 'pertenece_grupo_empresarial',
+                'cual grupo empresarial si aplica': 'grupo_empresarial',
+                'tiene multiples sedes': 'tiene_multiples_sedes',
+                'esta a nivel nacional': 'es_nacional',
+                'comentarios cuentanos la historia de este comercio': 'historia_comercio',
+                'como es tu modelo de atencion con este cliente haces reuniones cada cuanto tiempo': 'modelo_atencion',
+                'le envias reporteria especial': 'envia_reporteria_especial',
+                'detalle de reporteria especial': 'detalle_reporteria_especial',
+                'negociaciones y terminos especiales': 'negociaciones_terminos_especiales',
+                'dolores y necesidades del cliente': 'dolores_necesidades',
+                'corto plazo 3 6 meses': 'plan_corto_plazo',
+                'mediano plazo 6 12 meses': 'plan_mediano_plazo',
+                'largo plazo 1 anos': 'plan_largo_plazo',
+                'tpv potencial del cliente podemos profundizarlo y traer mas tpv': 'tpv_potencial_contexto',
+                'temas pendientes compromisos cliente': 'pendientes_cliente',
+                'temas pendientes compromisos bold': 'pendientes_bold'
+            };
+            const normalizeRow = sourceRow => {
+                const row = { ...sourceRow };
+                Object.entries(sourceRow).forEach(([header, value]) => {
+                    const canonical = aliases[headerKey(header)];
+                    if (canonical && !norm(row[canonical])) row[canonical] = value;
+                });
+                const descriptor = norm(row.merchant_descriptor);
+                if (descriptor) {
+                    const match = descriptor.match(/^(.*?)\s+[—–-]\s+Merchant\s+([^|]+)(?:\|\s*([^|]+))?(?:\|\s*TL:\s*(.+))?$/i);
+                    if (match) {
+                        if (!norm(row.merchant_name)) row.merchant_name = match[1];
+                        if (!norm(row.merchant_id)) row.merchant_id = match[2];
+                        if (!norm(row.city_code) && match[3]) row.city_code = match[3];
+                        if (!norm(row.team_lead) && match[4]) row.team_lead = match[4];
+                    } else if (!norm(row.merchant_name)) {
+                        row.merchant_name = descriptor;
+                    }
+                }
+                return row;
+            };
+
+            return rawData.map(sourceRow => {
+                const row = normalizeRow(sourceRow);
+                const m0 = parseMoney(row.tpv_m0_1tx);
+                const m1 = parseMoney(row.tpv_m1_1tx);
+                const m2 = parseMoney(row.tpv_m2_1tx);
+                const m3 = parseMoney(row.tpv_m3_1tx);
+                const m4 = parseMoney(row.tpv_m4_1tx);
+                const m5 = parseMoney(row.tpv_m5_1tx_final || row.tpv_m5_1tx);
+                const max = parseMoney(row.tpv_max) || Math.max(m0,m1,m2,m3,m4,m5,1);
+                const pot = parseMoney(row.tpv_potencial) || max;
+
+                // Tendencia Calculation
+                let trendVal = m5 > 0 ? ((m0 - m5) / m5) : (m0 > 0 ? 1 : 0);
+                let tendencia_texto = norm(row.tendencia_tpv);
+                if(!tendencia_texto) {
+                    tendencia_texto = trendVal > 0.05 ? 'Creciente' : (trendVal < -0.05 ? 'Decreciente' : 'Estable');
+                }
+
+                // Scores
+                let healthScore = parseInt(row.health_score) || Math.round(Math.min(m0 / max, 1) * 40 + (trendVal >= 0?20:0) + 40);
+                let priorityScore = parseInt(row.priority_score) || Math.round(Math.min((max/50000000)*50, 50) + 50);
+                let growthScore = parseInt(row.growth_score) || Math.round(Math.min((pot/max)*35, 35) + 30);
+                
+                // Categorization for new filters
+                let nivel_prioridad = priorityScore >= 60 ? 'Alta Prioridad' : 'Normal';
+                
+                // Handoff state
+                const hist = norm(row.resumen_comercial || row.historia_comercio);
+                const dol = norm(row.dolores_necesidades);
+                const plan = norm(row.plan_corto_plazo);
+                let handoff_pct = ( (hist?1:0) + (dol?1:0) + (plan?1:0) ) / 3;
+                let estado_handoff_texto = norm(row.estado_handoff) || (handoff_pct === 1 ? 'Completo' : (handoff_pct > 0 ? 'Parcial' : 'Sin Handoff'));
+
+                return {
+                    ...row,
+                    merchant_id: norm(row.merchant_id) || 'MCH-XXXX',
+                    merchant_name: norm(row.merchant_name) || 'Comercio Sin Nombre',
+                    category_id: norm(row.category_id) || 'Sin Categoría',
+                    city_code: norm(row.city_code) || 'Sin Ciudad',
+                    kam_asignado: norm(row.kam_asignado) || 'Sin Asignar',
+                    team_lead: norm(row.team_lead),
+                    manager: norm(row.manager),
+                    clasificación: norm(row.clasificacion_tpv || row.clasificación || row.status) || 'No Clasificado',
+                    
+                    // Categorical filters standard
+                    pertenece_grupo_empresarial: yes(row.pertenece_grupo_empresarial),
+                    tiene_multiples_sedes: yes(row.tiene_multiples_sedes),
+                    es_nacional: yes(row.es_nacional),
+                    estado_handoff_texto,
+                    tendencia_texto,
+                    nivel_prioridad,
+                    
+                    // Transaccional
+                    tpv_m0_1tx: m0, tpv_m1_1tx: m1, tpv_m2_1tx: m2, tpv_m3_1tx: m3, tpv_m4_1tx: m4, tpv_m5_1tx: m5,
+                    tpv_max: max, tpv_potencial: pot, trendVal,
+                    
+                    // Context
+                    historia_comercio: hist, dolores_necesidades: dol, plan_corto_plazo: plan,
+                    modelo_atencion: norm(row.modelo_atencion),
+                    plan_mediano_plazo: norm(row.plan_mediano_plazo),
+                    plan_largo_plazo: norm(row.plan_largo_plazo),
+                    pagina_web: norm(row.pagina_web),
+                    envia_reporteria_especial: yes(row.envia_reporteria_especial),
+                    detalle_reporteria_especial: norm(row.detalle_reporteria_especial),
+                    negociaciones_terminos_especiales: norm(row.negociaciones_terminos_especiales),
+                    tpv_potencial_contexto: norm(row.tpv_potencial_contexto),
+                    pendientes_cliente: norm(row.pendientes_cliente),
+                    pendientes_bold: norm(row.pendientes_bold),
+                    
+                    // Contact Info
+                    contacto_1_nombre: norm(row.contacto_1_nombre),
+                    contacto_1_cargo: norm(row.contacto_1_cargo),
+                    contacto_1_email: norm(row.contacto_1_email || row.email_comercio || row.sales_agent_email_masked),
+                    contacto_1_telefono: norm(row.contacto_1_telefono || row.cellphone_comercio),
+                    contacto_1_mejor_via: norm(row.contacto_1_mejor_via),
+                    contacto_1_mejor_hora: norm(row.contacto_1_mejor_hora),
+                    contacto_2_tipo: norm(row.contacto_2_tipo),
+                    contacto_2_nombre: norm(row.contacto_2_nombre),
+                    contacto_2_cargo: norm(row.contacto_2_cargo),
+                    contacto_2_email: norm(row.contacto_2_email),
+                    contacto_2_telefono: norm(row.contacto_2_telefono),
+                    contacto_2_mejor_via: norm(row.contacto_2_mejor_via),
+                    contacto_2_mejor_hora: norm(row.contacto_2_mejor_hora),
+
+                    // Scores
+                    healthScore, priorityScore, growthScore,
+                    status_color: healthScore >= 75 ? 'bg-green-100 text-green-700' : (healthScore >= 50 ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'),
+                    status_clinico: healthScore >= 75 ? 'Excelente' : (healthScore >= 50 ? 'Estable' : 'En Riesgo'),
+                    accion_sugerida: norm(row.accion_sugerida) || 'Contacto inicial para alineación operativa'
+                };
+            });
+        }
+
+        function generateMockData() {
+            const data = [];
+            for(let i=1; i<=55; i++) {
+                let m0 = Math.floor(Math.random() * 80000000) + 1000000;
+                let trend = 1 + (Math.random() * 0.4 - 0.2); 
+                data.push({
+                    merchant_id: `MCH-${1000+i}`, merchant_name: `Empresa Mock ${i} SAS`,
+                    category_id: ['Restaurante','Retail','Servicios'][i%3],
+                    city_code: ['Bogotá','Medellín','Cali'][i%3],
+                    kam_asignado: ['Ana KAM','Carlos KAM'][i%2],
+                    clasificación: ['A','B','C'][i%3],
+                    tpv_m0_1tx: m0, tpv_m5_1tx: m0 * trend,
+                    tpv_max: m0 * 1.2,
+                    pertenece_grupo_empresarial: Math.random()>0.8?'SI':'NO',
+                    tiene_multiples_sedes: Math.random()>0.7?'SI':'NO',
+                    es_nacional: Math.random()>0.9?'SI':'NO',
+                    historia_comercio: Math.random()>0.2?'Opera hace años':'',
+                    dolores_necesidades: Math.random()>0.4?'Piden baja tasa':''
+                });
+            }
+            globalData = processData(data);
+            filteredData = [...globalData];
+            populateFilters();
+            renderApp();
+        }
+
+        // --- STREAMING_CHUNK:Filtering Logic ---
+        function setupDropdowns() {
+            document.querySelectorAll('.dropdown-check-list .anchor').forEach(anchor => {
+                anchor.onclick = function(e) {
+                    const dropdown = this.parentElement;
+                    const isVisible = dropdown.classList.contains('visible');
+                    document.querySelectorAll('.dropdown-check-list').forEach(d => d.classList.remove('visible'));
+                    if(!isVisible) dropdown.classList.add('visible');
+                }
+            });
+            document.addEventListener('click', e => {
+                if (!e.target.closest('.dropdown-check-list')) {
+                    document.querySelectorAll('.dropdown-check-list').forEach(d => d.classList.remove('visible'));
+                }
+            });
+        }
+
+        function populateFilters() {
+            const buildOptions = (key) => [...new Set(globalData.map(d => d[key]).filter(Boolean))].sort();
+            // Llenar sugerencias del buscador
+const searchDatalist = document.getElementById('search-suggestions');
+if (searchDatalist) {
+    searchDatalist.innerHTML = globalData.map(d => `<option value="${d.merchant_name}"></option>`).join('');
+}
+            const lists = {
+                'kam': buildOptions('kam_asignado'),
+                'city': buildOptions('city_code'),
+                'status': buildOptions('clasificación'),
+                'grupo': buildOptions('pertenece_grupo_empresarial'),
+                'sedes': buildOptions('tiene_multiples_sedes'),
+                'nacional': buildOptions('es_nacional'),
+                'handoff': buildOptions('estado_handoff_texto'),
+                'tendencia': buildOptions('tendencia_texto'),
+                'prioridad': buildOptions('nivel_prioridad')
+            };
+
+            for(const [filterId, arr] of Object.entries(lists)) {
+                const el = document.getElementById(filterMaps[filterId]);
+                if(!el) continue;
+                el.innerHTML = arr.map(item => `
+                    <li><label class="cursor-pointer flex items-center gap-2 w-full hover:bg-slate-50 px-2 py-1 rounded">
+                        <input type="checkbox" value="${item.replace(/"/g, '&quot;')}" onchange="applyFilters()" class="rounded border-slate-300 text-bold-blue focus:ring-bold-blue filter-checkbox-${filterId}">
+                        <span class="truncate">${item}</span>
+                    </label></li>`).join('');
+            }
+        }
+
+        function applyFilters() {
+            const getChecked = (type) => Array.from(document.querySelectorAll(`.filter-checkbox-${type}:checked`)).map(cb => cb.value);
+            
+            const s = {
+                kam: getChecked('kam'), city: getChecked('city'), status: getChecked('status'),
+                grupo: getChecked('grupo'), sedes: getChecked('sedes'), nacional: getChecked('nacional'),
+                handoff: getChecked('handoff'), tendencia: getChecked('tendencia'), prioridad: getChecked('prioridad')
+            };
+            const searchTxt = (document.getElementById('global-search').value || '').toLowerCase().trim();
+
+            filteredData = globalData.filter(r => {
+                return (s.kam.length===0 || s.kam.includes(r.kam_asignado)) &&
+                       (s.city.length===0 || s.city.includes(r.city_code)) &&
+                       (s.status.length===0 || s.status.includes(r.clasificación)) &&
+                       (s.grupo.length===0 || s.grupo.includes(r.pertenece_grupo_empresarial)) &&
+                       (s.sedes.length===0 || s.sedes.includes(r.tiene_multiples_sedes)) &&
+                       (s.nacional.length===0 || s.nacional.includes(r.es_nacional)) &&
+                       (s.handoff.length===0 || s.handoff.includes(r.estado_handoff_texto)) &&
+                       (s.tendencia.length===0 || s.tendencia.includes(r.tendencia_texto)) &&
+                       (s.prioridad.length===0 || s.prioridad.includes(r.nivel_prioridad)) &&
+                       (searchTxt === '' || r.merchant_name.toLowerCase().includes(searchTxt) || r.merchant_id.toLowerCase().includes(searchTxt));
+            });
+            renderApp();
+        }
+
+        function handleSearch() { applyFilters(); }
+        function clearFilters() {
+            document.getElementById('global-search').value = '';
+            document.querySelectorAll('.dropdown-check-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+            applyFilters();
+        }
+
+        function navigate(sectionId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(sectionId)?.classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-white/20', 'text-white', 'font-bold');
+                btn.classList.add('text-gray-300');
+                if(btn.dataset.target === sectionId) {
+                    btn.classList.add('bg-white/20', 'text-white', 'font-bold');
+                    btn.classList.remove('text-gray-300');
+                }
+            });
+            currentSection = sectionId;
+            if(window.innerWidth < 768) toggleSidebar(); 
+            if(globalData.length > 0) renderCurrentSection();
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        // --- STREAMING_CHUNK:Rendering Engine ---
+        function renderApp() {
+            populateMerchantSelector();
+            renderCurrentSection();
+        }
+
+        function renderCurrentSection() {
+            switch(currentSection) {
+                case 'executive-overview': renderExecutiveOverview(); break;
+                case 'triage-kam': renderPrioritization(); break;
+                case 'perfil-clinico': loadClinicalProfile(); break;
+                case 'mapa-oportunidades': renderOpportunities(); break;
+                case 'calidad-handoff': renderQuality(); break;
+                case 'asistente-kam': break; // Static or on-demand
+				case 'glosario-kam': break;
+            }
+            lucide.createIcons();
+        }
+
+        function createChart(id, cfg) {
+            if(myCharts[id]) myCharts[id].destroy();
+            myCharts[id] = new Chart(document.getElementById(id).getContext('2d'), cfg);
+        }
+        const fmtCurr = v => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v);
+        const fmtNum = v => new Intl.NumberFormat('es-CO').format(v);
+
+        function renderExecutiveOverview() {
+            const total = filteredData.length;
+            if(total===0) return;
+            
+            let tpvTot=0, comp=0, grupo=0, sedes=0, nac=0, decr=0, pri=0;
+            
+            filteredData.forEach(d => {
+                tpvTot += parseFloat(d.tpv_m0_1tx)||0;
+                if(d.estado_handoff_texto === 'Completo') comp++;
+                if(d.pertenece_grupo_empresarial === 'Sí') grupo++;
+                if(d.tiene_multiples_sedes === 'Sí') sedes++;
+                if(d.es_nacional === 'Sí') nac++;
+                if(d.tendencia_texto === 'Decreciente') decr++;
+                if(d.nivel_prioridad === 'Alta Prioridad') pri++;
+            });
+
+            document.getElementById('eo-total-merchants').innerText = fmtNum(total);
+            document.getElementById('eo-handoff-pct').innerText = `${Math.round((comp/total)*100)||0}%`;
+            document.getElementById('eo-handoff-complete').innerText = comp;
+            document.getElementById('eo-handoff-pending').innerText = total - comp;
+            document.getElementById('eo-tpv-total').innerText = fmtCurr(tpvTot);
+            document.getElementById('eo-tpv-avg').innerText = fmtCurr(total?tpvTot/total:0);
+            
+            document.getElementById('eo-kpi-grupo').innerText = grupo;
+            document.getElementById('eo-kpi-sedes').innerText = sedes;
+            document.getElementById('eo-kpi-nacional').innerText = nac;
+            document.getElementById('eo-kpi-decreciente').innerText = decr;
+            document.getElementById('eo-kpi-prioridad').innerText = pri;
+
+            // Segmentación Chart
+            // Segmentación Chart
+			let over40 = 0, mid = 0, under20 = 0;
+			filteredData.forEach(d => { let v = d.tpv_max; if(v>40000000) over40++; else if(v>20000000) mid++; else under20++; });
+            createChart('chart-tpv-segments', {
+                type: 'bar',
+                data: { labels: ['> 40M', '20M - 40M', '< 20M'], datasets: [{ data: [over40, mid, under20], backgroundColor: ['#121E6C', '#FF2847', '#E91E63'], borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false} } }
+            });
+
+            // Categorias Chart
+            let cats = {}; filteredData.forEach(d => {cats[d.category_id] = (cats[d.category_id]||0)+1;});
+            let sCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,5);
+            createChart('chart-top-categories', {
+                type: 'doughnut',
+                data: { labels: sCats.map(c=>c[0]), datasets: [{ data: sCats.map(c=>c[1]), backgroundColor: ['#121E6C', '#FF2847', '#E91E63', '#8A94A6', '#CBD5E1'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {position: 'right', labels:{boxWidth:10, font:{size:10}}} }, cutout: '70%' }
+            });
+
+            document.getElementById('eo-ai-summary').innerHTML = `Portafolio: <strong>${total} comercios</strong>. TPV M0: <strong>${fmtCurr(tpvTot)}</strong>. Avance de handoff completo: <strong>${Math.round((comp/total)*100)||0}%</strong> (${comp}/${total}). Alertas operativas: <strong>${decr}</strong> cuentas con tendencia transaccional a la baja. Se recomienda contacto urgente para los <strong>${pri}</strong> comercios marcados como prioridad alta.`;
+        }
+
+        function renderPrioritization() {
+            const tbody = document.getElementById('triage-table-body');
+            const empty = document.getElementById('triage-empty');
+            if(filteredData.length === 0) { tbody.innerHTML = ''; empty.classList.remove('hidden'); return; }
+            empty.classList.add('hidden');
+
+            tbody.innerHTML = filteredData.map(d => `
+                <tr class="hover:bg-blue-50 transition-colors cursor-pointer border-b border-slate-100" onclick="openClinicalProfile('${d.merchant_id}')">
+                    <td class="p-3">
+                        <p class="font-bold text-bold-blue max-w-[200px] truncate" title="${d.merchant_name}">${d.merchant_name}</p>
+                        <p class="text-[10px] text-slate-500 font-mono mt-0.5">${d.merchant_id}</p>
+                    </td>
+                    <td class="p-3 text-slate-600">${d.kam_asignado}</td>
+                    <td class="p-3"><div class="flex items-center gap-2 w-20"><div class="w-full bg-slate-200 h-1.5 rounded-full"><div class="bg-bold-coral h-full rounded-full" style="width:${d.priorityScore}%"></div></div><span class="text-[10px] font-bold">${d.priorityScore}</span></div></td>
+                    <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${d.status_color}">${d.status_clinico}</span></td>
+                    <td class="p-3 text-center font-semibold text-slate-700">${d.growthScore}</td>
+                    <td class="p-3 text-center text-[10px] uppercase font-bold text-slate-500">${d.estado_handoff_texto}</td>
+                    <td class="p-3 text-center"><span class="${d.tendencia_texto==='Decreciente'?'text-red-500':(d.tendencia_texto==='Creciente'?'text-green-500':'text-slate-500')} font-semibold">${d.tendencia_texto}</span></td>
+                    <td class="p-3 text-center">${d.pertenece_grupo_empresarial}</td>
+                    <td class="p-3 text-center">${d.tiene_multiples_sedes}</td>
+                </tr>`).join('');
+        }
+
+        // --- STREAMING_CHUNK:Vista 360 Detail Logic ---
+        function populateMerchantSelector() {
+            const sel = document.getElementById('pc-merchant-select');
+            const curr = sel.value;
+            sel.innerHTML = '<option value="">-- Buscar y seleccionar comercio --</option>';
+            filteredData.forEach(d => sel.innerHTML += `<option value="${d.merchant_id}">${d.merchant_name} (${d.merchant_id})</option>`);
+            if(curr && filteredData.find(x=>x.merchant_id===curr)) sel.value = curr;
+        }
+
+        function openClinicalProfile(id) {
+            navigate('perfil-clinico');
+            document.getElementById('pc-merchant-select').value = id;
+            loadClinicalProfile();
+        }
+
+        function loadClinicalProfile() {
+            const id = document.getElementById('pc-merchant-select').value;
+            const content = document.getElementById('pc-content');
+            const empty = document.getElementById('pc-empty');
+
+            if(!id) { content.classList.add('hidden'); empty.classList.remove('hidden'); return; }
+            const d = globalData.find(x => x.merchant_id === id);
+            if(!d) return;
+
+            content.classList.remove('hidden'); empty.classList.add('hidden');
+
+            document.getElementById('pc-name').innerText = d.merchant_name;
+            document.getElementById('pc-id').innerText = d.merchant_id;
+            document.getElementById('pc-city').innerText = d.city_code;
+            document.getElementById('pc-category').innerText = d.category_id;
+            document.getElementById('pc-status-badge').innerText = d.clasificación;
+            document.getElementById('pc-handoff-badge').innerText = `Handoff: ${d.estado_handoff_texto}`;
+            
+            document.getElementById('pc-health-score').innerText = d.healthScore;
+            document.getElementById('pc-priority-score').innerText = d.priorityScore;
+            document.getElementById('pc-growth-score').innerText = d.growthScore;
+
+            // Gestión KAM
+            document.getElementById('pc-kam').innerText = d.kam_asignado;
+            document.getElementById('pc-lead').innerText = d.team_lead || 'No asig.';
+            document.getElementById('pc-manager').innerText = d.manager || 'No asig.';
+            document.getElementById('pc-contact-name').innerText = d.contacto_1_nombre || 'Pendiente de captura';
+            document.getElementById('pc-contact-role').innerText = d.contacto_1_cargo || 'Sin cargo definido';
+            document.getElementById('pc-contact-email').innerText = d.contacto_1_email || 'Sin correo';
+            document.getElementById('pc-contact-phone').innerText = d.contacto_1_telefono || 'Sin teléfono';
+            document.getElementById('pc-contact-via').innerText = d.contacto_1_mejor_via || 'ND';
+            document.getElementById('pc-contact-hora').innerText = d.contacto_1_mejor_hora || 'ND';
+
+            // Contexto
+            document.getElementById('pc-history').innerText = d.historia_comercio || 'No documentada.';
+            document.getElementById('pc-pain').innerText = d.dolores_necesidades || 'No reportados.';
+            document.getElementById('pc-model').innerText = d.modelo_atencion || 'No especificado.';
+            document.getElementById('pc-plans').innerText = [
+                d.plan_corto_plazo && `Corto plazo: ${d.plan_corto_plazo}`,
+                d.plan_mediano_plazo && `Mediano plazo: ${d.plan_mediano_plazo}`,
+                d.plan_largo_plazo && `Largo plazo: ${d.plan_largo_plazo}`
+            ].filter(Boolean).join('\n') || 'Sin planes.';
+            document.getElementById('pc-negotiations').innerText = d.negociaciones_terminos_especiales || 'Sin términos especiales.';
+            document.getElementById('pc-reporting').innerText = [
+                `¿Se envía?: ${d.envia_reporteria_especial || 'No'}`,
+                d.detalle_reporteria_especial
+            ].filter(Boolean).join('\n');
+            document.getElementById('pc-potential-context').innerText = d.tpv_potencial_contexto || 'Sin contexto documentado.';
+            document.getElementById('pc-commitments').innerText = [
+                d.pendientes_cliente && `Cliente: ${d.pendientes_cliente}`,
+                d.pendientes_bold && `Bold: ${d.pendientes_bold}`
+            ].filter(Boolean).join('\n') || 'Sin compromisos documentados.';
+            document.getElementById('pc-contact-2').innerText = [
+                d.contacto_2_nombre,
+                d.contacto_2_cargo || d.contacto_2_tipo,
+                d.contacto_2_email,
+                d.contacto_2_telefono,
+                d.contacto_2_mejor_via && `Vía: ${d.contacto_2_mejor_via}`,
+                d.contacto_2_mejor_hora && `Hora: ${d.contacto_2_mejor_hora}`
+            ].filter(Boolean).join(' · ') || 'No registrado.';
+
+            // Vitals Chart
+createChart('chart-vitals', {
+    type: 'line',
+    data: { 
+        // Invertimos el orden de las etiquetas
+        labels: ['M0 (Actual)','M1','M2','M3','M4','M5'], 
+        datasets: [{ 
+            label: 'TPV Mensual', 
+            // Invertimos el orden de las variables de datos para que coincidan con las etiquetas
+            data: [d.tpv_m0_1tx, d.tpv_m1_1tx, d.tpv_m2_1tx, d.tpv_m3_1tx, d.tpv_m4_1tx, d.tpv_m5_1tx], 
+            borderColor: '#121E6C', 
+            backgroundColor: 'rgba(18, 30, 108, 0.1)', 
+            borderWidth: 2, 
+            tension: 0.3, 
+            fill: true, 
+            pointBackgroundColor: '#FF2847' 
+        }] 
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: {
+            datalabels: { display: false } // <-- Agrega esta línea para apagar las etiquetas fijas
+        },
+		scales: { y: { beginAtZero: true } } }
+});
+
+            // Analytics Text
+            const isGr = d.tendencia_texto === 'Creciente'; const isFa = d.tendencia_texto === 'Decreciente';
+            document.getElementById('diag-trend-icon').innerHTML = isGr ? '<i data-lucide="trending-up" class="w-4 h-4 text-green-500"></i>' : (isFa ? '<i data-lucide="trending-down" class="w-4 h-4 text-red-500"></i>' : '<i data-lucide="minus" class="w-4 h-4 text-blue-500"></i>');
+            document.getElementById('diag-trend-text').innerText = d.tendencia_texto;
+            document.getElementById('diag-risk-text').innerText = d.healthScore < 50 ? 'ALTO - Riesgo de caída/churn.' : (d.healthScore < 75 ? 'MEDIO - Monitorear.' : 'BAJO - Estable.');
+            
+            let act = [d.accion_sugerida];
+            if(d.estado_handoff_texto !== 'Completo') act.push('Solicitar a SMB completar campos faltantes del handoff.');
+            if(d.growthScore > 65) act.push('Oportunidad detectada de profundización (Sedes/Nacional).');
+            document.getElementById('pc-treatment-list').innerHTML = act.map(x=>`<li>${x}</li>`).join('');
+            lucide.createIcons();
+        }
+
+        // --- STREAMING_CHUNK:Additional Views (Map, Quality, Assistant) ---
+        function renderOpportunities() {
+    let sc = [], kd = {};
+    
+    // 1. Encontrar el TPV actual máximo para calcular el tamaño proporcional de las burbujas
+    let maxTpvM0 = Math.max(...filteredData.map(d => d.tpv_m0_1tx || 1));
+
+    filteredData.forEach(d => {
+        // 2. Tamaño dinámico (r): Mínimo 4px, máximo 20px basado en su facturación actual
+        let dynamicRadius = Math.max(4, (d.tpv_m0_1tx / maxTpvM0) * 20);
+        
+        // 3. Color dinámico según el score de salud
+        let bubbleColor = d.healthScore >= 75 ? 'rgba(34, 197, 94, 0.6)' :  // Verde
+                          (d.healthScore >= 50 ? 'rgba(59, 130, 246, 0.6)' : // Azul
+                          'rgba(239, 68, 68, 0.6)');                        // Rojo
+
+        sc.push({ 
+            x: d.healthScore, 
+            y: d.tpv_max || 0, 
+            r: dynamicRadius, 
+            m: d.merchant_name,
+            kam: d.kam_asignado,
+            tpv_actual: d.tpv_m0_1tx,
+            color: bubbleColor
+        });
+        
+        kd[d.kam_asignado] = (kd[d.kam_asignado] || 0) + 1;
+    });
+
+    createChart('chart-matrix', {
+        type: 'bubble',
+        data: { 
+            datasets: [{ 
+                label: 'Comercios', 
+                data: sc, 
+                backgroundColor: sc.map(item => item.color), // Aplicar colores dinámicos
+                borderColor: '#ffffff',
+                borderWidth: 1
+            }] 
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { 
+				datalabels: { display: false },
+                legend: { display: false },
+                tooltip: { 
+                    callbacks: { 
+                        // Tooltip enriquecido
+                        label: (c) => {
+                            let data = c.raw;
+                            return [
+                                `${data.m} (KAM: ${data.kam})`, 
+                                `Salud: ${data.x}/100`, 
+                                `TPV Max: ${fmtCurr(data.y)}`,
+                                `TPV Actual: ${fmtCurr(data.tpv_actual)}`
+                            ];
+                        } 
+                    } 
+                } 
+            }, 
+            scales: { 
+                x: { 
+                    title: { display: true, text: 'Salud (0-100)' },
+                    min: 0, 
+                    max: 100,
+                    grid: {
+                        // 4. Crear una línea divisoria (Cuadrante) en el Score 50
+                        color: (ctx) => ctx.tick.value === 50 ? 'rgba(18, 30, 108, 0.4)' : 'rgba(0,0,0,0.05)',
+                        lineWidth: (ctx) => ctx.tick.value === 50 ? 2 : 1
+                    }
+                }, 
+                y: { 
+                    title: { display: true, text: 'TPV Máximo' },
+                    beginAtZero: true
+                } 
+            } 
+        }
+    });
+
+    // Gráfico de distribución de KAMs (Se mantiene igual)
+    let sorted = Object.entries(kd).sort((a,b) => b[1] - a[1]);
+    createChart('chart-kam-dist', {
+        type: 'bar',
+        data: { labels: sorted.map(k=>k[0]), datasets: [{ data: sorted.map(k=>k[1]), backgroundColor: '#121E6C', borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: {legend:{display:false}} }
+    });
+}
+function renderOpportunities() {
+    let sc = [], kd = {};
+    
+    // 1. Encontrar el TPV actual máximo para calcular el tamaño proporcional de las burbujas
+    let maxTpvM0 = Math.max(...filteredData.map(d => d.tpv_m0_1tx || 1));
+
+    filteredData.forEach(d => {
+        // 2. Tamaño dinámico (r): Mínimo 4px, máximo 20px basado en su facturación actual
+        let dynamicRadius = Math.max(4, (d.tpv_m0_1tx / maxTpvM0) * 20);
+        
+        // 3. Color dinámico según el score de salud
+        let bubbleColor = d.healthScore >= 75 ? 'rgba(34, 197, 94, 0.6)' :  // Verde
+                          (d.healthScore >= 50 ? 'rgba(59, 130, 246, 0.6)' : // Azul
+                          'rgba(239, 68, 68, 0.6)');                        // Rojo
+
+        sc.push({ 
+            x: d.healthScore, 
+            y: d.tpv_max || 0, 
+            r: dynamicRadius, 
+            m: d.merchant_name,
+            kam: d.kam_asignado,
+            tpv_actual: d.tpv_m0_1tx,
+            color: bubbleColor
+        });
+        
+        kd[d.kam_asignado] = (kd[d.kam_asignado] || 0) + 1;
+    });
+
+    createChart('chart-matrix', {
+        type: 'bubble',
+        data: { 
+            datasets: [{ 
+                label: 'Comercios', 
+                data: sc, 
+                backgroundColor: sc.map(item => item.color), // Aplicar colores dinámicos
+                borderColor: '#ffffff',
+                borderWidth: 1
+            }] 
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { 
+                legend: { display: false },
+                tooltip: { 
+                    callbacks: { 
+                        // Tooltip enriquecido
+                        label: (c) => {
+                            let data = c.raw;
+                            return [
+                                `${data.m} (KAM: ${data.kam})`, 
+                                `Salud: ${data.x}/100`, 
+                                `TPV Max: ${fmtCurr(data.y)}`,
+                                `TPV Actual: ${fmtCurr(data.tpv_actual)}`
+                            ];
+                        } 
+                    } 
+                } 
+            }, 
+            scales: { 
+                x: { 
+                    title: { display: true, text: 'Salud (0-100)' },
+                    min: 0, 
+                    max: 100,
+                    grid: {
+                        // 4. Crear una línea divisoria (Cuadrante) en el Score 50
+                        color: (ctx) => ctx.tick.value === 50 ? 'rgba(18, 30, 108, 0.4)' : 'rgba(0,0,0,0.05)',
+                        lineWidth: (ctx) => ctx.tick.value === 50 ? 2 : 1
+                    }
+                }, 
+                y: { 
+                    title: { display: true, text: 'TPV Máximo' },
+                    beginAtZero: true
+                } 
+            } 
+        }
+    });
+
+    // Gráfico de distribución de KAMs (Se mantiene igual)
+    let sorted = Object.entries(kd).sort((a,b) => b[1] - a[1]);
+    createChart('chart-kam-dist', {
+        type: 'bar',
+        data: { labels: sorted.map(k=>k[0]), datasets: [{ data: sorted.map(k=>k[1]), backgroundColor: '#121E6C', borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: {legend:{display:false}} }
+    });
+}
+
+        function renderQuality() {
+            const tot = filteredData.length; if(tot===0) return;
+            const f = [{i:'historia_comercio', l:'Historia'}, {i:'dolores_necesidades', l:'Dolores'}, {i:'plan_corto_plazo', l:'Plan'}, {i:'contacto_1_nombre', l:'Contacto'}];
+            let h = '', w = [];
+            f.forEach(x => {
+                let fill = filteredData.filter(d => d[x.i] && String(d[x.i]).trim() !== '').length;
+                let p = Math.round((fill/tot)*100)||0; let c = p>80?'bg-green-500':(p>50?'bg-yellow-500':'bg-red-500');
+                if(p<80) w.push(`Brecha en <strong>${x.l}</strong> (${p}% completitud).`);
+                h += `<div><div class="flex justify-between text-xs mb-1 font-bold text-slate-700"><span>${x.l}</span><span>${p}%</span></div><div class="w-full bg-slate-200 rounded-full h-2"><div class="${c} h-2 rounded-full" style="width:${p}%"></div></div></div>`;
+            });
+            document.getElementById('ch-progress-bars').innerHTML = h;
+            document.getElementById('ch-recommendations').innerHTML = w.length ? w.map(x=>`<li>${x}</li>`).join('') : '<li>Excelente calidad de datos en la selección actual.</li>';
+        }
+
+        // --- STREAMING_CHUNK:Asistente KAM Logic ---
+        function askAssistant() {
+            const q = (document.getElementById('assistant-question').value || '').toLowerCase();
+            if (!q.trim()) { assistantAnswer('prioridad'); return; }
+            
+            // NLP Básico
+            if(q.includes('prioridad') || q.includes('primero') || q.includes('urgente')) assistantAnswer('prioridad');
+            else if(q.includes('caida') || q.includes('baja') || q.includes('riesgo') || q.includes('caída')) assistantAnswer('caida');
+            else if(q.includes('potencial') || q.includes('crecer') || q.includes('nacional') || q.includes('sedes')) assistantAnswer('potencial');
+            else if(q.includes('resumen') || q.includes('contacto') || q.includes('llamar') || q.includes('comunicar')) assistantAnswer('resumen');
+            else {
+                // Check if they typed a merchant name or ID
+                const found = filteredData.find(d => q.includes(d.merchant_name.toLowerCase()) || q.includes(d.merchant_id.toLowerCase()));
+                if(found) {
+                    renderMerchantSummary(found);
+                } else {
+                    assistantAnswer('prioridad'); // Default fallback
+                }
+            }
+        }
+
+        function assistantAnswer(intent) {
+            if(filteredData.length === 0) {
+                document.getElementById('assistant-answer').innerHTML = `<p class="text-sm font-semibold text-slate-500">No hay datos para analizar.</p>`;
+                return;
+            }
+
+            let res = `<p class="text-sm font-semibold mb-4 text-slate-700 flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4 text-bold-coral"></i> Analizando base de ${filteredData.length} comercios...</p>`;
+            
+            if (intent === 'prioridad') {
+                let top = filteredData.filter(d=>d.nivel_prioridad==='Alta Prioridad').sort((a,b)=>b.priorityScore - a.priorityScore).slice(0,4);
+                if(!top.length) top = filteredData.sort((a,b)=>b.priorityScore - a.priorityScore).slice(0,4);
+                res += top.map(d=>`
+                    <div class="mt-2 p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
+                        <p class="font-bold text-sm text-bold-blue flex justify-between">${d.merchant_name} <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded">Score: ${d.priorityScore}</span></p>
+                        <p class="text-xs text-slate-500 mt-1"><i data-lucide="tag" class="w-3 h-3 inline"></i> ${d.category_id} | <i data-lucide="map-pin" class="w-3 h-3 inline"></i> ${d.city_code}</p>
+                        <p class="text-xs text-slate-600 mt-2 border-t pt-2"><strong>Acción KAM:</strong> ${d.accion_sugerida}</p>
+                    </div>
+                `).join('');
+            } 
+            else if (intent === 'caida') {
+                let falling = filteredData.filter(d=>d.tendencia_texto==='Decreciente').sort((a,b)=>a.trendVal - b.trendVal).slice(0,4);
+                if(!falling.length) res += `<p class="text-sm text-green-600">No se detectan caídas significativas en la selección actual.</p>`;
+                res += falling.map(d=>`
+                    <div class="mt-2 p-3 bg-red-50 rounded-lg border border-red-100 shadow-sm">
+                        <p class="font-bold text-sm text-red-700 flex justify-between">${d.merchant_name} <span class="text-xs bg-red-200 text-red-800 px-2 py-0.5 rounded">Caída de TPV</span></p>
+                        <p class="text-xs text-slate-600 mt-1">TPV Actual: ${fmtCurr(d.tpv_m0_1tx)} vs Max: ${fmtCurr(d.tpv_max)}</p>
+                        <p class="text-xs text-slate-600 mt-2 border-t border-red-200 pt-2"><strong>Atención:</strong> Revisar fricciones. ${d.dolores_necesidades ? 'Dolor reportado: ' + d.dolores_necesidades : 'No hay dolores documentados.'}</p>
+                    </div>
+                `).join('');
+            }
+            else if (intent === 'potencial') {
+                let topG = filteredData.sort((a,b)=>b.growthScore - a.growthScore).slice(0,4);
+                res += topG.map(d=>`
+                    <div class="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-100 shadow-sm">
+                        <p class="font-bold text-sm text-bold-blue flex justify-between">${d.merchant_name} <span class="text-xs bg-blue-200 text-blue-800 px-2 py-0.5 rounded">Growth: ${d.growthScore}</span></p>
+                        <p class="text-xs text-slate-600 mt-1">Múltiples Sedes: ${d.tiene_multiples_sedes} | Grupo Empresarial: ${d.pertenece_grupo_empresarial}</p>
+                        <p class="text-xs text-slate-600 mt-2 border-t border-blue-200 pt-2"><strong>Plan:</strong> ${d.plan_corto_plazo || 'Sin plan documentado. Agendar llamada de descubrimiento.'}</p>
+                    </div>
+                `).join('');
+            }
+            else if (intent === 'resumen') {
+                const selectId = document.getElementById('pc-merchant-select').value;
+                const merchant = globalData.find(x => x.merchant_id === selectId) || filteredData[0];
+                if(merchant) {
+                    renderMerchantSummary(merchant);
+                    return;
+                } else {
+                    res += `<p class="text-xs text-slate-500 mt-2">No hay comercios seleccionados para resumir.</p>`;
+                }
+            }
+            
+            document.getElementById('assistant-answer').innerHTML = res;
+            lucide.createIcons();
+        }
+
+        function renderMerchantSummary(d) {
+            let res = `
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="text-lg font-bold text-bold-blue uppercase">${d.merchant_name}</h4>
+                            <p class="text-xs text-slate-500 mt-1">${d.merchant_id} | KAM Asignado: <strong>${d.kam_asignado}</strong></p>
+                        </div>
+                        <span class="px-2 py-1 text-[10px] font-bold rounded bg-slate-200 text-slate-700 uppercase">${d.status_clinico}</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3 mt-4 text-sm">
+                        <div class="bg-white p-3 rounded-lg shadow-sm border border-slate-100"><span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">TPV Actual (M0)</span><span class="font-bold text-slate-700">${fmtCurr(d.tpv_m0_1tx)}</span></div>
+                        <div class="bg-white p-3 rounded-lg shadow-sm border border-slate-100"><span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">TPV Máximo</span><span class="font-bold text-slate-700">${fmtCurr(d.tpv_max)}</span></div>
+                    </div>
+
+                    <div class="mt-5">
+                        <p class="text-[11px] font-bold uppercase text-slate-500 mb-2">Contexto Comercial Documentado</p>
+                        <p class="text-sm text-slate-700 leading-relaxed">${d.historia_comercio || 'No se transfirió contexto en el handoff.'}</p>
+                    </div>
+
+                    <div class="mt-5 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <p class="text-[11px] font-bold uppercase text-bold-blue mb-3 border-b pb-2"><i data-lucide="phone-call" class="w-3 h-3 inline mr-1"></i> Protocolo de Comunicación Sugerido</p>
+                        <ul class="text-sm space-y-2 text-slate-600">
+                            <li class="flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-slate-400"></i> <strong>Contacto:</strong> ${d.contacto_1_nombre || 'No identificado'} (${d.contacto_1_cargo || 'Cargo no documentado'})</li>
+                            <li class="flex items-center gap-2"><i data-lucide="mail" class="w-4 h-4 text-slate-400"></i> <strong>Email:</strong> ${d.contacto_1_email || 'No registrado en base'}</li>
+                            <li class="flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4 text-slate-400"></i> <strong>Teléfono:</strong> ${d.contacto_1_telefono || 'No registrado en base'}</li>
+                            <li class="flex items-center gap-2 mt-2 pt-2 border-t border-slate-100"><i data-lucide="clock" class="w-4 h-4 text-slate-400"></i> <strong>Canal Ideal:</strong> Contactar vía ${d.contacto_1_mejor_via || 'el canal preferido del cliente'} a las ${d.contacto_1_mejor_hora || 'horas de menor flujo'}.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-5 pt-4 border-t border-slate-200">
+                        <p class="text-[11px] font-bold uppercase text-slate-500 mb-2">Fricción Comercial / Dolor</p>
+                        <p class="text-sm text-slate-700 italic border-l-2 border-bold-coral pl-3">"${d.dolores_necesidades || 'Ninguno reportado.'}"</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('assistant-answer').innerHTML = res;
+            lucide.createIcons();
+        }
+
+        async function copyGeminiPrompt() {
+            try { await navigator.clipboard.writeText("Actúa como Account Manager Senior. Analiza este portafolio de cuentas estratégicas..."); showToast('Prompt copiado.', 'success'); } catch(e) { showToast('Error al copiar.', 'error'); }
+        }
+		function applyQuickFilter(filterType, value) {
+    // 1. Limpiar filtros actuales para evitar cruces
+    clearFilters();
+    
+    // 2. Buscar los checkboxes correspondientes y marcar el correcto
+    const checkboxes = document.querySelectorAll(`.filter-checkbox-${filterType}`);
+    checkboxes.forEach(cb => {
+        if(cb.value === value) cb.checked = true;
+    });
+    
+    // 3. Refrescar los datos y navegar a la tabla
+    applyFilters();
+    navigate('triage-kam');
+    
+    // 4. Mostrar notificación
+    showToast(`Mostrando: ${value}`, 'info');
+}
+
+        function showToast(m, t='info') {
+            let c = document.getElementById('toast-container'); if(!c){c=document.createElement('div'); c.id='toast-container'; document.body.appendChild(c);}
+            let el = document.createElement('div'); el.className = `toast bg-${t==='error'?'red-600':(t==='success'?'green-600':'bold-blue')}`;
+            el.innerHTML = `<span class="text-sm">${m}</span>`; c.appendChild(el); setTimeout(()=>{el.remove();}, 3000);
+        }
+    </script>
+</body>
+</html>
