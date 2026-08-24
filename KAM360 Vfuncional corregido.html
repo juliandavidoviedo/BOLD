@@ -652,8 +652,8 @@
         let currentSection = 'executive-overview'; // Vista inicial
         let myCharts = {}; 
         
-        // Data URL source
-        const DATA_URL = 'https://docs.google.com/spreadsheets/d/1-wRhlcE9HBP97c6aVme3Bt7FmT0KXpbdr4g02A7g5Dg/export?format=csv&gid=948881589';
+        // Fuente de verdad: pestaña RESPUESTAS_FORM del Sheet conectado al Forms.
+        const DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTng2yxItLl-WoIAOfMImXwWwM1eumphKLAVWIPAInQoTgAYH4YpyMoDDddXkFXX7aT9ySWGoOlmvA4/pub?gid=1514470107&single=true&output=csv';
 
         // Filters DOM IDs mapped to object keys
         const filterMaps = {
@@ -676,30 +676,24 @@
             loadDataFromSheet();
         });
 
-        // 1. Fetching Logic (Secure fetch bypasses some CORS issues with PapaParse direct)
+        // 1. Fetching Logic
         async function loadDataFromSheet() {
-    showToast('Conectando con Google Sheets...', 'info');
-    try {
-        // Creamos un "rompe-caché" añadiendo la hora exacta en milisegundos al enlace
-        const cacheBuster = new Date().getTime();
-        const urlSinCache = `${DATA_URL}&_t=${cacheBuster}`; 
+            showToast('Conectando con RESPUESTAS_FORM...', 'info');
+            try {
+                const cacheBuster = new Date().getTime();
+                const response = await fetch(`${DATA_URL}&_t=${cacheBuster}`);
 
-        // Usamos la nueva URL en el fetch
-        const response = await fetch(urlSinCache); 
-        
-        if (!response.ok) throw new Error("Fallo de red");
-        const csvText = await response.text();
-     
-                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const csvText = await response.text();
+
                 if (csvText.includes('<!DOCTYPE html>') || csvText.includes('<html')) {
-                    throw new Error("Google devolvió un HTML (Posible bloqueo por permisos privados)");
+                    throw new Error('Google devolvió HTML en vez de CSV. Revisa permisos de publicación del Sheet.');
                 }
 
-                parseAndLoadCsv(csvText, 'Google Sheets');
+                parseAndLoadCsv(csvText, 'RESPUESTAS_FORM');
             } catch (error) {
-                console.error("❌ Error de carga real:", error.message);
-                showToast(`Permisos de Sheet bloqueados. Generando datos demo locales.`, 'error');
-                generateMockData();
+                console.error('Error cargando RESPUESTAS_FORM:', error.message);
+                showToast('No fue posible cargar RESPUESTAS_FORM desde Sheets. Revisa permisos, gid o carga el CSV manualmente.', 'error');
             }
         }
 
@@ -741,6 +735,15 @@
         }
 
         // --- STREAMING_CHUNK:Data Processing Pipeline ---
+        function normalizeSearchText(value) {
+            return String(value || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, ' ')
+                .trim();
+        }
+
         function processData(rawData) {
             const parseMoney = (v) => {
                 if(!v) return 0;
@@ -806,10 +809,10 @@
                 if (descriptor) {
                     const match = descriptor.match(/^(.*?)\s+[—–-]\s+Merchant\s+([^|]+)(?:\|\s*([^|]+))?(?:\|\s*TL:\s*(.+))?$/i);
                     if (match) {
-                        if (!norm(row.merchant_name)) row.merchant_name = match[1];
-                        if (!norm(row.merchant_id)) row.merchant_id = match[2];
-                        if (!norm(row.city_code) && match[3]) row.city_code = match[3];
-                        if (!norm(row.team_lead) && match[4]) row.team_lead = match[4];
+                        if (!norm(row.merchant_name)) row.merchant_name = norm(match[1]);
+                        if (!norm(row.merchant_id)) row.merchant_id = norm(match[2]).replace(/\s+/g, '').toUpperCase();
+                        if (!norm(row.city_code) && match[3]) row.city_code = norm(match[3]);
+                        if (!norm(row.team_lead) && match[4]) row.team_lead = norm(match[4]);
                     } else if (!norm(row.merchant_name)) {
                         row.merchant_name = descriptor;
                     }
@@ -849,17 +852,32 @@
                 const plan = norm(row.plan_corto_plazo);
                 let handoff_pct = ( (hist?1:0) + (dol?1:0) + (plan?1:0) ) / 3;
                 let estado_handoff_texto = norm(row.estado_handoff) || (handoff_pct === 1 ? 'Completo' : (handoff_pct > 0 ? 'Parcial' : 'Sin Handoff'));
+                const merchantId = norm(row.merchant_id).replace(/\s+/g, '').toUpperCase();
+                const merchantName = norm(row.merchant_name);
+                const cityCode = norm(row.city_code);
+                const teamLead = norm(row.team_lead);
+                const merchantDescriptor = norm(row.merchant_descriptor);
+                const searchText = normalizeSearchText([
+                    merchantName,
+                    merchantId,
+                    cityCode,
+                    teamLead,
+                    merchantDescriptor
+                ].join(' '));
 
                 return {
                     ...row,
-                    merchant_id: norm(row.merchant_id) || 'MCH-XXXX',
-                    merchant_name: norm(row.merchant_name) || 'Comercio Sin Nombre',
+                    merchant_id: merchantId || 'MCH-XXXX',
+                    merchant_name: merchantName || 'Comercio Sin Nombre',
                     category_id: norm(row.category_id) || 'Sin Categoría',
-                    city_code: norm(row.city_code) || 'Sin Ciudad',
+                    city_code: cityCode || 'Sin Ciudad',
                     kam_asignado: norm(row.kam_asignado) || 'Sin Asignar',
-                    team_lead: norm(row.team_lead),
+                    team_lead: teamLead,
                     manager: norm(row.manager),
                     clasificación: norm(row.clasificacion_tpv || row.clasificación || row.status) || 'No Clasificado',
+                    merchant_descriptor: merchantDescriptor,
+                    search_text: searchText,
+                    search_compact: searchText.replace(/\s+/g, ''),
                     
                     // Categorical filters standard
                     pertenece_grupo_empresarial: yes(row.pertenece_grupo_empresarial),
@@ -956,10 +974,14 @@
         function populateFilters() {
             const buildOptions = (key) => [...new Set(globalData.map(d => d[key]).filter(Boolean))].sort();
             // Llenar sugerencias del buscador
-const searchDatalist = document.getElementById('search-suggestions');
-if (searchDatalist) {
-    searchDatalist.innerHTML = globalData.map(d => `<option value="${d.merchant_name}"></option>`).join('');
-}
+	const searchDatalist = document.getElementById('search-suggestions');
+	if (searchDatalist) {
+	    const suggestions = [...new Set(globalData.flatMap(d => [
+	        `${d.merchant_name} — ${d.merchant_id}`,
+	        d.merchant_id
+	    ]).filter(Boolean))];
+	    searchDatalist.innerHTML = suggestions.map(item => `<option value="${String(item).replace(/"/g, '&quot;')}"></option>`).join('');
+	}
             const lists = {
                 'kam': buildOptions('kam_asignado'),
                 'city': buildOptions('city_code'),
@@ -991,7 +1013,8 @@ if (searchDatalist) {
                 grupo: getChecked('grupo'), sedes: getChecked('sedes'), nacional: getChecked('nacional'),
                 handoff: getChecked('handoff'), tendencia: getChecked('tendencia'), prioridad: getChecked('prioridad')
             };
-            const searchTxt = (document.getElementById('global-search').value || '').toLowerCase().trim();
+            const searchTxt = normalizeSearchText(document.getElementById('global-search').value || '');
+            const searchCompact = searchTxt.replace(/\s+/g, '');
 
             filteredData = globalData.filter(r => {
                 return (s.kam.length===0 || s.kam.includes(r.kam_asignado)) &&
@@ -1003,7 +1026,7 @@ if (searchDatalist) {
                        (s.handoff.length===0 || s.handoff.includes(r.estado_handoff_texto)) &&
                        (s.tendencia.length===0 || s.tendencia.includes(r.tendencia_texto)) &&
                        (s.prioridad.length===0 || s.prioridad.includes(r.nivel_prioridad)) &&
-                       (searchTxt === '' || r.merchant_name.toLowerCase().includes(searchTxt) || r.merchant_id.toLowerCase().includes(searchTxt));
+                       (searchTxt === '' || r.search_text.includes(searchTxt) || r.search_compact.includes(searchCompact));
             });
             renderApp();
         }
@@ -1443,7 +1466,7 @@ function renderOpportunities() {
 
         // --- STREAMING_CHUNK:Asistente KAM Logic ---
         function askAssistant() {
-            const q = (document.getElementById('assistant-question').value || '').toLowerCase();
+            const q = normalizeSearchText(document.getElementById('assistant-question').value || '');
             if (!q.trim()) { assistantAnswer('prioridad'); return; }
             
             // NLP Básico
@@ -1453,7 +1476,8 @@ function renderOpportunities() {
             else if(q.includes('resumen') || q.includes('contacto') || q.includes('llamar') || q.includes('comunicar')) assistantAnswer('resumen');
             else {
                 // Check if they typed a merchant name or ID
-                const found = filteredData.find(d => q.includes(d.merchant_name.toLowerCase()) || q.includes(d.merchant_id.toLowerCase()));
+                const qCompact = q.replace(/\s+/g, '');
+                const found = filteredData.find(d => d.search_text.includes(q) || d.search_compact.includes(qCompact));
                 if(found) {
                     renderMerchantSummary(found);
                 } else {
