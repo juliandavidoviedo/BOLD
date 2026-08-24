@@ -105,6 +105,9 @@
             <button onclick="navigate('asistente-kam')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium" data-target="asistente-kam">
                 <i data-lucide="sparkles" class="w-5 h-5"></i> <span>Asistente KAM</span>
             </button>
+			<button onclick="navigate('glosario-kam')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium" data-target="glosario-kam">
+                <i data-lucide="book-open" class="w-5 h-5"></i> <span>Glosario y Métricas</span>
+            </button>
         </nav>
 
         <div class="p-4 border-t border-white/10">
@@ -131,9 +134,12 @@
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                     <div class="relative w-full md:w-64">
-                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="global-search" placeholder="Buscar comercio o ID..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-bold-blue/20 transition-all" onkeyup="handleSearch()">
-                    </div>
+    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+    <!-- Agregamos list="search-suggestions" -->
+    <input type="text" id="global-search" list="search-suggestions" placeholder="Buscar comercio o ID..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-bold-blue/20 transition-all" onkeyup="handleSearch()">
+    <!-- Agregamos el contenedor de sugerencias -->
+    <datalist id="search-suggestions"></datalist>
+</div>
                 </div>
                 
                 <div class="flex items-center gap-2 shrink-0 self-end md:self-auto">
@@ -218,29 +224,29 @@
                     </div>
                 </div>
 
-                <!-- Mini KPIs Row 2 -->
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-                    <div class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-center shadow-sm">
-                        <p class="text-[10px] uppercase text-slate-500 font-bold mb-1">Grupo Empresarial</p>
-                        <p class="text-xl font-bold text-bold-blue" id="eo-kpi-grupo">0</p>
-                    </div>
-                    <div class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-center shadow-sm">
-                        <p class="text-[10px] uppercase text-slate-500 font-bold mb-1">Múltiples Sedes</p>
-                        <p class="text-xl font-bold text-bold-blue" id="eo-kpi-sedes">0</p>
-                    </div>
-                    <div class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-center shadow-sm">
-                        <p class="text-[10px] uppercase text-slate-500 font-bold mb-1">Presencia Nacional</p>
-                        <p class="text-xl font-bold text-bold-blue" id="eo-kpi-nacional">0</p>
-                    </div>
-                    <div class="bg-red-50 border border-red-100 rounded-xl p-3 flex flex-col justify-center shadow-sm">
-                        <p class="text-[10px] uppercase text-red-600 font-bold mb-1">Tendencia a la Baja</p>
-                        <p class="text-xl font-bold text-red-700" id="eo-kpi-decreciente">0</p>
-                    </div>
-                    <div class="bg-orange-50 border border-orange-100 rounded-xl p-3 flex flex-col justify-center shadow-sm">
-                        <p class="text-[10px] uppercase text-orange-600 font-bold mb-1">Prioridad Alta</p>
-                        <p class="text-xl font-bold text-orange-700" id="eo-kpi-prioridad">0</p>
-                    </div>
-                </div>
+                <!-- Mini KPIs Row 2 (Click to Action) -->
+<div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+    <div onclick="applyQuickFilter('grupo', 'Sí')" class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-center shadow-sm cursor-pointer hover:bg-blue-50 transition-all group">
+        <p class="text-[10px] uppercase text-slate-500 font-bold mb-1 group-hover:text-bold-blue">Grupo Empresarial <i data-lucide="arrow-up-right" class="w-3 h-3 inline float-right opacity-0 group-hover:opacity-100 transition-opacity"></i></p>
+        <p class="text-xl font-bold text-bold-blue" id="eo-kpi-grupo">0</p>
+    </div>
+    <div onclick="applyQuickFilter('sedes', 'Sí')" class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-center shadow-sm cursor-pointer hover:bg-blue-50 transition-all group">
+        <p class="text-[10px] uppercase text-slate-500 font-bold mb-1 group-hover:text-bold-blue">Múltiples Sedes <i data-lucide="arrow-up-right" class="w-3 h-3 inline float-right opacity-0 group-hover:opacity-100 transition-opacity"></i></p>
+        <p class="text-xl font-bold text-bold-blue" id="eo-kpi-sedes">0</p>
+    </div>
+    <div onclick="applyQuickFilter('nacional', 'Sí')" class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-center shadow-sm cursor-pointer hover:bg-blue-50 transition-all group">
+        <p class="text-[10px] uppercase text-slate-500 font-bold mb-1 group-hover:text-bold-blue">Presencia Nacional <i data-lucide="arrow-up-right" class="w-3 h-3 inline float-right opacity-0 group-hover:opacity-100 transition-opacity"></i></p>
+        <p class="text-xl font-bold text-bold-blue" id="eo-kpi-nacional">0</p>
+    </div>
+    <div onclick="applyQuickFilter('tendencia', 'Decreciente')" class="bg-red-50 border border-red-100 rounded-xl p-3 flex flex-col justify-center shadow-sm cursor-pointer hover:bg-red-100 transition-all group">
+        <p class="text-[10px] uppercase text-red-600 font-bold mb-1 group-hover:text-red-800">Tendencia a la Baja <i data-lucide="arrow-up-right" class="w-3 h-3 inline float-right opacity-0 group-hover:opacity-100 transition-opacity"></i></p>
+        <p class="text-xl font-bold text-red-700" id="eo-kpi-decreciente">0</p>
+    </div>
+    <div onclick="applyQuickFilter('prioridad', 'Alta Prioridad')" class="bg-orange-50 border border-orange-100 rounded-xl p-3 flex flex-col justify-center shadow-sm cursor-pointer hover:bg-orange-100 transition-all group">
+        <p class="text-[10px] uppercase text-orange-600 font-bold mb-1 group-hover:text-orange-800">Prioridad Alta <i data-lucide="arrow-up-right" class="w-3 h-3 inline float-right opacity-0 group-hover:opacity-100 transition-opacity"></i></p>
+        <p class="text-xl font-bold text-orange-700" id="eo-kpi-prioridad">0</p>
+    </div>
+</div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="glass-card p-6 lg:col-span-2">
@@ -261,6 +267,8 @@
                     <h3 class="text-sm font-bold uppercase mb-3 flex items-center gap-2"><i data-lucide="bot" class="w-4 h-4"></i> Análisis Ejecutivo Autogenerado</h3>
                     <p id="eo-ai-summary" class="text-sm leading-relaxed text-blue-50">Generando lectura ejecutiva del portafolio...</p>
                 </div>
+				
+				
             </section>
 
             <!-- SECTION 2: PRIORIZACIÓN KAM -->
@@ -529,6 +537,90 @@
                     </div>
                 </div>
             </section>
+			<!-- SECTION 7: GLOSARIO Y MÉTRICAS -->
+            <section id="glosario-kam" class="view-section space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-bold-blue uppercase tracking-tight">Glosario y Metodología</h2>
+                    <p class="text-slate-500 text-sm mt-1">Diccionario de datos, fórmulas y guía de lectura para la toma de decisiones.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <!-- Columna Izquierda: Scores -->
+                    <div class="space-y-6">
+                        <div class="glass-card p-6 border-t-4 border-green-500">
+                            <h3 class="text-lg font-bold text-slate-800 uppercase mb-2 flex items-center gap-2"><i data-lucide="activity" class="w-5 h-5 text-green-500"></i> Score de Salud (Health Score)</h3>
+                            <p class="text-sm text-slate-600 mb-3">Mide el riesgo de *churn* (abandono) o caída transaccional del comercio en una escala de 0 a 100. Se calcula automáticamente si no viene provisto por la base de datos.</p>
+                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                                <p class="text-xs font-mono text-slate-500 mb-2">Fórmula algorítmica:</p>
+                                <ul class="text-sm text-slate-700 space-y-2 list-disc pl-4">
+                                    <li><strong>Base:</strong> 40 puntos asegurados.</li>
+                                    <li><strong>Volumen (Max 40 pts):</strong> Relación entre el TPV del mes actual (M0) y su TPV Histórico Máximo.</li>
+                                    <li><strong>Tendencia (20 pts):</strong> Se otorgan si la tendencia de M0 vs M5 es estable o creciente.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6 border-t-4 border-bold-blue">
+                            <h3 class="text-lg font-bold text-slate-800 uppercase mb-2 flex items-center gap-2"><i data-lucide="trending-up" class="w-5 h-5 text-bold-blue"></i> Score de Growth (Crecimiento)</h3>
+                            <p class="text-sm text-slate-600 mb-3">Evalúa el potencial de profundización de la cuenta (upselling/cross-selling). Entre mayor sea el puntaje, más factible es expandir la facturación con Bold.</p>
+                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                                <p class="text-xs font-mono text-slate-500 mb-2">Fórmula algorítmica:</p>
+                                <ul class="text-sm text-slate-700 space-y-2 list-disc pl-4">
+                                    <li><strong>Base:</strong> 30 puntos asegurados.</li>
+                                    <li><strong>Potencial (Max 35 pts extras):</strong> Relación matemática calculando qué tan grande es su <em>TPV Potencial</em> reportado versus su facturación máxima lograda con nosotros.</li>
+                                </ul>
+                                <p class="text-xs text-slate-500 mt-2 italic">* Se complementa cualitativamente si el comercio tiene "Múltiples sedes" o "Presencia Nacional".</p>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6 border-t-4 border-orange-500">
+                            <h3 class="text-lg font-bold text-slate-800 uppercase mb-2 flex items-center gap-2"><i data-lucide="alert-circle" class="w-5 h-5 text-orange-500"></i> Score de Prioridad</h3>
+                            <p class="text-sm text-slate-600 mb-2">Indica la urgencia de atención por parte del KAM, con un máximo de 100 puntos. Todo comercio por encima de 60 puntos se etiqueta como <strong>"Alta Prioridad"</strong>.</p>
+                            <p class="text-sm text-slate-600">Se calcula otorgando una base de 50 puntos, más un factor ponderado que evalúa qué tan cerca está su TPV Máximo de los $50.000.000 COP.</p>
+                        </div>
+                    </div>
+
+                    <!-- Columna Derecha: Matriz y Conceptos -->
+                    <div class="space-y-6">
+                        <div class="glass-card p-6 bg-slate-800 text-white border-none shadow-lg">
+                            <h3 class="text-lg font-bold uppercase mb-4 flex items-center gap-2 text-bold-coral"><i data-lucide="map" class="w-5 h-5"></i> ¿Cómo leer la Matriz de Oportunidades?</h3>
+                            <p class="text-sm text-slate-300 mb-4">El gráfico de dispersión (burbujas) es una herramienta visual estratégica. Se divide conceptualmente en cuatro cuadrantes de acción:</p>
+                            
+                            <div class="space-y-4">
+                                <div class="bg-white/10 p-3 rounded-lg border border-white/5">
+                                    <h4 class="font-bold text-sm text-green-400">1. Eje X (Horizontal) - Salud</h4>
+                                    <p class="text-xs text-slate-300 mt-1">A la izquierda (0-50) están los comercios en riesgo de caída. A la derecha (51-100) están los comercios sanos y estables.</p>
+                                </div>
+                                <div class="bg-white/10 p-3 rounded-lg border border-white/5">
+                                    <h4 class="font-bold text-sm text-blue-400">2. Eje Y (Vertical) - TPV Máximo</h4>
+                                    <p class="text-xs text-slate-300 mt-1">Muestra el techo histórico de facturación. Los que están más arriba representan las cuentas de mayor valor económico para Bold.</p>
+                                </div>
+                                <div class="bg-white/10 p-3 rounded-lg border border-white/5">
+                                    <h4 class="font-bold text-sm text-yellow-400">3. Tamaño y Color de Burbuja</h4>
+                                    <p class="text-xs text-slate-300 mt-1">El <strong>tamaño</strong> indica la facturación actual (M0). El <strong>color</strong> refuerza la salud (Verde=Bien, Azul=Estable, Rojo=Riesgo).</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 p-3 bg-red-900/50 border border-red-500/30 rounded-lg">
+                                <p class="text-xs font-bold text-red-300 uppercase mb-1">🔥 Zona Crítica de Acción</p>
+                                <p class="text-xs text-slate-300">Busca burbujas grandes en la parte superior izquierda. Son comercios de altísimo valor histórico que actualmente están enfermos (bajo Score de Salud). Requieren contacto inmediato.</p>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6">
+                            <h3 class="text-lg font-bold text-slate-800 uppercase mb-3 border-b pb-2">Términos Transaccionales</h3>
+                            <ul class="text-sm text-slate-700 space-y-3">
+                                <li><strong>TPV (Total Payment Volume):</strong> Volumen total de dinero procesado a través de los canales de pago de Bold.</li>
+                                <li><strong>M0 (Mes Actual):</strong> Corresponde al mes en curso.</li>
+                                <li><strong>M1 a M5:</strong> Histórico de los 5 meses anteriores al actual.</li>
+                                <li><strong>TPV Máximo:</strong> El pico más alto de facturación mensual registrado por el comercio.</li>
+                                <li><strong>Handoff Completo:</strong> Ocurre cuando el Team Lead (SMB) documentó satisfactoriamente los dolores, planes y la historia del comercio.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
         </div>
     </main>
@@ -565,11 +657,18 @@
 
         // 1. Fetching Logic (Secure fetch bypasses some CORS issues with PapaParse direct)
         async function loadDataFromSheet() {
-            showToast('Conectando con Google Sheets...', 'info');
-            try {
-                const response = await fetch(DATA_URL);
-                if (!response.ok) throw new Error("Fallo de red");
-                const csvText = await response.text();
+    showToast('Conectando con Google Sheets...', 'info');
+    try {
+        // Creamos un "rompe-caché" añadiendo la hora exacta en milisegundos al enlace
+        const cacheBuster = new Date().getTime();
+        const urlSinCache = `${DATA_URL}&_t=${cacheBuster}`; 
+
+        // Usamos la nueva URL en el fetch
+        const response = await fetch(urlSinCache); 
+        
+        if (!response.ok) throw new Error("Fallo de red");
+        const csvText = await response.text();
+     
                 
                 if (csvText.includes('<!DOCTYPE html>') || csvText.includes('<html')) {
                     throw new Error("Google devolvió un HTML (Posible bloqueo por permisos privados)");
@@ -732,7 +831,11 @@
 
         function populateFilters() {
             const buildOptions = (key) => [...new Set(globalData.map(d => d[key]).filter(Boolean))].sort();
-            
+            // Llenar sugerencias del buscador
+const searchDatalist = document.getElementById('search-suggestions');
+if (searchDatalist) {
+    searchDatalist.innerHTML = globalData.map(d => `<option value="${d.merchant_name}"></option>`).join('');
+}
             const lists = {
                 'kam': buildOptions('kam_asignado'),
                 'city': buildOptions('city_code'),
@@ -826,6 +929,7 @@
                 case 'mapa-oportunidades': renderOpportunities(); break;
                 case 'calidad-handoff': renderQuality(); break;
                 case 'asistente-kam': break; // Static or on-demand
+				case 'glosario-kam': break;
             }
             lucide.createIcons();
         }
@@ -867,8 +971,9 @@
             document.getElementById('eo-kpi-prioridad').innerText = pri;
 
             // Segmentación Chart
-            let over40 = 0, mid = 0, under20 = 0;
-            filteredData.forEach(d => { let v = d.tpv_m0_1tx; if(v>40000000) over40++; else if(v>20000000) mid++; else under20++; });
+            // Segmentación Chart
+			let over40 = 0, mid = 0, under20 = 0;
+			filteredData.forEach(d => { let v = d.tpv_max; if(v>40000000) over40++; else if(v>20000000) mid++; else under20++; });
             createChart('chart-tpv-segments', {
                 type: 'bar',
                 data: { labels: ['> 40M', '20M - 40M', '< 20M'], datasets: [{ data: [over40, mid, under20], backgroundColor: ['#121E6C', '#FF2847', '#E91E63'], borderRadius: 4 }] },
@@ -965,11 +1070,28 @@
             document.getElementById('pc-plans').innerText = [d.plan_corto_plazo, d.plan_mediano_plazo].filter(Boolean).join(' | ') || 'Sin planes.';
 
             // Vitals Chart
-            createChart('chart-vitals', {
-                type: 'line',
-                data: { labels: ['M5','M4','M3','M2','M1','M0 (Actual)'], datasets: [{ label: 'TPV Mensual', data: [d.tpv_m5_1tx, d.tpv_m4_1tx, d.tpv_m3_1tx, d.tpv_m2_1tx, d.tpv_m1_1tx, d.tpv_m0_1tx], borderColor: '#121E6C', backgroundColor: 'rgba(18, 30, 108, 0.1)', borderWidth: 2, tension: 0.3, fill: true, pointBackgroundColor: '#FF2847' }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
-            });
+createChart('chart-vitals', {
+    type: 'line',
+    data: { 
+        // Invertimos el orden de las etiquetas
+        labels: ['M0 (Actual)','M1','M2','M3','M4','M5'], 
+        datasets: [{ 
+            label: 'TPV Mensual', 
+            // Invertimos el orden de las variables de datos para que coincidan con las etiquetas
+            data: [d.tpv_m0_1tx, d.tpv_m1_1tx, d.tpv_m2_1tx, d.tpv_m3_1tx, d.tpv_m4_1tx, d.tpv_m5_1tx], 
+            borderColor: '#121E6C', 
+            backgroundColor: 'rgba(18, 30, 108, 0.1)', 
+            borderWidth: 2, 
+            tension: 0.3, 
+            fill: true, 
+            pointBackgroundColor: '#FF2847' 
+        }] 
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: {
+            datalabels: { display: false } // <-- Agrega esta línea para apagar las etiquetas fijas
+        },
+		scales: { y: { beginAtZero: true } } }
+});
 
             // Analytics Text
             const isGr = d.tendencia_texto === 'Creciente'; const isFa = d.tendencia_texto === 'Decreciente';
@@ -986,23 +1108,178 @@
 
         // --- STREAMING_CHUNK:Additional Views (Map, Quality, Assistant) ---
         function renderOpportunities() {
-            let sc = [], kd = {};
-            filteredData.forEach(d => {
-                sc.push({ x: d.healthScore, y: d.tpv_potencial||0, r: 5, m: d.merchant_name });
-                kd[d.kam_asignado] = (kd[d.kam_asignado]||0)+1;
-            });
-            createChart('chart-matrix', {
-                type: 'bubble',
-                data: { datasets: [{ label: 'Comercios', data: sc, backgroundColor: 'rgba(233, 30, 99, 0.5)', borderColor: '#E91E63' }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { tooltip: { callbacks: { label: (c) => `${c.raw.m}: Salud ${c.raw.x}, TPV Pot. ${fmtCurr(c.raw.y)}` } } }, scales: { x: { title: {display:true, text:'Salud (0-100)'} }, y: { title: {display:true, text:'TPV Potencial'} } } }
-            });
-            let sorted = Object.entries(kd).sort((a,b)=>b[1]-a[1]);
-            createChart('chart-kam-dist', {
-                type: 'bar',
-                data: { labels: sorted.map(k=>k[0]), datasets: [{ data: sorted.map(k=>k[1]), backgroundColor: '#121E6C', borderRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: {legend:{display:false}} }
-            });
+    let sc = [], kd = {};
+    
+    // 1. Encontrar el TPV actual máximo para calcular el tamaño proporcional de las burbujas
+    let maxTpvM0 = Math.max(...filteredData.map(d => d.tpv_m0_1tx || 1));
+
+    filteredData.forEach(d => {
+        // 2. Tamaño dinámico (r): Mínimo 4px, máximo 20px basado en su facturación actual
+        let dynamicRadius = Math.max(4, (d.tpv_m0_1tx / maxTpvM0) * 20);
+        
+        // 3. Color dinámico según el score de salud
+        let bubbleColor = d.healthScore >= 75 ? 'rgba(34, 197, 94, 0.6)' :  // Verde
+                          (d.healthScore >= 50 ? 'rgba(59, 130, 246, 0.6)' : // Azul
+                          'rgba(239, 68, 68, 0.6)');                        // Rojo
+
+        sc.push({ 
+            x: d.healthScore, 
+            y: d.tpv_max || 0, 
+            r: dynamicRadius, 
+            m: d.merchant_name,
+            kam: d.kam_asignado,
+            tpv_actual: d.tpv_m0_1tx,
+            color: bubbleColor
+        });
+        
+        kd[d.kam_asignado] = (kd[d.kam_asignado] || 0) + 1;
+    });
+
+    createChart('chart-matrix', {
+        type: 'bubble',
+        data: { 
+            datasets: [{ 
+                label: 'Comercios', 
+                data: sc, 
+                backgroundColor: sc.map(item => item.color), // Aplicar colores dinámicos
+                borderColor: '#ffffff',
+                borderWidth: 1
+            }] 
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { 
+				datalabels: { display: false },
+                legend: { display: false },
+                tooltip: { 
+                    callbacks: { 
+                        // Tooltip enriquecido
+                        label: (c) => {
+                            let data = c.raw;
+                            return [
+                                `${data.m} (KAM: ${data.kam})`, 
+                                `Salud: ${data.x}/100`, 
+                                `TPV Max: ${fmtCurr(data.y)}`,
+                                `TPV Actual: ${fmtCurr(data.tpv_actual)}`
+                            ];
+                        } 
+                    } 
+                } 
+            }, 
+            scales: { 
+                x: { 
+                    title: { display: true, text: 'Salud (0-100)' },
+                    min: 0, 
+                    max: 100,
+                    grid: {
+                        // 4. Crear una línea divisoria (Cuadrante) en el Score 50
+                        color: (ctx) => ctx.tick.value === 50 ? 'rgba(18, 30, 108, 0.4)' : 'rgba(0,0,0,0.05)',
+                        lineWidth: (ctx) => ctx.tick.value === 50 ? 2 : 1
+                    }
+                }, 
+                y: { 
+                    title: { display: true, text: 'TPV Máximo' },
+                    beginAtZero: true
+                } 
+            } 
         }
+    });
+
+    // Gráfico de distribución de KAMs (Se mantiene igual)
+    let sorted = Object.entries(kd).sort((a,b) => b[1] - a[1]);
+    createChart('chart-kam-dist', {
+        type: 'bar',
+        data: { labels: sorted.map(k=>k[0]), datasets: [{ data: sorted.map(k=>k[1]), backgroundColor: '#121E6C', borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: {legend:{display:false}} }
+    });
+}
+function renderOpportunities() {
+    let sc = [], kd = {};
+    
+    // 1. Encontrar el TPV actual máximo para calcular el tamaño proporcional de las burbujas
+    let maxTpvM0 = Math.max(...filteredData.map(d => d.tpv_m0_1tx || 1));
+
+    filteredData.forEach(d => {
+        // 2. Tamaño dinámico (r): Mínimo 4px, máximo 20px basado en su facturación actual
+        let dynamicRadius = Math.max(4, (d.tpv_m0_1tx / maxTpvM0) * 20);
+        
+        // 3. Color dinámico según el score de salud
+        let bubbleColor = d.healthScore >= 75 ? 'rgba(34, 197, 94, 0.6)' :  // Verde
+                          (d.healthScore >= 50 ? 'rgba(59, 130, 246, 0.6)' : // Azul
+                          'rgba(239, 68, 68, 0.6)');                        // Rojo
+
+        sc.push({ 
+            x: d.healthScore, 
+            y: d.tpv_max || 0, 
+            r: dynamicRadius, 
+            m: d.merchant_name,
+            kam: d.kam_asignado,
+            tpv_actual: d.tpv_m0_1tx,
+            color: bubbleColor
+        });
+        
+        kd[d.kam_asignado] = (kd[d.kam_asignado] || 0) + 1;
+    });
+
+    createChart('chart-matrix', {
+        type: 'bubble',
+        data: { 
+            datasets: [{ 
+                label: 'Comercios', 
+                data: sc, 
+                backgroundColor: sc.map(item => item.color), // Aplicar colores dinámicos
+                borderColor: '#ffffff',
+                borderWidth: 1
+            }] 
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { 
+                legend: { display: false },
+                tooltip: { 
+                    callbacks: { 
+                        // Tooltip enriquecido
+                        label: (c) => {
+                            let data = c.raw;
+                            return [
+                                `${data.m} (KAM: ${data.kam})`, 
+                                `Salud: ${data.x}/100`, 
+                                `TPV Max: ${fmtCurr(data.y)}`,
+                                `TPV Actual: ${fmtCurr(data.tpv_actual)}`
+                            ];
+                        } 
+                    } 
+                } 
+            }, 
+            scales: { 
+                x: { 
+                    title: { display: true, text: 'Salud (0-100)' },
+                    min: 0, 
+                    max: 100,
+                    grid: {
+                        // 4. Crear una línea divisoria (Cuadrante) en el Score 50
+                        color: (ctx) => ctx.tick.value === 50 ? 'rgba(18, 30, 108, 0.4)' : 'rgba(0,0,0,0.05)',
+                        lineWidth: (ctx) => ctx.tick.value === 50 ? 2 : 1
+                    }
+                }, 
+                y: { 
+                    title: { display: true, text: 'TPV Máximo' },
+                    beginAtZero: true
+                } 
+            } 
+        }
+    });
+
+    // Gráfico de distribución de KAMs (Se mantiene igual)
+    let sorted = Object.entries(kd).sort((a,b) => b[1] - a[1]);
+    createChart('chart-kam-dist', {
+        type: 'bar',
+        data: { labels: sorted.map(k=>k[0]), datasets: [{ data: sorted.map(k=>k[1]), backgroundColor: '#121E6C', borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: {legend:{display:false}} }
+    });
+}
 
         function renderQuality() {
             const tot = filteredData.length; if(tot===0) return;
@@ -1138,6 +1415,23 @@
         async function copyGeminiPrompt() {
             try { await navigator.clipboard.writeText("Actúa como Account Manager Senior. Analiza este portafolio de cuentas estratégicas..."); showToast('Prompt copiado.', 'success'); } catch(e) { showToast('Error al copiar.', 'error'); }
         }
+		function applyQuickFilter(filterType, value) {
+    // 1. Limpiar filtros actuales para evitar cruces
+    clearFilters();
+    
+    // 2. Buscar los checkboxes correspondientes y marcar el correcto
+    const checkboxes = document.querySelectorAll(`.filter-checkbox-${filterType}`);
+    checkboxes.forEach(cb => {
+        if(cb.value === value) cb.checked = true;
+    });
+    
+    // 3. Refrescar los datos y navegar a la tabla
+    applyFilters();
+    navigate('triage-kam');
+    
+    // 4. Mostrar notificación
+    showToast(`Mostrando: ${value}`, 'info');
+}
 
         function showToast(m, t='info') {
             let c = document.getElementById('toast-container'); if(!c){c=document.createElement('div'); c.id='toast-container'; document.body.appendChild(c);}
