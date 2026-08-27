@@ -15,6 +15,19 @@
 --    dejarla como consulta productiva.
 -- 4. La informacion cualitativa no debe salir de esta consulta; esa vive en
 --    RESPUESTAS_FORM y se cruza despues por merchant_id.
+-- 5. Si dim_client no tiene category_id/subcategory_id, se dejan como NULL
+--    temporalmente para no bloquear la validacion de TPV y terminales.
+--
+-- Consulta auxiliar para encontrar columnas de categoria si fallan:
+-- SELECT table_schema, table_name, column_name
+-- FROM information_schema.columns
+-- WHERE table_schema = 'bold_gold_growth'
+--   AND (
+--       lower(column_name) LIKE '%categor%'
+--       OR lower(column_name) LIKE '%subcategor%'
+--       OR lower(column_name) LIKE '%mcc%'
+--   )
+-- ORDER BY table_name, column_name;
 
 WITH
 validation_merchants (merchant_id) AS (
@@ -37,8 +50,8 @@ client_ranked AS (
         c.merchant_name,
         c.merchant_identification_document_type AS document_type,
         cast(c.merchant_identification_document_number AS varchar) AS document_number,
-        c.category_id,
-        c.subcategory_id,
+        cast(NULL AS varchar) AS category_id,
+        cast(NULL AS varchar) AS subcategory_id,
         c.city_code,
         c.city,
         c.address,
