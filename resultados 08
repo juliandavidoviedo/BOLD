@@ -1,0 +1,123 @@
+-- Validación de la relación entre jerarquía comercial y merchant/client.
+-- El resultado 07 encontró campos candidatos, pero aún no demostró la llave ni la vigencia.
+-- Ejecutar cada bloque por separado.
+
+-- 1) Estructura completa de tablas candidatas
+SELECT table_schema, table_name, ordinal_position, column_name, data_type
+FROM information_schema.columns
+WHERE table_schema = 'bold_gold_sales'
+  AND table_name IN (
+      'dim_crm_pos_locations',
+      'dim_crm_services',
+      'dim_crm_users',
+      'dim_user_bamboo_information',
+      'dim_user_bamboo_information_history',
+      'fact_crm_checkout_status_change'
+  )
+ORDER BY table_name, ordinal_position;
+
+
+#	table_schema	table_name	ordinal_position	column_name	data_type
+1	bold_gold_sales	dim_crm_pos_locations	1	id	varchar
+2	bold_gold_sales	dim_crm_pos_locations	2	business_datetime	timestamp(3)
+3	bold_gold_sales	dim_crm_pos_locations	3	event_timestamp	bigint
+4	bold_gold_sales	dim_crm_pos_locations	4	event_datetime	timestamp(3)
+5	bold_gold_sales	dim_crm_pos_locations	5	event_type	varchar
+6	bold_gold_sales	dim_crm_pos_locations	6	event_id	varchar
+7	bold_gold_sales	dim_crm_pos_locations	7	load_source	varchar
+8	bold_gold_sales	dim_crm_pos_locations	8	load_identity	varchar
+9	bold_gold_sales	dim_crm_pos_locations	9	load_datetime	timestamp(3)
+10	bold_gold_sales	dim_crm_pos_locations	10	year	varchar
+11	bold_gold_sales	dim_crm_pos_locations	11	month	varchar
+12	bold_gold_sales	dim_crm_pos_locations	12	day	varchar
+13	bold_gold_sales	dim_crm_pos_locations	13	pos_location_id	varchar
+14	bold_gold_sales	dim_crm_pos_locations	14	custom_id	varchar
+15	bold_gold_sales	dim_crm_pos_locations	15	audit_log_reason	varchar
+16	bold_gold_sales	dim_crm_pos_locations	16	audit_log_author	varchar
+17	bold_gold_sales	dim_crm_pos_locations	17	audit_log_date	varchar
+18	bold_gold_sales	dim_crm_pos_locations	18	audit_log_device_fingerprint_device_type	varchar
+19	bold_gold_sales	dim_crm_pos_locations	19	audit_log_device_fingerprint_platform	varchar
+20	bold_gold_sales	dim_crm_pos_locations	20	audit_log_device_fingerprint_os	varchar
+21	bold_gold_sales	dim_crm_pos_locations	21	audit_log_device_fingerprint_model	varchar
+22	bold_gold_sales	dim_crm_pos_locations	22	audit_log_device_fingerprint_browser	varchar
+23	bold_gold_sales	dim_crm_pos_locations	23	audit_log_device_fingerprint_app_version	varchar
+24	bold_gold_sales	dim_crm_pos_locations	24	audit_log_device_fingerprint_latitude	varchar
+25	bold_gold_sales	dim_crm_pos_locations	25	audit_log_device_fingerprint_longitude	varchar
+26	bold_gold_sales	dim_crm_pos_locations	26	audit_log_device_fingerprint_city	varchar
+27	bold_gold_sales	dim_crm_pos_locations	27	audit_log_device_fingerprint_region	varchar
+28	bold_gold_sales	dim_crm_pos_locations	28	audit_log_device_fingerprint_country	varchar
+29	bold_gold_sales	dim_crm_pos_locations	29	audit_log_device_fingerprint_ip	varchar
+30	bold_gold_sales	dim_crm_pos_locations	30	name	varchar
+31	bold_gold_sales	dim_crm_pos_locations	31	address_street	varchar
+32	bold_gold_sales	dim_crm_pos_locations	32	address_city_code	varchar
+33	bold_gold_sales	dim_crm_pos_locations	33	address_department_code	varchar
+34	bold_gold_sales	dim_crm_pos_locations	34	address_country_code	varchar
+35	bold_gold_sales	dim_crm_pos_locations	35	address_complementary_address	varchar
+36	bold_gold_sales	dim_crm_pos_locations	36	latitude	double
+37	bold_gold_sales	dim_crm_pos_locations	37	longitude	double
+38	bold_gold_sales	dim_crm_pos_locations	38	status	varchar
+39	bold_gold_sales	dim_crm_pos_locations	39	type	varchar
+40	bold_gold_sales	dim_crm_pos_locations	40	parent_id	varchar
+41	bold_gold_sales	dim_crm_pos_locations	41	manager_email	varchar
+42	bold_gold_sales	dim_crm_pos_locations	42	substitute_managers	varchar
+43	bold_gold_sales	dim_crm_pos_locations	43	creation_date	timestamp(3)
+44	bold_gold_sales	dim_crm_pos_locations	44	metadata	varchar
+45	bold_gold_sales	dim_crm_pos_locations	45	event_partition	varchar
+46	bold_gold_sales	dim_crm_services	1	id	varchar
+47	bold_gold_sales	dim_crm_services	2	business_datetime	timestamp(3)
+48	bold_gold_sales	dim_crm_services	3	event_timestamp	bigint
+49	bold_gold_sales	dim_crm_services	4	event_datetime	timestamp(3)
+50	bold_gold_sales	dim_crm_services	5	event_type	varchar
+51	bold_gold_sales	dim_crm_services	6	event_id	varchar
+52	bold_gold_sales	dim_crm_services	7	load_source	varchar
+53	bold_gold_sales	dim_crm_services	8	load_identity	varchar
+54	bold_gold_sales	dim_crm_services	9	load_datetime	timestamp(3)
+55	bold_gold_sales	dim_crm_services	10	year	varchar
+56	bold_gold_sales	dim_crm_services	11	month	varchar
+57	bold_gold_sales	dim_crm_services	12	day	varchar
+58	bold_gold_sales	dim_crm_services	13	crm_service_id	varchar
+59	bold_gold_sales	dim_crm_services	14	user_id	varchar
+60	bold_gold_sales	dim_crm_services	15	type	varchar
+61	bold_gold_sales	dim_crm_services	16	status	varchar
+62	bold_gold_sales	dim_crm_services	17	metadata	map(varchar, varchar)
+63	bold_gold_sales	dim_crm_services	18	creation_date	row(posix_time_ns varchar)
+64	bold_gold_sales	dim_crm_services	19	last_update_date	row(posix_time_ns varchar)
+65	bold_gold_sales	dim_crm_services	20	service_detail_person_type	varchar
+66	bold_gold_sales	dim_crm_services	21	service_detail_company_name	varchar
+67	bold_gold_sales	dim_crm_services	22	service_detail_economic_activity	varchar
+68	bold_gold_sales	dim_crm_services	23	service_detail_parent_type	varchar
+69	bold_gold_sales	dim_crm_services	24	service_detail_parent_id	varchar
+70	bold_gold_sales	dim_crm_services	25	service_detail_client_id	varchar
+71	bold_gold_sales	dim_crm_services	26	service_detail_client_type	varchar
+72	bold_gold_sales	dim_crm_services	27	service_detail_client_is_key_account	varchar
+73	bold_gold_sales	dim_crm_services	28	service_detail_client_kam_email	varchar
+74	bold_gold_sales	dim_crm_services	29	service_detail_company_document_type	varchar
+75	bold_gold_sales	dim_crm_services	30	service_detail_company_document_number	varchar
+76	bold_gold_sales	dim_crm_services	31	service_detail_company_document_expedition_date	varchar
+77	bold_gold_sales	dim_crm_services	32	service_detail_company_document_verification_digit	varchar
+78	bold_gold_sales	dim_crm_services	33	event_partition	varchar
+79	bold_gold_sales	dim_crm_users	1	event_timestamp	bigint
+80	bold_gold_sales	dim_crm_users	2	load_datetime	timestamp(3)
+81	bold_gold_sales	dim_crm_users	3	user_id	varchar
+82	bold_gold_sales	dim_crm_users	4	company	varchar
+83	bold_gold_sales	dim_crm_users	5	email	varchar
+84	bold_gold_sales	dim_crm_users	6	parent_id	varchar
+85	bold_gold_sales	dim_crm_users	7	role	varchar
+86	bold_gold_sales	dim_crm_users	8	sales_channel	varchar
+87	bold_gold_sales	dim_crm_users	9	status	varchar
+88	bold_gold_sales	dim_crm_users	10	country_code	varchar
+89	bold_gold_sales	dim_crm_users	11	metadata	varchar
+90	bold_gold_sales	dim_crm_users	12	parent_previous_id	varchar
+91	bold_gold_sales	dim_crm_users	13	event_partition	integer
+92	bold_gold_sales	dim_user_bamboo_information	1	user_id	varchar
+93	bold_gold_sales	dim_user_bamboo_information	2	reports_to	varchar
+94	bold_gold_sales	dim_user_bamboo_information	3	supervisor_id	varchar
+95	bold_gold_sales	dim_user_bamboo_information	4	city	varchar
+96	bold_gold_sales	dim_user_bamboo_information	5	region	varchar
+97	bold_gold_sales	dim_user_bamboo_information	6	hub_custom_id	varchar
+98	bold_gold_sales	dim_user_bamboo_information	7	hub_name	varchar
+99	bold_gold_sales	dim_user_bamboo_information	8	job_title	varchar
+100	bold_gold_sales	dim_user_bamboo_information	9	channel	varchar
+
+
+
