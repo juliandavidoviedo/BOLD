@@ -1,0 +1,528 @@
+-- Validación de la relación entre jerarquía comercial y merchant/client.
+-- El resultado 07 encontró campos candidatos, pero aún no demostró la llave ni la vigencia.
+-- Ejecutar cada bloque por separado.
+
+-- 1) Estructura completa de tablas candidatas
+SELECT table_schema, table_name, ordinal_position, column_name, data_type
+FROM information_schema.columns
+WHERE table_schema = 'bold_gold_sales'
+  AND table_name IN (
+      'dim_crm_pos_locations',
+      'dim_crm_services',
+      'dim_crm_users',
+      'dim_user_bamboo_information',
+      'dim_user_bamboo_information_history',
+      'fact_crm_checkout_status_change'
+  )
+ORDER BY table_name, ordinal_position;
+
+
+#	table_schema	table_name	ordinal_position	column_name	data_type
+1	bold_gold_sales	dim_crm_pos_locations	1	id	varchar
+2	bold_gold_sales	dim_crm_pos_locations	2	business_datetime	timestamp(3)
+3	bold_gold_sales	dim_crm_pos_locations	3	event_timestamp	bigint
+4	bold_gold_sales	dim_crm_pos_locations	4	event_datetime	timestamp(3)
+5	bold_gold_sales	dim_crm_pos_locations	5	event_type	varchar
+6	bold_gold_sales	dim_crm_pos_locations	6	event_id	varchar
+7	bold_gold_sales	dim_crm_pos_locations	7	load_source	varchar
+8	bold_gold_sales	dim_crm_pos_locations	8	load_identity	varchar
+9	bold_gold_sales	dim_crm_pos_locations	9	load_datetime	timestamp(3)
+10	bold_gold_sales	dim_crm_pos_locations	10	year	varchar
+11	bold_gold_sales	dim_crm_pos_locations	11	month	varchar
+12	bold_gold_sales	dim_crm_pos_locations	12	day	varchar
+13	bold_gold_sales	dim_crm_pos_locations	13	pos_location_id	varchar
+14	bold_gold_sales	dim_crm_pos_locations	14	custom_id	varchar
+15	bold_gold_sales	dim_crm_pos_locations	15	audit_log_reason	varchar
+16	bold_gold_sales	dim_crm_pos_locations	16	audit_log_author	varchar
+17	bold_gold_sales	dim_crm_pos_locations	17	audit_log_date	varchar
+18	bold_gold_sales	dim_crm_pos_locations	18	audit_log_device_fingerprint_device_type	varchar
+19	bold_gold_sales	dim_crm_pos_locations	19	audit_log_device_fingerprint_platform	varchar
+20	bold_gold_sales	dim_crm_pos_locations	20	audit_log_device_fingerprint_os	varchar
+21	bold_gold_sales	dim_crm_pos_locations	21	audit_log_device_fingerprint_model	varchar
+22	bold_gold_sales	dim_crm_pos_locations	22	audit_log_device_fingerprint_browser	varchar
+23	bold_gold_sales	dim_crm_pos_locations	23	audit_log_device_fingerprint_app_version	varchar
+24	bold_gold_sales	dim_crm_pos_locations	24	audit_log_device_fingerprint_latitude	varchar
+25	bold_gold_sales	dim_crm_pos_locations	25	audit_log_device_fingerprint_longitude	varchar
+26	bold_gold_sales	dim_crm_pos_locations	26	audit_log_device_fingerprint_city	varchar
+27	bold_gold_sales	dim_crm_pos_locations	27	audit_log_device_fingerprint_region	varchar
+28	bold_gold_sales	dim_crm_pos_locations	28	audit_log_device_fingerprint_country	varchar
+29	bold_gold_sales	dim_crm_pos_locations	29	audit_log_device_fingerprint_ip	varchar
+30	bold_gold_sales	dim_crm_pos_locations	30	name	varchar
+31	bold_gold_sales	dim_crm_pos_locations	31	address_street	varchar
+32	bold_gold_sales	dim_crm_pos_locations	32	address_city_code	varchar
+33	bold_gold_sales	dim_crm_pos_locations	33	address_department_code	varchar
+34	bold_gold_sales	dim_crm_pos_locations	34	address_country_code	varchar
+35	bold_gold_sales	dim_crm_pos_locations	35	address_complementary_address	varchar
+36	bold_gold_sales	dim_crm_pos_locations	36	latitude	double
+37	bold_gold_sales	dim_crm_pos_locations	37	longitude	double
+38	bold_gold_sales	dim_crm_pos_locations	38	status	varchar
+39	bold_gold_sales	dim_crm_pos_locations	39	type	varchar
+40	bold_gold_sales	dim_crm_pos_locations	40	parent_id	varchar
+41	bold_gold_sales	dim_crm_pos_locations	41	manager_email	varchar
+42	bold_gold_sales	dim_crm_pos_locations	42	substitute_managers	varchar
+43	bold_gold_sales	dim_crm_pos_locations	43	creation_date	timestamp(3)
+44	bold_gold_sales	dim_crm_pos_locations	44	metadata	varchar
+45	bold_gold_sales	dim_crm_pos_locations	45	event_partition	varchar
+46	bold_gold_sales	dim_crm_services	1	id	varchar
+47	bold_gold_sales	dim_crm_services	2	business_datetime	timestamp(3)
+48	bold_gold_sales	dim_crm_services	3	event_timestamp	bigint
+49	bold_gold_sales	dim_crm_services	4	event_datetime	timestamp(3)
+50	bold_gold_sales	dim_crm_services	5	event_type	varchar
+51	bold_gold_sales	dim_crm_services	6	event_id	varchar
+52	bold_gold_sales	dim_crm_services	7	load_source	varchar
+53	bold_gold_sales	dim_crm_services	8	load_identity	varchar
+54	bold_gold_sales	dim_crm_services	9	load_datetime	timestamp(3)
+55	bold_gold_sales	dim_crm_services	10	year	varchar
+56	bold_gold_sales	dim_crm_services	11	month	varchar
+57	bold_gold_sales	dim_crm_services	12	day	varchar
+58	bold_gold_sales	dim_crm_services	13	crm_service_id	varchar
+59	bold_gold_sales	dim_crm_services	14	user_id	varchar
+60	bold_gold_sales	dim_crm_services	15	type	varchar
+61	bold_gold_sales	dim_crm_services	16	status	varchar
+62	bold_gold_sales	dim_crm_services	17	metadata	map(varchar, varchar)
+63	bold_gold_sales	dim_crm_services	18	creation_date	row(posix_time_ns varchar)
+64	bold_gold_sales	dim_crm_services	19	last_update_date	row(posix_time_ns varchar)
+65	bold_gold_sales	dim_crm_services	20	service_detail_person_type	varchar
+66	bold_gold_sales	dim_crm_services	21	service_detail_company_name	varchar
+67	bold_gold_sales	dim_crm_services	22	service_detail_economic_activity	varchar
+68	bold_gold_sales	dim_crm_services	23	service_detail_parent_type	varchar
+69	bold_gold_sales	dim_crm_services	24	service_detail_parent_id	varchar
+70	bold_gold_sales	dim_crm_services	25	service_detail_client_id	varchar
+71	bold_gold_sales	dim_crm_services	26	service_detail_client_type	varchar
+72	bold_gold_sales	dim_crm_services	27	service_detail_client_is_key_account	varchar
+73	bold_gold_sales	dim_crm_services	28	service_detail_client_kam_email	varchar
+74	bold_gold_sales	dim_crm_services	29	service_detail_company_document_type	varchar
+75	bold_gold_sales	dim_crm_services	30	service_detail_company_document_number	varchar
+76	bold_gold_sales	dim_crm_services	31	service_detail_company_document_expedition_date	varchar
+77	bold_gold_sales	dim_crm_services	32	service_detail_company_document_verification_digit	varchar
+78	bold_gold_sales	dim_crm_services	33	event_partition	varchar
+79	bold_gold_sales	dim_crm_users	1	event_timestamp	bigint
+80	bold_gold_sales	dim_crm_users	2	load_datetime	timestamp(3)
+81	bold_gold_sales	dim_crm_users	3	user_id	varchar
+82	bold_gold_sales	dim_crm_users	4	company	varchar
+83	bold_gold_sales	dim_crm_users	5	email	varchar
+84	bold_gold_sales	dim_crm_users	6	parent_id	varchar
+85	bold_gold_sales	dim_crm_users	7	role	varchar
+86	bold_gold_sales	dim_crm_users	8	sales_channel	varchar
+87	bold_gold_sales	dim_crm_users	9	status	varchar
+88	bold_gold_sales	dim_crm_users	10	country_code	varchar
+89	bold_gold_sales	dim_crm_users	11	metadata	varchar
+90	bold_gold_sales	dim_crm_users	12	parent_previous_id	varchar
+91	bold_gold_sales	dim_crm_users	13	event_partition	integer
+92	bold_gold_sales	dim_user_bamboo_information	1	user_id	varchar
+93	bold_gold_sales	dim_user_bamboo_information	2	reports_to	varchar
+94	bold_gold_sales	dim_user_bamboo_information	3	supervisor_id	varchar
+95	bold_gold_sales	dim_user_bamboo_information	4	city	varchar
+96	bold_gold_sales	dim_user_bamboo_information	5	region	varchar
+97	bold_gold_sales	dim_user_bamboo_information	6	hub_custom_id	varchar
+98	bold_gold_sales	dim_user_bamboo_information	7	hub_name	varchar
+99	bold_gold_sales	dim_user_bamboo_information	8	job_title	varchar
+100	bold_gold_sales	dim_user_bamboo_information	9	channel	varchar
+
+SELECT * FROM awsdatacatalog.bold_gold_sales.dim_crm_pos_locations LIMIT 50;
+#	id	business_datetime	event_timestamp	event_datetime	event_type	event_id	load_source	load_identity	load_datetime	year	month	day	pos_location_id	custom_id	audit_log_reason	audit_log_author	audit_log_date	audit_log_device_fingerprint_device_type	audit_log_device_fingerprint_platform	audit_log_device_fingerprint_os	audit_log_device_fingerprint_model	audit_log_device_fingerprint_browser	audit_log_device_fingerprint_app_version	audit_log_device_fingerprint_latitude	audit_log_device_fingerprint_longitude	audit_log_device_fingerprint_city	audit_log_device_fingerprint_region	audit_log_device_fingerprint_country	audit_log_device_fingerprint_ip	name	address_street	address_city_code	address_department_code	address_country_code	address_complementary_address	latitude	longitude	status	type	parent_id	manager_email	substitute_managers	creation_date	metadata	event_partition
+1	a1b8e2e1-c816-4786-8ec2-19263ddafea6	2025-07-07 17:55:23.597	1751928923597421851	2025-07-07 17:55:23.597	application/vnd.co.bold.c-r-m-p-o-s-location-created	a1b8e2e1-c816-4786-8ec2-19263ddafea6	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	07	07	KY86E5ZNRR	ISLAMALLCT		rafael.gonzalez@bold.co	2025-07-07 22:55:23													Mallplaza Cartagena						10.4249077	-75.5403852	ACTIVE	STAND	J7CM7VHW7Y	aviluz.molina@bold.co	[]	2025-07-07 17:55:23.595		20250707
+2	514543de-5e58-4915-88f0-dff274a90d75	2025-07-07 17:52:23.385	1751928743385792194	2025-07-07 17:52:23.385	application/vnd.co.bold.c-r-m-p-o-s-location-created	514543de-5e58-4915-88f0-dff274a90d75	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	07	07	9R1LD64RK3	HUBSANGIL		rafael.gonzalez@bold.co	2025-07-07 22:52:23													Hub San Gil						6.5555847	-73.1333749	ACTIVE	HUB		maria.parra@bold.co	[]	2025-07-07 17:52:23.383		20250707
+3	0773df20-4d7b-43eb-afe0-cbfaa8d82fc2	2025-07-07 17:52:26.715	1751928746715857470	2025-07-07 17:52:26.715	application/vnd.co.bold.c-r-m-p-o-s-location-created	0773df20-4d7b-43eb-afe0-cbfaa8d82fc2	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	07	07	GQSYD14E1U	HUBTULUA		rafael.gonzalez@bold.co	2025-07-07 22:52:26													Hub Tuluá						4.0839595	-76.1947362	ACTIVE	HUB		maria.parra@bold.co	[]	2025-07-07 17:52:26.713		20250707
+4	c3c89e1d-e1e7-47d2-bf2e-e6672f03c029	2025-07-07 17:52:21.677	1751928741677057527	2025-07-07 17:52:21.677	application/vnd.co.bold.c-r-m-p-o-s-location-created	c3c89e1d-e1e7-47d2-bf2e-e6672f03c029	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	07	07	I4WSIWY5IX	HUBPOPAYAN		rafael.gonzalez@bold.co	2025-07-07 22:52:21													Hub Popayan						2.4419489	-76.6158994	ACTIVE	HUB		maria.parra@bold.co	[]	2025-07-07 17:52:21.674		20250707
+5	8a542bcd-3799-4b78-bc04-e14787b84243	2025-07-07 17:52:25.053	1751928745053069816	2025-07-07 17:52:25.053	application/vnd.co.bold.c-r-m-p-o-s-location-created	8a542bcd-3799-4b78-bc04-e14787b84243	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	07	07	9CNHFVGUYF	HUBVALLEDU		rafael.gonzalez@bold.co	2025-07-07 22:52:25													Hub Vallerdupar						10.46501175	-73.25687637	ACTIVE	HUB		maria.parra@bold.co	[]	2025-07-07 17:52:25.050		20250707
+6	cbb98681-ae4f-4b1d-afec-5c1d8877f21e	2025-05-26 12:35:37.244	1748280937244370609	2025-05-26 12:35:37.244	application/vnd.co.bold.c-r-m-p-o-s-location-created	cbb98681-ae4f-4b1d-afec-5c1d8877f21e	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	05	26	MPBKTXLYJ6	ISLAUNIBOG		rafael.gonzalez@bold.co	2025-05-26 17:35:37													Unicentro BOGOTA_D_C						4.7027108	-74.041028	ACTIVE	STAND	082ZBWGJ7K	carolina.aragon@bold.co	[]	2025-05-26 12:35:37.237		20250526
+7	f7e780c9-faf3-4231-93f2-38c9f0912100	2025-05-26 12:29:22.325	1748280562325567966	2025-05-26 12:29:22.325	application/vnd.co.bold.c-r-m-p-o-s-location-created	f7e780c9-faf3-4231-93f2-38c9f0912100	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	05	26	ALOGX5DHJI	HUBARM		rafael.gonzalez@bold.co	2025-05-26 17:29:22													Hub ARMENIA						4.5389539	-75.665557	ACTIVE	HUB		carolina.ramirez@bold.co	[]	2025-05-26 12:29:22.322		20250526
+8	1cddc2ad-7dc8-4330-b68a-53ac6cff9bd9	2025-05-26 12:35:42.483	1748280942483386821	2025-05-26 12:35:42.483	application/vnd.co.bold.c-r-m-p-o-s-location-created	1cddc2ad-7dc8-4330-b68a-53ac6cff9bd9	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	05	26	D6D38V4MQT	ISLASCM		rafael.gonzalez@bold.co	2025-05-26 17:35:42													Centro Mayor						4.5926279	-74.1245679	ACTIVE	STAND	ANV6AI103L	carolina.aragon@bold.co	[]	2025-05-26 12:35:42.473		20250526
+9	367ab52e-ad94-49a2-a9cd-3b46d32f4d5c	2025-05-26 12:29:27.563	1748280567563726956	2025-05-26 12:29:27.563	application/vnd.co.bold.c-r-m-p-o-s-location-created	367ab52e-ad94-49a2-a9cd-3b46d32f4d5c	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	05	26	20CRVI0TG3	HUBCHIA		rafael.gonzalez@bold.co	2025-05-26 17:29:27													Hub CHIA						4.863179	-74.0579818	ACTIVE	HUB		carolina.aragon@bold.co	[]	2025-05-26 12:29:27.545		20250526
+10	f35d0f45-86c9-4801-b093-907e282d1458	2025-05-26 12:35:47.726	1748280947726119387	2025-05-26 12:35:47.726	application/vnd.co.bold.c-r-m-p-o-s-location-created	f35d0f45-86c9-4801-b093-907e282d1458	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	05	26	ME7TINIAT6	ISLAFONTAN		rafael.gonzalez@bold.co	2025-05-26 17:35:47													Fontanar						4.8857839	-74.0347143	ACTIVE	STAND	20CRVI0TG3	alejandra.pajaro@bold.co	[]	2025-05-26 12:35:47.723		20250526
+11	08442f7c-aa41-4730-a610-5386b6491f53	2025-05-26 12:29:31.063	1748280571063988957	2025-05-26 12:29:31.063	application/vnd.co.bold.c-r-m-p-o-s-location-created	08442f7c-aa41-4730-a610-5386b6491f53	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	05	26	FDXA1AU83X	HUBMODBOG		rafael.gonzalez@bold.co	2025-05-26 17:29:31													Hub Modelia						4.665611	-74.1197913	ACTIVE	HUB		carolina.aragon@bold.co	[]	2025-05-26 12:29:31.061		20250526
+12	c69f9e5e-1a37-4ea4-8b61-ce6db2f9859b	2025-05-26 12:35:45.978	1748280945978387723	2025-05-26 12:35:45.978	application/vnd.co.bold.c-r-m-p-o-s-location-created	c69f9e5e-1a37-4ea4-8b61-ce6db2f9859b	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	05	26	DAND9MDJYA	ISLAGPBOSA		rafael.gonzalez@bold.co	2025-05-26 17:35:45													Gran Plaza Bosa						4.6379187	-74.2017127	ACTIVE	STAND	14N0B9UT31	carolina.aragon@bold.co	[]	2025-05-26 12:35:45.976		20250526
+13	bc525832-fbee-4063-af5e-18a742515233	2025-05-26 12:29:43.323	1748280583323632294	2025-05-26 12:29:43.323	application/vnd.co.bold.c-r-m-p-o-s-location-created	bc525832-fbee-4063-af5e-18a742515233	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	05	26	DXUNT3UVPL	HUBBUCARA		rafael.gonzalez@bold.co	2025-05-26 17:29:43													Hub BUCARAMANGA						7.1180988	-73.1121419	ACTIVE	HUB		jinna.jimenez@bold.co	[]	2025-05-26 12:29:43.303		20250526
+14	e3b4ab73-37e8-4f4e-b8a6-55d534d8594e	2025-05-26 12:29:39.822	1748280579822471619	2025-05-26 12:29:39.822	application/vnd.co.bold.c-r-m-p-o-s-location-created	e3b4ab73-37e8-4f4e-b8a6-55d534d8594e	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	05	26	176AF2NVZ8	HUBSUBBOG		rafael.gonzalez@bold.co	2025-05-26 17:29:39													Hub Suba						4.7386759	-74.0851418	ACTIVE	HUB		carolina.aragon@bold.co	[]	2025-05-26 12:29:39.803		20250526
+15	17e4ed41-8b8e-45a1-b9b8-ee406fd02c9e	2025-05-26 12:35:44.233	1748280944233397964	2025-05-26 12:35:44.233	application/vnd.co.bold.c-r-m-p-o-s-location-created	17e4ed41-8b8e-45a1-b9b8-ee406fd02c9e	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	05	26	MXK817CM0X	ISLASANTAM		rafael.gonzalez@bold.co	2025-05-26 17:35:44													Santafé MEDELLIN						6.1976706	-75.5743742	ACTIVE	STAND	AHJ7ZKO4P0	sebastian.taborda@bold.co	[]	2025-05-26 12:35:44.231		20250526
+16	bdf86df1-0297-4866-bee6-63438964b5a4	2025-06-19 12:35:22.348	1750354522348178493	2025-06-19 12:35:22.348	application/vnd.co.bold.c-r-m-p-o-s-location-created	bdf86df1-0297-4866-bee6-63438964b5a4	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	06	19	X79ETOEHFB	HUBGIRARD		rafael.gonzalez@bold.co	2025-06-19 17:35:22													Hub Girardot						4.3018939	-74.8038101	ACTIVE	HUB		maria.parra@bold.co	[]	2025-06-19 12:35:22.329		20250619
+17	24d57a26-9ec6-4dec-af64-1597c8df6fc1	2025-06-19 12:35:18.888	1750354518888736097	2025-06-19 12:35:18.888	application/vnd.co.bold.c-r-m-p-o-s-location-created	24d57a26-9ec6-4dec-af64-1597c8df6fc1	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	06	19	J98URNZ8HZ	HUBYOPAL		rafael.gonzalez@bold.co	2025-06-19 17:35:18													Hub Yopal						5.3345897	-72.3951211	ACTIVE	HUB		maria.parra@bold.co	[]	2025-06-19 12:35:18.869		20250619
+18	2854cfb0-ee58-4257-bcd9-b4f4fa7e6966	2025-06-19 12:35:11.990	1750354511990981400	2025-06-19 12:35:11.990	application/vnd.co.bold.c-r-m-p-o-s-location-created	2854cfb0-ee58-4257-bcd9-b4f4fa7e6966	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	06	19	MNNN0FF52G	HUBPASTO		rafael.gonzalez@bold.co	2025-06-19 17:35:11													Hub Pasto						1.2101787	-77.2766219	ACTIVE	HUB		maria.parra@bold.co	[]	2025-06-19 12:35:11.988		20250619
+19	2d318eb3-0759-4ceb-8f8d-c313f5315b30	2025-06-19 12:35:13.711	1750354513711884975	2025-06-19 12:35:13.711	application/vnd.co.bold.c-r-m-p-o-s-location-created	2d318eb3-0759-4ceb-8f8d-c313f5315b30	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	06	19	C5C9EAFBS2	HUBTUNJA		rafael.gonzalez@bold.co	2025-06-19 17:35:13													Hub Tunja						5.5358753	-73.3595034	ACTIVE	HUB		maria.parra@bold.co	[]	2025-06-19 12:35:13.708		20250619
+20	ad1ff29b-0385-49de-aaa6-e735249518a8	2025-06-19 12:35:17.158	1750354517158670048	2025-06-19 12:35:17.158	application/vnd.co.bold.c-r-m-p-o-s-location-created	ad1ff29b-0385-49de-aaa6-e735249518a8	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	06	19	ERU0T76OZA	HUBDUITAM		rafael.gonzalez@bold.co	2025-06-19 17:35:17													Hub Duitama						5.82496647	-73.03149906	ACTIVE	HUB		maria.parra@bold.co	[]	2025-06-19 12:35:17.156		20250619
+21	8278dde5-0e91-4509-8c49-1247055acd4d	2025-06-19 12:35:20.613	1750354520613432732	2025-06-19 12:35:20.613	application/vnd.co.bold.c-r-m-p-o-s-location-created	8278dde5-0e91-4509-8c49-1247055acd4d	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	06	19	J3XWPLLSPA	HUBSOGAM		rafael.gonzalez@bold.co	2025-06-19 17:35:20													Hub Sogamoso						5.71755309	-72.930567	ACTIVE	HUB		maria.parra@bold.co	[]	2025-06-19 12:35:20.609		20250619
+22	640eb72b-a690-4adc-b5c3-4ab8567a9a14	2025-06-19 12:35:15.431	1750354515431076625	2025-06-19 12:35:15.431	application/vnd.co.bold.c-r-m-p-o-s-location-created	640eb72b-a690-4adc-b5c3-4ab8567a9a14	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	06	19	EDDWEMULS3	HUBVILLAV		rafael.gonzalez@bold.co	2025-06-19 17:35:15													Hub Villavicencio						4.1358854	-73.6190173	ACTIVE	HUB		maria.parra@bold.co	[]	2025-06-19 12:35:15.428		20250619
+23	e9b86251-3ca1-4dc5-bdc4-1bac10f84d23	2026-04-27 08:58:47.236	1777298327236231618	2026-04-27 08:58:47.236	application/vnd.co.bold.c-r-m-p-o-s-location-updated	e9b86251-3ca1-4dc5-bdc4-1bac10f84d23	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2026-05-07 16:05:09.300	2026	04	27	ANV6AI103L	HUBKENBOG		andres.bueno@bold.co	2026-04-27 13:58:47													Hub Kennedy						4.6174863	-74.1527682	ACTIVE	HUB		diana.prieto@bold.co	[]	2025-05-26 12:29:34.508	{}	20260427
+24	df000170-3bbc-4fcb-a9d3-279865c2dde2	2026-07-24 16:51:19.234	1784929879234929984	2026-07-24 16:51:19.234	application/vnd.co.bold.c-r-m-p-o-s-location-updated	df000170-3bbc-4fcb-a9d3-279865c2dde2	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2026-07-27 13:04:41.894	2026	07	24	P424S7RQC8	HUBLAUMED		andres.bueno@bold.co	2026-07-24 21:51:19													Hub Laureles						6.24257425	-75.592689	ACTIVE	HUB		carlos.garnica@bold.co	[]	2025-05-26 12:29:38.082	{}	20260724
+25	cf3363f5-9384-4703-a5d3-2ab25be404a3	2026-08-05 11:09:19.038	1785946159038850719	2026-08-05 11:09:19.038	application/vnd.co.bold.c-r-m-p-o-s-location-updated	cf3363f5-9384-4703-a5d3-2ab25be404a3	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2026-08-05 13:06:10.330	2026	08	05	XQVAD1OSA1	HUBTEQBOG		andres.bueno@bold.co	2026-08-05 16:09:19													Hub Tequendama						4.612814	-74.0705877	ACTIVE	HUB		jose.rodriguez@bold.co	[]	2025-05-26 12:29:17.122	{}	20260805
+26	7811d113-2ef5-4bcd-82c7-f197e0151ac6	2026-08-05 11:09:45.377	1785946185377123827	2026-08-05 11:09:45.377	application/vnd.co.bold.c-r-m-p-o-s-location-updated	7811d113-2ef5-4bcd-82c7-f197e0151ac6	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2026-08-05 19:05:11.028	2026	08	05	KTJR5PJCY4	HUBRESBOG		andres.bueno@bold.co	2026-08-05 16:09:45													Hub Restrepo						4.5889717	-74.1003047	ACTIVE	HUB		luz.sanchez@bold.co	[]	2025-05-26 12:29:32.783	{}	20260805
+27	4146c5cd-b7b3-4b98-9ef6-23229ab08126	2026-08-05 10:54:46.675	1785945286675475021	2026-08-05 10:54:46.675	application/vnd.co.bold.c-r-m-p-o-s-location-updated	4146c5cd-b7b3-4b98-9ef6-23229ab08126	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2026-08-05 13:06:10.330	2026	08	05	FRUBS5RHJ0	BSTORE		andres.bueno@bold.co	2026-08-05 15:54:46													Bold Store						4.6759127	-74.0467981	ACTIVE	HUB		estefania.more@bold.co	[]	2025-05-26 12:29:09.785	{}	20260805
+28	a6394eed-00ee-4102-b076-d359d763254b	2026-08-05 10:54:20.093	1785945260093496764	2026-08-05 10:54:20.093	application/vnd.co.bold.c-r-m-p-o-s-location-updated	a6394eed-00ee-4102-b076-d359d763254b	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2026-08-05 13:06:10.330	2026	08	05	SCUOP7Y39D	HUBENGBOG		andres.bueno@bold.co	2026-08-05 15:54:20													Hub Engativá						4.7029696	-74.10922046	ACTIVE	HUB		vanessa.gonzalez@bold.co	[]	2025-06-19 12:35:08.450	{}	20260805
+29	ed5f6382-0bf7-490c-8335-cd39e7140a8f	2026-08-11 10:01:46.566	1786460506566875980	2026-08-11 10:01:46.566	application/vnd.co.bold.c-r-m-p-o-s-location-updated	ed5f6382-0bf7-490c-8335-cd39e7140a8f	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbt
+	2026-08-27 16:05:50.441	2026	08	11	4MKNGIT74J	HUBLIMCALI		andres.bueno@bold.co	2026-08-11 15:01:46													Hub Cali Limonar						3.3985367	-76.5437321	ACTIVE	HUB		victor.figueroa@bold.co	[]	2025-05-26 12:29:50.303	{}	20260811
+30	e3e8e80f-4067-4b42-9c77-81c13f1a261b	2026-07-23 07:34:46.514	1784810086514124316	2026-07-23 07:34:46.514	application/vnd.co.bold.c-r-m-p-o-s-location-updated	e3e8e80f-4067-4b42-9c77-81c13f1a261b	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2026-07-24 19:05:27.756	2026	07	23	082ZBWGJ7K	HUBUSABOG		andres.bueno@bold.co	2026-07-23 12:34:46													Hub Usaquen						4.6912025	-74.033673	ACTIVE	HUB		alejandra.pajaro@bold.co	[]	2025-05-26 12:29:29.305	{}	20260723
+31	d02cf696-90e1-49fe-b3be-a212e5583130	2026-06-03 16:06:24.261	1780520784261287131	2026-06-03 16:06:24.261	application/vnd.co.bold.c-r-m-p-o-s-location-created	d02cf696-90e1-49fe-b3be-a212e5583130	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2026-06-11 19:05:10.340	2026	06	03	CL4B0T54C5	HUBCARTPLA		andres.espitia@bold.co	2026-06-03 21:06:24													Hub Cartagena La Plazuela						10.3912215	-75.4792203	ACTIVE	HUB		kevin.villamizar@bold.co	[]	2026-06-03 16:06:24.258		20260603
+32	4b7b5a83-0ac8-4b84-a870-ffc551ccdf4a	2026-06-03 16:04:56.741	1780520696741078969	2026-06-03 16:04:56.741	application/vnd.co.bold.c-r-m-p-o-s-location-created	4b7b5a83-0ac8-4b84-a870-ffc551ccdf4a	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2026-06-03 19:05:35.298	2026	06	03	S6OO4XMR0D	HUBENVI		andres.espitia@bold.co	2026-06-03 21:04:56													Hub Envigado						6.1721677	-75.5858523	ACTIVE	HUB		veronica.vargas@bold.co	[]	2026-06-03 16:04:56.738		20260603
+33	e8b7bc52-b90b-4812-a9c4-95e8dc9c0704	2026-02-05 08:13:14.360	1770297194360460041	2026-02-05 08:13:14.360	application/vnd.co.bold.c-r-m-p-o-s-location-updated	e8b7bc52-b90b-4812-a9c4-95e8dc9c0704	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2026-02-26 10:04:10.954	2026	02	05	14N0B9UT31	HUBSOA		andres.bueno@bold.co	2026-02-05 13:13:14													Hub Soacha						4.5833625	-74.2121186	ACTIVE	HUB		natalia.duran@bold.co	[]	2025-05-26 12:29:24.041	{}	20260205
+34	9a5eedaa-4a7c-4e20-aa31-7083f6308a52	2025-09-05 17:11:59.633	1757110319633504114	2025-09-05 17:11:59.633	application/vnd.co.bold.c-r-m-p-o-s-location-updated	9a5eedaa-4a7c-4e20-aa31-7083f6308a52	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	09	05	1BSE69V6PB	HUBPALLBQ		rafael.gonzalez@bold.co	2025-09-05 22:11:59													Hub Palladium						11.001177	-74.8193129	ACTIVE	HUB		luis.castellar@bold.co	[]	2025-05-26 12:29:13.342	{}	20250905
+35	3e7fe316-0850-4fd6-b350-d40d2aa91846	2026-07-03 10:27:23.832	1783092443832546766	2026-07-03 10:27:23.832	application/vnd.co.bold.c-r-m-p-o-s-location-updated	3e7fe316-0850-4fd6-b350-d40d2aa91846	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2026-07-09 16:05:12.012	2026	07	03	72D9VJJQW2	HUBMANZ		andres.bueno@bold.co	2026-07-03 15:27:23													Hub Manizales						5.0682955	-75.5191402	ACTIVE	HUB		diana.alvarez@bold.co	[]	2025-05-26 12:29:20.602	{}	20260703
+36	bfbc3217-c47a-4aa9-af23-ea111eb9a626	2025-09-05 17:12:11.458	1757110331458200268	2025-09-05 17:12:11.458	application/vnd.co.bold.c-r-m-p-o-s-location-updated	bfbc3217-c47a-4aa9-af23-ea111eb9a626	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	09	05	L2AZ4IXRAO	HUBPRABOG		rafael.gonzalez@bold.co	2025-09-05 22:12:11													Hub Prado						4.7169789	-74.0641068	ACTIVE	HUB		ingrid.soto@bold.co	[]	2025-05-26 12:29:25.782	{}	20250905
+37	b68509a6-1493-4397-ab60-bc5cbb4e3276	2025-09-05 17:12:30.095	1757110350095914738	2025-09-05 17:12:30.095	application/vnd.co.bold.c-r-m-p-o-s-location-updated	b68509a6-1493-4397-ab60-bc5cbb4e3276	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	09	05	AHJ7ZKO4P0	HUBRIOMED		rafael.gonzalez@bold.co	2025-09-05 22:12:30													Hub Ciudad del Rio						6.2248472	-75.5747045	ACTIVE	HUB		carolina.casas@bold.co	[]	2025-05-26 12:29:45.081	{}	20250905
+38	83cab2a2-41cd-4b71-856f-0dd248265772	2025-09-05 17:12:04.680	1757110324680159841	2025-09-05 17:12:04.680	application/vnd.co.bold.c-r-m-p-o-s-location-updated	83cab2a2-41cd-4b71-856f-0dd248265772	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	09	05	VVNTKMBFFB	HUBALCPER		rafael.gonzalez@bold.co	2025-09-05 22:12:04													Hub Alcides Arevalo						4.8152896	-75.694336	ACTIVE	HUB		sebastian.loaiza@bold.co	[]	2025-05-26 12:29:18.828	{}	20250905
+39	658ba630-9445-45e2-842a-8353fc661d54	2025-09-05 17:12:38.602	1757110358602757966	2025-09-05 17:12:38.602	application/vnd.co.bold.c-r-m-p-o-s-location-updated	658ba630-9445-45e2-842a-8353fc661d54	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2026-01-22 16:05:22.384	2025	09	05	J7CM7VHW7Y	HUBCARTAG		rafael.gonzalez@bold.co	2025-09-05 22:12:38													Hub Cartagena						10.41066409	-75.51419115	ACTIVE	HUB		kelly.hamburger@bold.co	[]	2025-06-19 12:35:10.251	{}	20250905
+40	27ff50f6-d3da-4ac5-9441-89d039177480	2025-09-05 17:12:33.458	1757110353458912174	2025-09-05 17:12:33.458	application/vnd.co.bold.c-r-m-p-o-s-location-updated	27ff50f6-d3da-4ac5-9441-89d039177480	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 20:05:19.350	2025	09	05	DC8MJYJA20	HUBIBAGUE		rafael.gonzalez@bold.co	2025-09-05 22:12:33													Hub Ibagué						4.4454829	-75.241676	ACTIVE	HUB		nohora.varon@bold.co	[]	2025-05-26 12:29:48.544	{}	20250905
+41	06b57f8b-a587-4bbd-9fa7-6927d119153b	2025-09-05 17:12:26.736	1757110346736493498	2025-09-05 17:12:26.736	application/vnd.co.bold.c-r-m-p-o-s-location-updated	06b57f8b-a587-4bbd-9fa7-6927d119153b	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	09	05	AKA17RDCUK	HUBTESCALI		rafael.gonzalez@bold.co	2025-09-05 22:12:26													Hub Cali Centro						3.4357281	-76.5485765	ACTIVE	HUB		federico.romero@bold.co	[]	2025-05-26 12:29:41.563	{}	20250905
+42	d8c57c91-8ff6-4d17-8169-705b730e3a6d	2025-09-05 17:12:01.321	1757110321321687655	2025-09-05 17:12:01.321	application/vnd.co.bold.c-r-m-p-o-s-location-updated	d8c57c91-8ff6-4d17-8169-705b730e3a6d	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	09	05	EGCKGYKUZX	HUBPLAZBQ		rafael.gonzalez@bold.co	2025-09-05 22:12:01													Hub Plazuela El Prado						10.989444	-74.789521	ACTIVE	HUB		wilson.pedraza@bold.co	[]	2025-05-26 12:29:15.383	{}	20250905
+43	022ad44f-90b1-497a-8764-4d32db07e38e	2025-09-05 17:12:21.683	1757110341683337659	2025-09-05 17:12:21.683	application/vnd.co.bold.c-r-m-p-o-s-location-updated	022ad44f-90b1-497a-8764-4d32db07e38e	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	09	05	3F2550NUVB	HUBSTAMAR		rafael.gonzalez@bold.co	2025-09-05 22:12:21													Hub Santa Marta						11.2353128	-74.19407019	ACTIVE	HUB		carlos.gil@bold.co	[]	2025-05-26 12:29:36.324	{}	20250905
+44	f9035d85-3d13-4a0c-9785-5e03f6c5cd20	2025-09-05 17:12:31.779	1757110351779994763	2025-09-05 17:12:31.779	application/vnd.co.bold.c-r-m-p-o-s-location-updated	f9035d85-3d13-4a0c-9785-5e03f6c5cd20	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 20:05:19.350	2025	09	05	ZO54W72KY8	HUBCUCUTA		rafael.gonzalez@bold.co	2025-09-05 22:12:31													Hub Cúcuta						7.8912009	-72.4851458	ACTIVE	HUB		francisco.sepulveda@bold.co	[]	2025-05-26 12:29:46.802	{}	20250905
+45	2278c905-7b61-4764-962a-26ef7a59b356	2025-07-09 16:48:56.410	1752097736410478742	2025-07-09 16:48:56.410	application/vnd.co.bold.c-r-m-p-o-s-location-created	2278c905-7b61-4764-962a-26ef7a59b356	merchantseventsv2bronzedatabase.c_r_m_pos_location_created	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	07	09	RWQCIYK4YK	HUBBARRANC		rafael.gonzalez@bold.co	2025-07-09 21:48:56													Hub Barrancabermeja						7.0644955	-73.8472037	ACTIVE	HUB		maria.parra@bold.co	[]	2025-07-09 16:48:56.407		20250709
+46	a8ed7d53-098e-42f9-8634-f31f86af007b	2025-05-29 16:02:21.236	1748552541236872980	2025-05-29 16:02:21.236	application/vnd.co.bold.c-r-m-p-o-s-location-updated	a8ed7d53-098e-42f9-8634-f31f86af007b	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	05	29	3JMHPZBS78	ISLASANPED		rafael.gonzalez@bold.co	2025-05-29 21:02:21													San Pedro Plaza						2.9418004	-75.2877692	ACTIVE	STAND		carolina.aragon@bold.co	[]	2025-05-26 12:29:11.582	{}	20250529
+47	366f5ac3-b8f8-4efc-8d56-08aefd29d95b	2025-05-29 16:02:10.675	1748552530675774517	2025-05-29 16:02:10.675	application/vnd.co.bold.c-r-m-p-o-s-location-updated	366f5ac3-b8f8-4efc-8d56-08aefd29d95b	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	05	29	OR758INQMF	ISLAJARDIN		rafael.gonzalez@bold.co	2025-05-29 21:02:10													Jardín Plaza						3.3698661	-76.5266712	ACTIVE	STAND	4MKNGIT74J	edward.pacheco@bold.co	[]	2025-05-26 12:35:38.991	{}	20250529
+48	1e9b046f-0d1d-4094-9ab9-4aede444c558	2025-05-29 16:02:12.424	1748552532424840610	2025-05-29 16:02:12.424	application/vnd.co.bold.c-r-m-p-o-s-location-updated	1e9b046f-0d1d-4094-9ab9-4aede444c558	merchantseventsv2bronzedatabase.c_r_m_pos_location_updated	
+
+    CRMPOSLocationsGoldDbtStateMachine
+	2025-11-26 17:40:29.758	2025	05	29	LK9Z4GLTM3	ISLAMALLCL		rafael.gonzalez@bold.co	2025-05-29 21:02:12													Mallplaza Cali						3.4510955	-76.5329795	ACTIVE	STAND	AKA17RDCUK	edward.pacheco@bold.co	[]	2025-05-26 12:35:40.744	{}	20250529
+
+
+SELECT * FROM awsdatacatalog.bold_gold_sales.dim_crm_services LIMIT 50;
+#	id	business_datetime	event_timestamp	event_datetime	event_type	event_id	load_source	load_identity	load_datetime	year	month	day	crm_service_id	user_id	type	status	metadata	creation_date	last_update_date	service_detail_person_type	service_detail_company_name	service_detail_economic_activity	service_detail_parent_type	service_detail_parent_id	service_detail_client_id	service_detail_client_type	service_detail_client_is_key_account	service_detail_client_kam_email	service_detail_company_document_type	service_detail_company_document_number	service_detail_company_document_expedition_date	service_detail_company_document_verification_digit	event_partition
+1	2acfcc62-1259-4f2b-ad89-90c1d76a28ce	2025-11-19 09:17:22.319	1763561842319654639	2025-11-19 09:17:22.319	application/vnd.co.bold.c-r-m-service-updated	2acfcc62-1259-4f2b-ad89-90c1d76a28ce	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-11-19 11:09:52.500	2025	11	19	T9NK8C81OM	28890N05J2	REACTIVATION	CREATED	{}	{posix_time_ns=1763561842316202760}	{posix_time_ns=1763561842316202760}	NATURAL_PERSON	kZ Euphoria	Bar / Club / Discoteca	OPPORTUNITY	BXLI67BYZH	NUCPG9H0Z8	MERCHANT			CEDULA	72292233	1970-01-01 00:00:00		20251119
+2	8cbcc067-b429-4a7c-be2a-aab50b2c0660	2025-08-21 09:51:49.401	1755787909401775341	2025-08-21 09:51:49.401	application/vnd.co.bold.c-r-m-service-updated	8cbcc067-b429-4a7c-be2a-aab50b2c0660	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 11:07:23.994	2025	08	21	I0XEPE8Z0Q	NI6C7CTAC6	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755787909382494706}	{posix_time_ns=1755787909382494706}	NATURAL_PERSON	Difer Quintanares	Distribuidora	OPPORTUNITY	BGOIVGCIOH	28DER4TWOR	MERCHANT			CEDULA	255930	1970-01-01 00:00:00		20250821
+3	aea29ce1-f612-4b58-8a05-a6d68ca687ed	2025-08-21 09:58:59.838	1755788339838886296	2025-08-21 09:58:59.838	application/vnd.co.bold.c-r-m-service-updated	aea29ce1-f612-4b58-8a05-a6d68ca687ed	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 11:07:23.994	2025	08	21	X7D1HFFX6X	NI6C7CTAC6	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755788339803206387}	{posix_time_ns=1755788339803206387}	NATURAL_PERSON	Chai naan palestinian Grill	Restaurante / Café	OPPORTUNITY	Y8DH0JKECI	ELWRKRKD60	MERCHANT			CEDULA	1013642193	1970-01-01 00:00:00		20250821
+4	4b051985-7134-46c9-a0a5-47a8ad938c32	2025-08-21 09:52:24.440	1755787944440743522	2025-08-21 09:52:24.440	application/vnd.co.bold.c-r-m-service-updated	4b051985-7134-46c9-a0a5-47a8ad938c32	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 11:07:23.994	2025	08	21	RGK38SNOW4	NI6C7CTAC6	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755787944435781047}	{posix_time_ns=1755787944435781047}	NATURAL_PERSON	Difer Quintanares	Distribuidora	OPPORTUNITY	BGOIVGCIOH	28DER4TWOR	MERCHANT			CEDULA	255930	1970-01-01 00:00:00		20250821
+5	60224324-f5a2-48ef-840a-2420cb98ce81	2025-11-19 09:37:10.780	1763563030780611544	2025-11-19 09:37:10.780	application/vnd.co.bold.c-r-m-service-updated	60224324-f5a2-48ef-840a-2420cb98ce81	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-11-19 14:08:18.191	2025	11	19	YXEB2T5S0P	50GA0RC6MD	REASSIGNMENT	CREATED	{}	{posix_time_ns=1763563030738281406}	{posix_time_ns=1763563030738281406}	NATURAL_PERSON	Sudoeste casa de carnes	Carnicería	OPPORTUNITY	CHV63FBXBZ	FWHKLQQ20O	MERCHANT			CEDULA	1010157095	1970-01-01 00:00:00		20251119
+6	bae04a82-fcc4-4f06-b141-69483b0da9d6	2025-11-19 09:16:38.282	1763561798282677958	2025-11-19 09:16:38.282	application/vnd.co.bold.c-r-m-service-updated	bae04a82-fcc4-4f06-b141-69483b0da9d6	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-11-19 11:09:52.500	2025	11	19	6LVL0F2YGC	28890N05J2	REACTIVATION	CREATED	{}	{posix_time_ns=1763561798246668468}	{posix_time_ns=1763561798246668468}	NATURAL_PERSON	kZ Euphoria	Bar / Club / Discoteca	OPPORTUNITY	BXLI67BYZH	NUCPG9H0Z8	MERCHANT			CEDULA	72292233	1970-01-01 00:00:00		20251119
+7	c90b1e94-eb1f-41c8-85b7-bbd0b52d3beb	2025-11-19 12:15:23.627	1763572523627885754	2025-11-19 12:15:23.627	application/vnd.co.bold.c-r-m-service-updated	c90b1e94-eb1f-41c8-85b7-bbd0b52d3beb	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-11-19 14:08:18.191	2025	11	19	UZAS64AV6P	FZOXO24W1K	REACTIVATION	CREATED	{}	{posix_time_ns=1763572523614115652}	{posix_time_ns=1763572523614115652}	NATURAL_PERSON	Soul Sisters	Joyería	OPPORTUNITY	UIKTYDOG3B	NBTIGX4YBA	MERCHANT			CEDULA	42871435	1970-01-01 00:00:00		20251119
+8	0a86a83a-df60-49de-8746-9fc3ace8d366	2025-11-19 12:38:05.389	1763573885389884416	2025-11-19 12:38:05.389	application/vnd.co.bold.c-r-m-service-updated	0a86a83a-df60-49de-8746-9fc3ace8d366	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-11-19 14:08:18.191	2025	11	19	TKC0VBMOVH	BAIOAGPLQP	REACTIVATION	CREATED	{}	{posix_time_ns=1763573885384721803}	{posix_time_ns=1763573885384721803}	NATURAL_PERSON	Inmobiliaria movimundolv	Inmobiliarias	OPPORTUNITY	XNWTULB03Q	EY39WSYN33	MERCHANT			CEDULA	73119884	1970-01-01 00:00:00		20251119
+9	202a2e02-ab6d-4674-9aa5-8b456dde010a	2025-11-19 12:39:17.673	1763573957673774937	2025-11-19 12:39:17.673	application/vnd.co.bold.c-r-m-service-updated	202a2e02-ab6d-4674-9aa5-8b456dde010a	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-11-19 17:08:28.975	2025	11	19	1SEUWXEA2N	ZGKWYT4YYD	REASSIGNMENT	CREATED	{}	{posix_time_ns=1763573957660169960}	{posix_time_ns=1763573957660169960}	NATURAL_PERSON	Pipi Cucu	Licores	OPPORTUNITY	AZH8CW0QZ6	CEVANBCYMT	MERCHANT			CEDULA	1020727629	1970-01-01 00:00:00		20251119
+10	a984a62b-e150-4c25-97cb-7fd66c9022b7	2025-11-19 12:14:21.850	1763572461850610505	2025-11-19 12:14:21.850	application/vnd.co.bold.c-r-m-service-updated	a984a62b-e150-4c25-97cb-7fd66c9022b7	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-11-19 14:08:18.191	2025	11	19	YHOSTAXU8V	FZOXO24W1K	REACTIVATION	CREATED	{}	{posix_time_ns=1763572461828918373}	{posix_time_ns=1763572461828918373}	NATURAL_PERSON	Soul Sisters	Joyería	OPPORTUNITY	UIKTYDOG3B	NBTIGX4YBA	MERCHANT			CEDULA	42871435	1970-01-01 00:00:00		20251119
+11	08becf1b-b0bb-4a10-91d5-53f0257a8ec1	2025-08-21 09:59:25.195	1755788365195950871	2025-08-21 09:59:25.195	application/vnd.co.bold.c-r-m-service-updated	08becf1b-b0bb-4a10-91d5-53f0257a8ec1	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 14:07:07.794	2025	08	21	K8XKWSPG3L	NI6C7CTAC6	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755788365192334666}	{posix_time_ns=1755788365192334666}	NATURAL_PERSON	Chai naan palestinian Grill	Restaurante / Café	OPPORTUNITY	Y8DH0JKECI	ELWRKRKD60	MERCHANT			CEDULA	1013642193	1970-01-01 00:00:00		20250821
+12	11c4fb0a-a49e-4c89-a8db-8fad08449338	2025-08-21 11:12:25.383	1755792745383625427	2025-08-21 11:12:25.383	application/vnd.co.bold.c-r-m-service-updated	11c4fb0a-a49e-4c89-a8db-8fad08449338	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 14:07:07.794	2025	08	21	50385NGX1F	9WZBQ9FS2B	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755792745376847759}	{posix_time_ns=1755792745376847759}	LEGAL_PERSON	ELEMENTTO Carpintería	Muebles / Decoración	OPPORTUNITY	O78M7SN0W9	AX24DFV4HY	MERCHANT			NIT	901909605	1970-01-01 00:00:00	7	20250821
+13	0756fa2d-c1cf-4846-a05f-9281624a3eab	2025-08-21 11:17:52.843	1755793072843012329	2025-08-21 11:17:52.843	application/vnd.co.bold.c-r-m-service-updated	0756fa2d-c1cf-4846-a05f-9281624a3eab	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 14:07:07.794	2025	08	21	7KDK9LOZQ6	SLMJTBA03K	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755793072838138696}	{posix_time_ns=1755793072838138696}	LEGAL_PERSON	RECLINO HOME	Muebles / Decoración	OPPORTUNITY	LW0VNQT1N5	THQD4E3J5J	MERCHANT			NIT	811044148	1970-01-01 00:00:00	2	20250821
+14	16bcb4a1-8449-49fd-9edd-f38de705f01f	2025-08-21 11:32:30.278	1755793950278774326	2025-08-21 11:32:30.278	application/vnd.co.bold.c-r-m-service-updated	16bcb4a1-8449-49fd-9edd-f38de705f01f	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 14:07:07.794	2025	08	21	Q1ZCADBNUU	SLMJTBA03K	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755793950267521573}	{posix_time_ns=1755793950267521573}	LEGAL_PERSON	MODELOS MAYORCA	Muebles / Decoración	OPPORTUNITY	4DL9WITU3O	UE5OR9ZLPQ	MERCHANT			NIT	811044148	1970-01-01 00:00:00	2	20250821
+15	fe30eedd-c9af-47b5-906e-0e99993f1dbd	2026-06-02 10:27:08.530	1780414028530800204	2026-06-02 10:27:08.530	application/vnd.co.bold.c-r-m-service-updated	fe30eedd-c9af-47b5-906e-0e99993f1dbd	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2026-06-02 13:10:24.217	2026	06	02	MEDFBQFKEN	UQ0VTFLKO0	REASSIGNMENT	CLOSED	{}	{posix_time_ns=1780413174680571758}	{posix_time_ns=1780414028516816131}		CRISTIAN FABIAN SERRANO MILLAN		OPPORTUNITY	1DZMUJ8H9T	0PO8ACOOK7	MERCHANT			NIT	900326452	1970-01-01 00:00:00	0	20260602
+16	3b6e14a6-4d61-409c-b5a7-0ce2ee1e6335	2026-06-02 13:02:06.636	1780423326636804428	2026-06-02 13:02:06.636	application/vnd.co.bold.c-r-m-service-updated	3b6e14a6-4d61-409c-b5a7-0ce2ee1e6335	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2026-06-02 16:09:22.859	2026	06	02	YXXT7E7MAP	VOHOVWGMT6	REASSIGNMENT	CLOSED	{}	{posix_time_ns=1780418912916007331}	{posix_time_ns=1780423326628017350}		HECTOR FERNANDO MENDOZA GUAYARA		OPPORTUNITY	9C1BRUOQ2G	IZLHF6LKOH	MERCHANT			NIT	901149725	1970-01-01 00:00:00	0	20260602
+17	0664e9d4-d2a0-4e9b-8341-98758c1c86aa	2026-06-02 10:27:00.244	1780414020244634298	2026-06-02 10:27:00.244	application/vnd.co.bold.c-r-m-service-updated	0664e9d4-d2a0-4e9b-8341-98758c1c86aa	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2026-06-02 13:10:24.217	2026	06	02	XY1SQOOJAD	SIP4HA7NEV	REASSIGNMENT	CREATED	{}	{posix_time_ns=1780414020212814042}	{posix_time_ns=1780414020212814042}		JUAN MANUEL URIBE JARAMILLO		OPPORTUNITY	JID1HK9H0B	PENDING	MERCHANT			NIT	902020139	1970-01-01 00:00:00	2	20260602
+18	bcc03ff8-4096-4f00-85d9-07007d910401	2025-08-21 10:34:52.157	1755790492157972307	2025-08-21 10:34:52.157	application/vnd.co.bold.c-r-m-service-updated	bcc03ff8-4096-4f00-85d9-07007d910401	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 14:07:07.794	2025	08	21	38O01CZBLD	ILJVC8MBT9	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755790492144032165}	{posix_time_ns=1755790492144032165}	NATURAL_PERSON	video juegos Mario Andrés	Tecnología	OPPORTUNITY	RI9DIGOYOE	GAMQTAJ7TX	MERCHANT			CEDULA_EXTRANJERIA	5716557	1970-01-01 00:00:00		20250821
+19	d604486b-996a-4b71-a494-34c84c9199fc	2025-08-21 11:36:23.475	1755794183475454314	2025-08-21 11:36:23.475	application/vnd.co.bold.c-r-m-service-updated	d604486b-996a-4b71-a494-34c84c9199fc	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 17:07:18.655	2025	08	21	O7L9XV6P3D	SLMJTBA03K	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755794183462075801}	{posix_time_ns=1755794183462075801}	LEGAL_PERSON	MODELOS MAYORCA	Muebles / Decoración	OPPORTUNITY	4BGMBRFJ3P	UE5OR9ZLPQ	MERCHANT			NIT	811044148	1970-01-01 00:00:00	2	20250821
+20	8bfa122c-0d93-4b0f-bda5-fc90fd688801	2025-08-21 11:27:45.136	1755793665136249394	2025-08-21 11:27:45.136	application/vnd.co.bold.c-r-m-service-updated	8bfa122c-0d93-4b0f-bda5-fc90fd688801	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 14:07:07.794	2025	08	21	8N9VCIBIOZ	SLMJTBA03K	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755793665126592903}	{posix_time_ns=1755793665126592903}	LEGAL_PERSON	RECLINO HOME	Muebles / Decoración	OPPORTUNITY	HBS17QROGG	THQD4E3J5J	MERCHANT			NIT	811044148	1970-01-01 00:00:00	2	20250821
+21	f2db3980-a317-489d-95f4-f9d6644a82aa	2025-08-21 11:13:09.217	1755792789217254960	2025-08-21 11:13:09.217	application/vnd.co.bold.c-r-m-service-updated	f2db3980-a317-489d-95f4-f9d6644a82aa	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 14:07:07.794	2025	08	21	LSQHNENLUU	9WZBQ9FS2B	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755792789201086954}	{posix_time_ns=1755792789201086954}	LEGAL_PERSON	ELEMENTTO Carpintería	Muebles / Decoración	OPPORTUNITY	O78M7SN0W9	AX24DFV4HY	MERCHANT			NIT	901909605	1970-01-01 00:00:00	7	20250821
+22	f28ed59c-d676-4d33-9645-f3e2aad3f37a	2025-08-21 10:35:55.635	1755790555635457722	2025-08-21 10:35:55.635	application/vnd.co.bold.c-r-m-service-updated	f28ed59c-d676-4d33-9645-f3e2aad3f37a	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 14:07:07.794	2025	08	21	5MIF11ZBWL	ILJVC8MBT9	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755790555630592628}	{posix_time_ns=1755790555630592628}	NATURAL_PERSON	video juegos Mario Andrés	Tecnología	OPPORTUNITY	RI9DIGOYOE	GAMQTAJ7TX	MERCHANT			CEDULA_EXTRANJERIA	5716557	1970-01-01 00:00:00		20250821
+23	d55efa7d-45f5-4860-8b47-fe434e0cc196	2025-08-21 14:06:19.638	1755803179638592725	2025-08-21 14:06:19.638	application/vnd.co.bold.c-r-m-service-updated	d55efa7d-45f5-4860-8b47-fe434e0cc196	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 17:07:18.655	2025	08	21	EJG3IYUMJU	9TJHK5C8OM	REACTIVATION	CREATED	{}	{posix_time_ns=1755803179629128140}	{posix_time_ns=1755803179629128140}	NATURAL_PERSON	Poblado La Casa Medellin	Hoteles	OPPORTUNITY	V50IYL0QGC	4C1RPQ3MNW	MERCHANT			CEDULA	15919919	1970-01-01 00:00:00		20250821
+24	7eb9f492-c37b-41bd-aac6-9a2ce6dd339e	2025-08-21 14:47:18.517	1755805638517733361	2025-08-21 14:47:18.517	application/vnd.co.bold.c-r-m-service-updated	7eb9f492-c37b-41bd-aac6-9a2ce6dd339e	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 17:07:18.655	2025	08	21	RL10ZO4X9G	10157B7CW2	REACTIVATION	CREATED	{}	{posix_time_ns=1755805638512576711}	{posix_time_ns=1755805638512576711}	NATURAL_PERSON	Spa Avictorias IL	Spa	OPPORTUNITY	0MULAI8KBM	9JFFRQZUML	MERCHANT			CEDULA	52764260	1970-01-01 00:00:00		20250821
+25	14130e6b-695e-4d62-896c-c8e2e4432c03	2025-08-21 15:12:43.476	1755807163476484881	2025-08-21 15:12:43.476	application/vnd.co.bold.c-r-m-service-updated	14130e6b-695e-4d62-896c-c8e2e4432c03	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 17:07:18.655	2025	08	21	3H1M22DEMJ	3RHBW7UV27	REACTIVATION	CREATED	{}	{posix_time_ns=1755807163471575186}	{posix_time_ns=1755807163471575186}	NATURAL_PERSON	Carolina Matias	Productos alimenticios	OPPORTUNITY	5H2TNRK4EZ	81W9Y8VW12	MERCHANT			CEDULA	53013055	1970-01-01 00:00:00		20250821
+26	ad11060c-7820-471b-95c0-cf8e35e04645	2025-11-19 10:57:55.210	1763567875210934478	2025-11-19 10:57:55.210	application/vnd.co.bold.c-r-m-service-updated	ad11060c-7820-471b-95c0-cf8e35e04645	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-11-19 14:08:18.191	2025	11	19	S61DRKRB30	XYAWOK6TBR	REASSIGNMENT	CREATED	{}	{posix_time_ns=1763567875187669647}	{posix_time_ns=1763567875187669647}	NATURAL_PERSON	Supermercado Punto express plus	Abarrotes / Mercado	OPPORTUNITY	93VMTM1NWK	66XK9LUZ3J	MERCHANT			CEDULA	37334148	1970-01-01 00:00:00		20251119
+27	86ff4d7a-ae2c-4a3b-b5ce-3c567ec5664a	2025-11-19 11:04:46.668	1763568286668655697	2025-11-19 11:04:46.668	application/vnd.co.bold.c-r-m-service-updated	86ff4d7a-ae2c-4a3b-b5ce-3c567ec5664a	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-11-19 14:08:18.191	2025	11	19	ZEEFNPWT7F	61KDHFKBES	REASSIGNMENT	CREATED	{}	{posix_time_ns=1763568286654829526}	{posix_time_ns=1763568286654829526}	NATURAL_PERSON	Remodelaciones Leydi Herrera	Materiales de construcción	OPPORTUNITY	Y34GZV1XHR	ZEB7UNV3HV	MERCHANT			CEDULA	5883424	1970-01-01 00:00:00		20251119
+28	20b20204-18bb-4643-a890-3944ea523c86	2025-11-19 12:08:04.828	1763572084828050297	2025-11-19 12:08:04.828	application/vnd.co.bold.c-r-m-service-updated	20b20204-18bb-4643-a890-3944ea523c86	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-11-19 14:08:18.191	2025	11	19	06OLEWEU4G	TVBAL0TAJI	REASSIGNMENT	CREATED	{}	{posix_time_ns=1763572084810713742}	{posix_time_ns=1763572084810713742}	NATURAL_PERSON	FEDERAL BEER	Restaurante / Café	OPPORTUNITY	XFN1E9KT7N	Y7OWWDSL53	MERCHANT			CEDULA	80038834	1970-01-01 00:00:00		20251119
+29	97856637-7ec2-4a1b-9a33-54921ec69073	2025-11-19 11:26:18.270	1763569578270595077	2025-11-19 11:26:18.270	application/vnd.co.bold.c-r-m-service-updated	97856637-7ec2-4a1b-9a33-54921ec69073	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-11-19 14:08:18.191	2025	11	19	6R7SDTFAZN	39924VE9T5	REASSIGNMENT	CREATED	{}	{posix_time_ns=1763569578261124187}	{posix_time_ns=1763569578261124187}	NATURAL_PERSON	Ríos Grill	Comida rápida	OPPORTUNITY	QCRNZZZ01J	OX6Q6ZI16E	MERCHANT			PPT	5943725	1970-01-01 00:00:00		20251119
+30	4dfeaeaf-b611-4487-bec0-4d59eb2375c8	2025-11-19 12:14:48.569	1763572488569978349	2025-11-19 12:14:48.569	application/vnd.co.bold.c-r-m-service-updated	4dfeaeaf-b611-4487-bec0-4d59eb2375c8	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-11-19 14:08:18.191	2025	11	19	7FJ53XL6IO	FZOXO24W1K	REACTIVATION	CREATED	{}	{posix_time_ns=1763572488549626631}	{posix_time_ns=1763572488549626631}	NATURAL_PERSON	Soul Sisters	Joyería	OPPORTUNITY	UIKTYDOG3B	NBTIGX4YBA	MERCHANT			CEDULA	42871435	1970-01-01 00:00:00		20251119
+31	7838da06-b952-4ab6-a8e8-2f9dc1da457e	2025-11-19 11:03:58.245	1763568238245190564	2025-11-19 11:03:58.245	application/vnd.co.bold.c-r-m-service-updated	7838da06-b952-4ab6-a8e8-2f9dc1da457e	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-11-19 14:08:18.191	2025	11	19	BJ3DRBIU5Y	61KDHFKBES	REASSIGNMENT	CREATED	{}	{posix_time_ns=1763568238235917753}	{posix_time_ns=1763568238235917753}	NATURAL_PERSON	Remodelaciones Leydi Herrera	Materiales de construcción	OPPORTUNITY	Y34GZV1XHR	ZEB7UNV3HV	MERCHANT			CEDULA	5883424	1970-01-01 00:00:00		20251119
+32	67040c40-980c-48f6-b496-52e909ea083e	2025-11-19 12:00:33.988	1763571633988611180	2025-11-19 12:00:33.988	application/vnd.co.bold.c-r-m-service-updated	67040c40-980c-48f6-b496-52e909ea083e	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-11-19 14:08:18.191	2025	11	19	VILOKTXWUE	TVBAL0TAJI	REASSIGNMENT	CREATED	{}	{posix_time_ns=1763571633969117729}	{posix_time_ns=1763571633969117729}	NATURAL_PERSON	FEDERAL BEER	Restaurante / Café	OPPORTUNITY	BQ8A4Q5D1Q	Y7OWWDSL53	MERCHANT			CEDULA	80038834	1970-01-01 00:00:00		20251119
+33	4072cc25-f470-4b7d-a531-206b90d2b7de	2025-11-19 11:25:32.688	1763569532688234654	2025-11-19 11:25:32.688	application/vnd.co.bold.c-r-m-service-updated	4072cc25-f470-4b7d-a531-206b90d2b7de	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-11-19 14:08:18.191	2025	11	19	VLSCONIXE5	39924VE9T5	REASSIGNMENT	CREATED	{}	{posix_time_ns=1763569532683384992}	{posix_time_ns=1763569532683384992}	NATURAL_PERSON	Ríos Grill	Comida rápida	OPPORTUNITY	QCRNZZZ01J	OX6Q6ZI16E	MERCHANT			PPT	5943725	1970-01-01 00:00:00		20251119
+34	e4d9a8fa-440a-4379-9166-6ec4fb493077	2026-06-18 11:26:15.729	1781799975729902292	2026-06-18 11:26:15.729	application/vnd.co.bold.c-r-m-service-updated	e4d9a8fa-440a-4379-9166-6ec4fb493077	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2026-06-18 16:10:15.128	2026	06	18	W5KBASXF9E	MHUXT20VQ0	REASSIGNMENT	CLOSED	{}	{posix_time_ns=1781799955315075162}	{posix_time_ns=1781799975713325220}		ESSEENCIAL		OPPORTUNITY	MSFV57BYSY	DZH49D6MRE	MERCHANT			CEDULA	1025882133	1970-01-01 00:00:00		20260618
+35	fa9fb3ee-fdbe-4571-a3a3-738111e3e42d	2026-06-02 11:29:15.035	1780417755035373534	2026-06-02 11:29:15.035	application/vnd.co.bold.c-r-m-service-updated	fa9fb3ee-fdbe-4571-a3a3-738111e3e42d	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2026-06-02 13:10:24.217	2026	06	02	XT8RDR7W5C	UQ0VTFLKO0	REASSIGNMENT	CLOSED	{}	{posix_time_ns=1780417470623212623}	{posix_time_ns=1780417755029972515}		CRISTIAN FABIAN SERRANO MILLAN		OPPORTUNITY	R8RO2W13AL	0PO8ACOOK7	MERCHANT			NIT	900326452	1970-01-01 00:00:00	0	20260602
+36	b77b0b8d-492b-4431-88dd-e2bc2ac4f146	2026-06-02 14:36:22.805	1780428982805459723	2026-06-02 14:36:22.805	application/vnd.co.bold.c-r-m-service-updated	b77b0b8d-492b-4431-88dd-e2bc2ac4f146	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2026-06-02 16:09:22.859	2026	06	02	77E52XFZ5O	RS82O34N7R	REASSIGNMENT	CLOSED	{}	{posix_time_ns=1780428950618738276}	{posix_time_ns=1780428982796771495}		DRA KATHERINE SAAVEDRA NATURALMENTE TU S.A.S.		OPPORTUNITY	M4640NFYA6	CKSP8NZ2FZ	MERCHANT			NIT	902063336	1970-01-01 00:00:00	1	20260602
+37	8b922f49-cd29-4b7e-b261-e3130cc62ea0	2026-06-02 14:49:31.859	1780429771859419086	2026-06-02 14:49:31.859	application/vnd.co.bold.c-r-m-service-updated	8b922f49-cd29-4b7e-b261-e3130cc62ea0	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2026-06-02 19:11:12.948	2026	06	02	SLRY6ZTARU	SKEF0ZNUS9	REASSIGNMENT	CREATED	{}	{posix_time_ns=1780429771850422376}	{posix_time_ns=1780429771850422376}		PAULA ANDREA BRAVO RUIZ		OPPORTUNITY	8H6ZOJGY4Y	KUOGC565KU	MERCHANT			CEDULA	1121968695	1970-01-01 00:00:00		20260602
+38	49ab3c21-fc58-4bcd-ba8a-0c00b3ff04d9	2026-06-02 14:02:48.519	1780426968519571301	2026-06-02 14:02:48.519	application/vnd.co.bold.c-r-m-service-updated	49ab3c21-fc58-4bcd-ba8a-0c00b3ff04d9	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2026-06-02 16:09:22.859	2026	06	02	0FJ7W8NF0U	3ZYV63RDGP	REASSIGNMENT	CREATED	{}	{posix_time_ns=1780426968502139460}	{posix_time_ns=1780426968502139460}		YULISSA ANETTE JAIMES OTERO		OPPORTUNITY	YOUGTFURE3	8BVNP9JCYP	MERCHANT			CEDULA	40993975	1970-01-01 00:00:00		20260602
+39	0dcd8211-bf47-4af8-91be-d7df53dbb319	2025-08-21 14:38:27.288	1755805107288034675	2025-08-21 14:38:27.288	application/vnd.co.bold.c-r-m-service-updated	0dcd8211-bf47-4af8-91be-d7df53dbb319	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 17:07:18.655	2025	08	21	UO1LX0SCIW	LHC1RC4IN9	REACTIVATION	CREATED	{}	{posix_time_ns=1755805107264525014}	{posix_time_ns=1755805107264525014}	LEGAL_PERSON	Acimcol	Contabilidad / Asesorías	OPPORTUNITY	R62Q7M775J	I9MG2T5GXB	MERCHANT			NIT	900119675	1970-01-01 00:00:00	9	20250821
+40	f70fe8f7-7945-4543-9006-a1a978a27899	2025-08-21 14:39:56.186	1755805196186108132	2025-08-21 14:39:56.186	application/vnd.co.bold.c-r-m-service-updated	f70fe8f7-7945-4543-9006-a1a978a27899	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 17:07:18.655	2025	08	21	PQMD00ZFGX	HNYVMAS612	REACTIVATION	CREATED	{}	{posix_time_ns=1755805196178595580}	{posix_time_ns=1755805196178595580}	NATURAL_PERSON	VENTAS TROCONIS	Artesanías	OPPORTUNITY	URMHGPQ9JW	DAKTFNCFA2	MERCHANT			CEDULA	1136912324	1970-01-01 00:00:00		20250821
+41	f4b3c537-7c12-47c6-82c9-316f4b5c4592	2025-08-21 13:11:10.889	1755799870889617400	2025-08-21 13:11:10.889	application/vnd.co.bold.c-r-m-service-updated	f4b3c537-7c12-47c6-82c9-316f4b5c4592	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 17:07:18.655	2025	08	21	ECHXB9HMF4	RPKK9RCXB2	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755799870871105830}	{posix_time_ns=1755799870871105830}	NATURAL_PERSON	Fortaleza Gourmet	Comida rápida	OPPORTUNITY	6414GVN5MA	50GL9CPJZG	MERCHANT			CEDULA	1002031486	1970-01-01 00:00:00		20250821
+42	a82b47d8-c9c0-49c1-a1f0-9c743a0e841a	2025-08-21 15:32:33.923	1755808353923190965	2025-08-21 15:32:33.923	application/vnd.co.bold.c-r-m-service-updated	a82b47d8-c9c0-49c1-a1f0-9c743a0e841a	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 17:07:18.655	2025	08	21	FCG3ZEWNM4	LKXSWF56WN	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755808353903706492}	{posix_time_ns=1755808353903706492}	LEGAL_PERSON	Daniela	Talleres / Cursos / Capacitaciones	OPPORTUNITY	EAC42ZK3ZR	KFUKI8UCCE	MERCHANT			NIT	901962111	1970-01-01 00:00:00	5	20250821
+43	0af3acfc-5d29-4755-b3b7-4c010cd9caf2	2025-08-21 13:12:01.208	1755799921208653570	2025-08-21 13:12:01.208	application/vnd.co.bold.c-r-m-service-updated	0af3acfc-5d29-4755-b3b7-4c010cd9caf2	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 17:07:18.655	2025	08	21	7DJ5HC5LMT	RPKK9RCXB2	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755799921186710857}	{posix_time_ns=1755799921186710857}	NATURAL_PERSON	Fortaleza Gourmet	Comida rápida	OPPORTUNITY	6414GVN5MA	50GL9CPJZG	MERCHANT			CEDULA	1002031486	1970-01-01 00:00:00		20250821
+44	e89328a0-7fab-4771-add3-3c8a1e168289	2025-08-21 14:07:27.716	1755803247716937219	2025-08-21 14:07:27.716	application/vnd.co.bold.c-r-m-service-updated	e89328a0-7fab-4771-add3-3c8a1e168289	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 17:07:18.655	2025	08	21	23EUU74U3D	1B0COI8PNP	REACTIVATION	CREATED	{}	{posix_time_ns=1755803247699382574}	{posix_time_ns=1755803247699382574}	NATURAL_PERSON	Travel with Malibú	Entretenimiento	OPPORTUNITY	DV9CIRKPD0	012EM7FMYX	MERCHANT			CEDULA	1047461915	1970-01-01 00:00:00		20250821
+45	04dfb7de-6ea0-4f3a-9199-28ea69fd9d4d	2025-08-21 15:33:02.401	1755808382401934295	2025-08-21 15:33:02.401	application/vnd.co.bold.c-r-m-service-updated	04dfb7de-6ea0-4f3a-9199-28ea69fd9d4d	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 20:06:44.517	2025	08	21	8BD32FHHC4	EC5N8XD68D	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755808382391448147}	{posix_time_ns=1755808382391448147}	LEGAL_PERSON	Taro Pop	Productos alimenticios	OPPORTUNITY	LL3OYOCNJC	OIB5B7H0YN	MERCHANT			NIT	901963187	1970-01-01 00:00:00	9	20250821
+46	79e381f6-46a8-43fd-a4e8-4aef1fe326c4	2025-08-21 13:45:40.753	1755801940753891250	2025-08-21 13:45:40.753	application/vnd.co.bold.c-r-m-service-updated	79e381f6-46a8-43fd-a4e8-4aef1fe326c4	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 17:07:18.655	2025	08	21	IQOUJ98SO2	NI6C7CTAC6	REACTIVATION	CREATED	{}	{posix_time_ns=1755801940750328318}	{posix_time_ns=1755801940750328318}	NATURAL_PERSON	Restaurante Díaz la negrita	Restaurante / Café	OPPORTUNITY	WEFHD0B3EF	W43DSA3KV3	MERCHANT			CEDULA	1020827400	1970-01-01 00:00:00		20250821
+47	3217f103-ea61-4977-9ef2-0dd3183e2032	2025-08-21 14:23:45.802	1755804225802279612	2025-08-21 14:23:45.802	application/vnd.co.bold.c-r-m-service-updated	3217f103-ea61-4977-9ef2-0dd3183e2032	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 17:07:18.655	2025	08	21	KMY8F0VJFT	LLP71M0TC4	REACTIVATION	CREATED	{}	{posix_time_ns=1755804225780946167}	{posix_time_ns=1755804225780946167}	NATURAL_PERSON	El fuerte de la pizza 147	Comida rápida	OPPORTUNITY	CXLW7ZE9YV	G4180WWNZC	MERCHANT			CEDULA	1019128262	1970-01-01 00:00:00		20250821
+48	cf96c420-babb-40d1-9f07-61fe7f3bf1de	2025-08-21 15:09:02.094	1755806942094842336	2025-08-21 15:09:02.094	application/vnd.co.bold.c-r-m-service-updated	cf96c420-babb-40d1-9f07-61fe7f3bf1de	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 17:07:18.655	2025	08	21	AZ6EJEK8LG	D7QO5GRCUO	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755806942073560732}	{posix_time_ns=1755806942073560732}	NATURAL_PERSON	Dulce Cafe 2	Repostería / Panadería	OPPORTUNITY	I3HS2DDPGJ	5C9Y7TOYN2	MERCHANT			CEDULA	1014228642	1970-01-01 00:00:00		20250821
+49	0993d0cf-fb31-4f84-99b0-aad597f239ac	2025-08-21 14:23:02.163	1755804182163145848	2025-08-21 14:23:02.163	application/vnd.co.bold.c-r-m-service-updated	0993d0cf-fb31-4f84-99b0-aad597f239ac	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 17:07:18.655	2025	08	21	XSHS5N5MC5	LLP71M0TC4	REACTIVATION	CREATED	{}	{posix_time_ns=1755804182139775126}	{posix_time_ns=1755804182139775126}	NATURAL_PERSON	El fuerte de la pizza 147	Comida rápida	OPPORTUNITY	CXLW7ZE9YV	G4180WWNZC	MERCHANT			CEDULA	1019128262	1970-01-01 00:00:00		20250821
+50	0b014b25-4c66-473e-9a73-0a7dc31d6bdd	2025-08-21 15:07:36.952	1755806856952802608	2025-08-21 15:07:36.952	application/vnd.co.bold.c-r-m-service-updated	0b014b25-4c66-473e-9a73-0a7dc31d6bdd	merchantseventsv2bronzedatabase.c_r_m_service_updated	
+
+    CRMServicesGoldDbtStateMachine
+	2025-08-21 17:07:18.655	2025	08	21	FEMPNFGFZR	D7QO5GRCUO	REASSIGNMENT	CREATED	{}	{posix_time_ns=1755806856916259335}	{posix_time_ns=1755806856916259335}	NATURAL_PERSON	Dulce Cafe 2	Repostería / Panadería	OPPORTUNITY	I3HS2DDPGJ	5C9Y7TOYN2	MERCHANT			CEDULA	1014228642	1970-01-01 00:00:00		20250821
+
+
+SELECT * FROM awsdatacatalog.bold_gold_sales.dim_crm_users LIMIT 50;
+
+#	event_timestamp	load_datetime	user_id	company	email	parent_id	role	sales_channel	status	country_code	metadata	parent_previous_id	event_partition
+1	1785877321147141667	2026-08-04 19:05:22.493	NH7RQQJVM2		daniel.gonzalez.contractor@bold.co	NH7RQQJVM2	EXECUTIVE	HUBS	ACTIVE	PE	{parent_email -> daniel.gonzalez.contractor@bold.co}	NH7RQQJVM2	20260804
+
+
+
