@@ -1,0 +1,151 @@
+-- Descubrimiento específico de jerarquía comercial.
+-- El resultado 05 confirmó que existe bold_gold_sales, pero no lo inspeccionó.
+-- Ejecutar cada bloque por separado en Metabase/Athena.
+
+-- 1) Tablas candidatas
+SELECT table_schema, table_name, table_type
+FROM information_schema.tables
+WHERE table_schema IN ('bold_gold_sales', 'bold_users_uploads', 'bold_users_uploads_sales')
+  AND (
+      lower(table_name) LIKE '%agent%' OR lower(table_name) LIKE '%seller%'
+      OR lower(table_name) LIKE '%team%' OR lower(table_name) LIKE '%lead%'
+      OR lower(table_name) LIKE '%manager%' OR lower(table_name) LIKE '%hierarch%'
+      OR lower(table_name) LIKE '%user%' OR lower(table_name) LIKE '%employee%'
+      OR lower(table_name) LIKE '%coverage%' OR lower(table_name) LIKE '%merchant%'
+      OR lower(table_name) LIKE '%assignment%' OR lower(table_name) LIKE '%owner%'
+  )
+ORDER BY table_schema, table_name;
+
+
+#	table_schema	table_name	table_type
+1	bold_gold_sales	dim_crm_leads	BASE TABLE
+2	bold_gold_sales	dim_crm_leads_current_products	BASE TABLE
+3	bold_gold_sales	dim_crm_leads_pictures	BASE TABLE
+4	bold_gold_sales	dim_crm_leads_products_of_interest	BASE TABLE
+5	bold_gold_sales	dim_crm_users	BASE TABLE
+6	bold_gold_sales	dim_user_bamboo_information	BASE TABLE
+7	bold_gold_sales	dim_user_bamboo_information_history	BASE TABLE
+8	bold_gold_sales	fact_crm_leads_daily	BASE TABLE
+9	bold_gold_sales	fact_crm_leads_notes	BASE TABLE
+10	bold_gold_sales	fact_crm_leads_status_change	BASE TABLE
+11	bold_gold_sales	fact_crm_leads_status_history	BASE TABLE
+12	bold_gold_sales	report_crm_leads_status_change_with_tasks	BASE TABLE
+
+
+
+-- 2) Columnas de jerarquía y llaves de unión
+SELECT table_schema, table_name, ordinal_position, column_name, data_type
+FROM information_schema.columns
+WHERE table_schema IN ('bold_gold_sales', 'bold_users_uploads', 'bold_users_uploads_sales')
+  AND (
+      lower(column_name) LIKE '%merchant%' OR lower(column_name) LIKE '%client%'
+      OR lower(column_name) LIKE '%agent%' OR lower(column_name) LIKE '%seller%'
+      OR lower(column_name) LIKE '%lead%' OR lower(column_name) LIKE '%manager%'
+      OR lower(column_name) LIKE '%leader%' OR lower(column_name) LIKE '%executive%'
+      OR lower(column_name) LIKE '%email%' OR lower(column_name) LIKE '%employee%'
+      OR lower(column_name) LIKE '%owner%' OR lower(column_name) LIKE '%team%'
+      OR lower(column_name) LIKE '%updated%' OR lower(column_name) LIKE '%load%'
+  )
+ORDER BY table_schema, table_name, ordinal_position;
+
+#	table_schema	table_name	ordinal_position	column_name	data_type
+1	bold_gold_sales	dim_apolo_opportunities	2	load_datetime	timestamp(3)
+2	bold_gold_sales	dim_apolo_opportunities	8	executive_email	varchar
+3	bold_gold_sales	dim_apolo_opportunities	20	lead_merchant_name	varchar
+4	bold_gold_sales	dim_apolo_opportunities	21	lead_economic_activity_name	varchar
+5	bold_gold_sales	dim_apolo_opportunities	22	lead_economic_activity_ciiu	varchar
+6	bold_gold_sales	dim_apolo_opportunities	23	lead_economic_activity_mcc	varchar
+7	bold_gold_sales	dim_apolo_opportunities	24	lead_origin	varchar
+8	bold_gold_sales	dim_apolo_opportunities	25	lead_quote	varchar
+9	bold_gold_sales	dim_apolo_opportunities	26	lead_comment	varchar
+10	bold_gold_sales	dim_apolo_opportunities	27	lead_estimated_sale_date	timestamp(3)
+11	bold_gold_sales	dim_apolo_opportunities	28	lead_average_monthly_sales	varchar
+12	bold_gold_sales	dim_apolo_opportunities	36	merchant_id	varchar
+13	bold_gold_sales	dim_apolo_opportunities	37	merchant_name	varchar
+14	bold_gold_sales	dim_apolo_opportunities	43	created_by_id_email	varchar
+15	bold_gold_sales	dim_crm_checkout	12	is_existing_client	boolean
+16	bold_gold_sales	dim_crm_checkout	13	client_id	varchar
+17	bold_gold_sales	dim_crm_checkout	14	client_type	varchar
+18	bold_gold_sales	dim_crm_checkout	15	client_email	varchar
+19	bold_gold_sales	dim_crm_checkout	16	merchant_id	varchar
+20	bold_gold_sales	dim_crm_checkout	27	buyer_email	varchar
+21	bold_gold_sales	dim_crm_checkout	35	billing_email	varchar
+22	bold_gold_sales	dim_crm_checkout	50	load_datetime	timestamp(3)
+23	bold_gold_sales	dim_crm_checkout_items	26	load_datetime	timestamp(3)
+24	bold_gold_sales	dim_crm_checkout_payments	23	load_datetime	timestamp(3)
+25	bold_gold_sales	dim_crm_contacts	7	email	varchar
+26	bold_gold_sales	dim_crm_contacts	18	load_datetime	timestamp(3)
+27	bold_gold_sales	dim_crm_leads	1	lead_id	varchar
+28	bold_gold_sales	dim_crm_leads	13	lead_origin_name	varchar
+29	bold_gold_sales	dim_crm_leads	14	lead_origin_description	varchar
+30	bold_gold_sales	dim_crm_leads	15	lead_origin_utm_source	varchar
+31	bold_gold_sales	dim_crm_leads	16	lead_origin_utm_medium	varchar
+32	bold_gold_sales	dim_crm_leads	17	lead_origin_utm_campaign	varchar
+33	bold_gold_sales	dim_crm_leads	18	lead_origin_utm_content	varchar
+34	bold_gold_sales	dim_crm_leads	19	lead_origin_utm_term	varchar
+35	bold_gold_sales	dim_crm_leads	49	is_existing_client	boolean
+36	bold_gold_sales	dim_crm_leads	55	metadata_client_id	varchar
+37	bold_gold_sales	dim_crm_leads	56	metadata_client_is_key_account	varchar
+38	bold_gold_sales	dim_crm_leads	57	metadata_client_type	varchar
+39	bold_gold_sales	dim_crm_leads	58	metadata_client__id	varchar
+40	bold_gold_sales	dim_crm_leads	63	load_datetime	timestamp(3)
+41	bold_gold_sales	dim_crm_leads_current_products	2	lead_id	varchar
+42	bold_gold_sales	dim_crm_leads_current_products	7	load_datetime	timestamp(6)
+43	bold_gold_sales	dim_crm_leads_pictures	2	lead_id	varchar
+44	bold_gold_sales	dim_crm_leads_pictures	6	load_datetime	timestamp(6)
+45	bold_gold_sales	dim_crm_leads_products_of_interest	2	lead_id	varchar
+46	bold_gold_sales	dim_crm_leads_products_of_interest	13	load_datetime	timestamp(6)
+47	bold_gold_sales	dim_crm_opportunities	4	load_datetime	timestamp(3)
+48	bold_gold_sales	dim_crm_opportunities	18	merchant_contact_id	varchar
+49	bold_gold_sales	dim_crm_opportunities	30	product_merchant_id	varchar
+50	bold_gold_sales	dim_crm_opportunities	31	metadata_merchant_id	varchar
+51	bold_gold_sales	dim_crm_opportunities	32	metadata_client_id	varchar
+52	bold_gold_sales	dim_crm_opportunities	33	metadata_client_type	varchar
+53	bold_gold_sales	dim_crm_opportunities_notes	10	load_datetime	timestamp(6)
+54	bold_gold_sales	dim_crm_pos_locations	7	load_source	varchar
+55	bold_gold_sales	dim_crm_pos_locations	8	load_identity	varchar
+56	bold_gold_sales	dim_crm_pos_locations	9	load_datetime	timestamp(3)
+57	bold_gold_sales	dim_crm_pos_locations	41	manager_email	varchar
+58	bold_gold_sales	dim_crm_pos_locations	42	substitute_managers	varchar
+59	bold_gold_sales	dim_crm_services	7	load_source	varchar
+60	bold_gold_sales	dim_crm_services	8	load_identity	varchar
+61	bold_gold_sales	dim_crm_services	9	load_datetime	timestamp(3)
+62	bold_gold_sales	dim_crm_services	25	service_detail_client_id	varchar
+63	bold_gold_sales	dim_crm_services	26	service_detail_client_type	varchar
+64	bold_gold_sales	dim_crm_services	27	service_detail_client_is_key_account	varchar
+65	bold_gold_sales	dim_crm_services	28	service_detail_client_kam_email	varchar
+66	bold_gold_sales	dim_crm_services_sales_items	5	load_datetime	timestamp(3)
+67	bold_gold_sales	dim_crm_tasks	2	load_datetime	timestamp(3)
+68	bold_gold_sales	dim_crm_users	2	load_datetime	timestamp(3)
+69	bold_gold_sales	dim_crm_users	5	email	varchar
+70	bold_gold_sales	dim_crm_work_locations	7	load_source	varchar
+71	bold_gold_sales	dim_crm_work_locations	8	load_datetime	timestamp(3)
+72	bold_gold_sales	dim_crm_work_locations	9	load_identity	varchar
+73	bold_gold_sales	dim_payment_order_c_r_u_d	2	load_datetime	timestamp(3)
+74	bold_gold_sales	dim_payment_order_c_r_u_d	4	new_image__client_type	varchar
+75	bold_gold_sales	dim_payment_order_c_r_u_d	9	new_image__merchant_id	varchar
+76	bold_gold_sales	dim_payment_order_c_r_u_d	34	old_image__client_type	varchar
+77	bold_gold_sales	dim_payment_order_c_r_u_d	39	old_image__merchant_id	varchar
+78	bold_gold_sales	dim_user_bamboo_information	30	load_datetime	timestamp(6)
+79	bold_gold_sales	dim_user_bamboo_information_history	31	load_datetime	timestamp(6)
+80	bold_gold_sales	fact_crm_checkout	12	is_existing_client	boolean
+81	bold_gold_sales	fact_crm_checkout	13	client_id	varchar
+82	bold_gold_sales	fact_crm_checkout	14	client_type	varchar
+83	bold_gold_sales	fact_crm_checkout	15	client_email	varchar
+84	bold_gold_sales	fact_crm_checkout	16	merchant_id	varchar
+85	bold_gold_sales	fact_crm_checkout	27	buyer_email	varchar
+86	bold_gold_sales	fact_crm_checkout	35	billing_email	varchar
+87	bold_gold_sales	fact_crm_checkout	54	load_datetime	timestamp(3)
+88	bold_gold_sales	fact_crm_checkout_status_change	8	user_email	varchar
+89	bold_gold_sales	fact_crm_checkout_status_change	9	lead_email	varchar
+90	bold_gold_sales	fact_crm_checkout_status_change	10	manager_email	varchar
+91	bold_gold_sales	fact_crm_checkout_status_change	11	merchant_id	varchar
+92	bold_gold_sales	fact_crm_checkout_status_change	20	is_existing_client	boolean
+93	bold_gold_sales	fact_crm_checkout_status_change	21	client_id	varchar
+94	bold_gold_sales	fact_crm_checkout_status_change	22	client_type	varchar
+95	bold_gold_sales	fact_crm_checkout_status_change	23	client_email	varchar
+96	bold_gold_sales	fact_crm_checkout_status_change	31	buyer_email	varchar
+97	bold_gold_sales	fact_crm_checkout_status_change	39	billing_email	varchar
+98	bold_gold_sales	fact_crm_leads_notes	2	lead_id	varchar
+99	bold_gold_sales	fact_crm_leads_notes	10	load_datetime	timestamp(6)
+100	bold_gold_sales	fact_crm_leads_status_change	2	lead_id	varchar
