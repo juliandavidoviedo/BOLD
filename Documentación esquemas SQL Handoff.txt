@@ -1,0 +1,389 @@
+-- BLOQUE 1: schemas disponibles relacionados con Bold Growth
+-- -------------------------------------------------------------------------
+SELECT
+    catalog_name,
+    schema_name
+FROM information_schema.schemata
+WHERE lower(schema_name) LIKE '%growth%'
+   OR lower(schema_name) LIKE '%merchant%'
+   OR lower(schema_name) LIKE '%client%'
+   OR lower(schema_name) LIKE '%terminal%'
+ORDER BY catalog_name, schema_name;
+
+---
+#	catalog_name	schema_name
+1	awsdatacatalog	bold_gold_growth
+2	awsdatacatalog	bold_gold_growth_accounting
+3	awsdatacatalog	bold_gold_terminals
+
+
+-- -------------------------------------------------------------------------
+-- BLOQUE 2: tablas candidatas dentro de bold_gold_growth
+-- -------------------------------------------------------------------------
+SELECT
+    table_schema,
+    table_name,
+    table_type
+FROM information_schema.tables
+WHERE table_schema = 'bold_gold_growth'
+  AND (
+      lower(table_name) LIKE '%client%'
+      OR lower(table_name) LIKE '%merchant%'
+      OR lower(table_name) LIKE '%tpv%'
+      OR lower(table_name) LIKE '%terminal%'
+      OR lower(table_name) LIKE '%transaction%'
+      OR lower(table_name) LIKE '%commercial%'
+      OR lower(table_name) LIKE '%sales%'
+      OR lower(table_name) LIKE '%assignment%'
+      OR lower(table_name) LIKE '%lineage%'
+      OR lower(table_name) LIKE '%enrich%'
+  )
+ORDER BY table_name;
+
+#	table_schema	table_name	table_type
+1	bold_gold_growth	dim_client	BASE TABLE
+2	bold_gold_growth	dim_client_georeference	BASE TABLE
+3	bold_gold_growth	dim_merchant_onboarding	BASE TABLE
+4	bold_gold_growth	dim_onboarding_client	BASE TABLE
+5	bold_gold_growth	dim_profiling_sales_channels	BASE TABLE
+6	bold_gold_growth	fact_client_economic_activity	BASE TABLE
+7	bold_gold_growth	fact_payment_and_recharge_transaction	BASE TABLE
+8	bold_gold_growth	mart_master_client_lineage	BASE TABLE
+9	bold_gold_growth	mart_master_merchant_enrich	BASE TABLE
+10	bold_gold_growth	mart_master_merchant_lineage	BASE TABLE
+11	bold_gold_growth	mart_merchant_enrich	BASE TABLE
+
+
+-- -------------------------------------------------------------------------
+-- BLOQUE 3: columnas candidatas por concepto
+-- -------------------------------------------------------------------------
+SELECT
+    table_schema,
+    table_name,
+    column_name,
+    data_type,
+    ordinal_position,
+    CASE
+        WHEN lower(column_name) IN ('merchant_id', 'merchantid') THEN 'llave_merchant'
+        WHEN lower(column_name) LIKE '%merchant%name%' THEN 'nombre_comercio'
+        WHEN lower(column_name) LIKE '%document%' OR lower(column_name) LIKE '%identification%' THEN 'documento'
+        WHEN lower(column_name) LIKE '%categor%' OR lower(column_name) LIKE '%subcategory%' OR lower(column_name) LIKE '%mcc%' THEN 'categoria'
+        WHEN lower(column_name) LIKE '%city%' OR lower(column_name) LIKE '%address%' THEN 'ubicacion'
+        WHEN lower(column_name) LIKE '%email%' OR lower(column_name) LIKE '%phone%' OR lower(column_name) LIKE '%cell%' THEN 'contacto_base'
+        WHEN lower(column_name) LIKE '%tpv%' OR lower(column_name) LIKE '%gmv%' OR lower(column_name) LIKE '%amount%' THEN 'tpv'
+        WHEN lower(column_name) LIKE '%terminal%' OR lower(column_name) LIKE '%serial%' OR lower(column_name) LIKE '%device%' THEN 'terminales'
+        WHEN lower(column_name) LIKE '%product%' OR lower(column_name) LIKE '%payment%' OR lower(column_name) LIKE '%qr%' OR lower(column_name) LIKE '%link%' THEN 'productos'
+        WHEN lower(column_name) LIKE '%team%' OR lower(column_name) LIKE '%lead%' OR lower(column_name) LIKE '%manager%' OR lower(column_name) LIKE '%kam%' OR lower(column_name) LIKE '%agent%' THEN 'jerarquia_comercial'
+        WHEN lower(column_name) LIKE '%updated%' OR lower(column_name) LIKE '%created%' OR lower(column_name) LIKE '%date%' THEN 'fecha_frescura'
+        ELSE 'otro'
+    END AS concepto_sugerido
+FROM information_schema.columns
+WHERE table_schema = 'bold_gold_growth'
+  AND (
+      lower(table_name) LIKE '%client%'
+      OR lower(table_name) LIKE '%merchant%'
+      OR lower(table_name) LIKE '%tpv%'
+      OR lower(table_name) LIKE '%terminal%'
+      OR lower(table_name) LIKE '%transaction%'
+      OR lower(table_name) LIKE '%commercial%'
+      OR lower(table_name) LIKE '%sales%'
+      OR lower(table_name) LIKE '%assignment%'
+      OR lower(table_name) LIKE '%lineage%'
+      OR lower(table_name) LIKE '%enrich%'
+  )
+  AND (
+      lower(column_name) LIKE '%merchant%'
+      OR lower(column_name) LIKE '%document%'
+      OR lower(column_name) LIKE '%identification%'
+      OR lower(column_name) LIKE '%categor%'
+      OR lower(column_name) LIKE '%subcategory%'
+      OR lower(column_name) LIKE '%mcc%'
+      OR lower(column_name) LIKE '%city%'
+      OR lower(column_name) LIKE '%address%'
+      OR lower(column_name) LIKE '%email%'
+      OR lower(column_name) LIKE '%phone%'
+      OR lower(column_name) LIKE '%cell%'
+      OR lower(column_name) LIKE '%tpv%'
+      OR lower(column_name) LIKE '%gmv%'
+      OR lower(column_name) LIKE '%amount%'
+      OR lower(column_name) LIKE '%terminal%'
+      OR lower(column_name) LIKE '%serial%'
+      OR lower(column_name) LIKE '%device%'
+      OR lower(column_name) LIKE '%product%'
+      OR lower(column_name) LIKE '%payment%'
+      OR lower(column_name) LIKE '%qr%'
+      OR lower(column_name) LIKE '%link%'
+      OR lower(column_name) LIKE '%team%'
+      OR lower(column_name) LIKE '%lead%'
+      OR lower(column_name) LIKE '%manager%'
+      OR lower(column_name) LIKE '%kam%'
+      OR lower(column_name) LIKE '%agent%'
+      OR lower(column_name) LIKE '%updated%'
+      OR lower(column_name) LIKE '%created%'
+      OR lower(column_name) LIKE '%date%'
+  )
+ORDER BY table_name, concepto_sugerido, ordinal_position;
+
+#	table_schema	table_name	column_name	data_type	ordinal_position	concepto_sugerido
+1	bold_gold_growth	dim_client	economic_activity_mcc	varchar	74	categoria
+2	bold_gold_growth	dim_client	economic_activity_category_id	varchar	75	categoria
+3	bold_gold_growth	dim_client	merchant_acquisition_channel_sales_agent_email	varchar	49	contacto_base
+4	bold_gold_growth	dim_client	identification_document_type	varchar	18	documento
+5	bold_gold_growth	dim_client	identification_document_number	varchar	19	documento
+6	bold_gold_growth	dim_client	identification_document_verification_digit	varchar	20	documento
+7	bold_gold_growth	dim_client	legal_representative_identification_document_type	varchar	21	documento
+8	bold_gold_growth	dim_client	legal_representative_identification_document_number	varchar	22	documento
+9	bold_gold_growth	dim_client	legal_representative_identification_document_verification_digit	varchar	23	documento
+10	bold_gold_growth	dim_client	merchant_identification_document_type	varchar	52	documento
+11	bold_gold_growth	dim_client	merchant_identification_document_number	varchar	53	documento
+12	bold_gold_growth	dim_client	merchant_identification_document_verification_digit	varchar	54	documento
+13	bold_gold_growth	dim_client	last_update_event_date	timestamp(3)	8	fecha_frescura
+14	bold_gold_growth	dim_client	creation_date	timestamp(3)	13	fecha_frescura
+15	bold_gold_growth	dim_client	onboarding_completion_date	timestamp(3)	16	fecha_frescura
+16	bold_gold_growth	dim_client	risk_assessment_last_recalculated_date	timestamp(3)	26	fecha_frescura
+17	bold_gold_growth	dim_client	birth_information_date	timestamp(3)	27	fecha_frescura
+18	bold_gold_growth	dim_client	tac_signing_date	timestamp(3)	38	fecha_frescura
+19	bold_gold_growth	dim_client	tac_acceptance_date	timestamp(3)	40	fecha_frescura
+20	bold_gold_growth	dim_client	migration_end_date	timestamp(3)	43	fecha_frescura
+21	bold_gold_growth	dim_client	commercial_activity_start_date	timestamp(3)	59	fecha_frescura
+22	bold_gold_growth	dim_client	kyc_registry_date	varchar	66	fecha_frescura
+23	bold_gold_growth	dim_client	last_update_event	varchar	69	fecha_frescura
+24	bold_gold_growth	dim_client	merchant_id	varchar	46	llave_merchant
+25	bold_gold_growth	dim_client	merchant_name	varchar	44	nombre_comercio
+26	bold_gold_growth	dim_client	migration_merchants	varchar	42	otro
+27	bold_gold_growth	dim_client	merchant_person_type	varchar	45	otro
+28	bold_gold_growth	dim_client	merchant_acquisition_channel_extra_reference	varchar	47	otro
+29	bold_gold_growth	dim_client	merchant_acquisition_channel_referred_by	varchar	48	otro
+30	bold_gold_growth	dim_client	merchant_acquisition_channel_source	varchar	50	otro
+31	bold_gold_growth	dim_client	merchant_acquisition_channel_value	varchar	51	otro
+32	bold_gold_growth	dim_client	selected_products	varchar	36	productos
+33	bold_gold_growth	dim_client	location_address_department_code	varchar	29	ubicacion
+34	bold_gold_growth	dim_client_georeference	geo_quality_category	varchar	37	categoria
+35	bold_gold_growth	dim_client_georeference	date_key	integer	1	fecha_frescura
+36	bold_gold_growth	dim_client_georeference	load_datetime	timestamp(6)	39	fecha_frescura
+37	bold_gold_growth	dim_client_georeference	merchant_id	varchar	4	llave_merchant
+38	bold_gold_growth	dim_client_georeference	standardized_address	varchar	5	ubicacion
+39	bold_gold_growth	dim_client_georeference	address_principal_road	varchar	6	ubicacion
+40	bold_gold_growth	dim_client_georeference	address_plate_number	varchar	7	ubicacion
+41	bold_gold_growth	dim_client_georeference	address_generating_road	varchar	8	ubicacion
+42	bold_gold_growth	dim_client_georeference	address_aggregation	varchar	9	ubicacion
+43	bold_gold_growth	dim_client_georeference	address_remainder	varchar	10	ubicacion
+44	bold_gold_growth	dim_client_georeference	address_complement	varchar	11	ubicacion
+45	bold_gold_growth	dim_client_georeference	alternate_address	varchar	12	ubicacion
+46	bold_gold_growth	dim_client_georeference	address_status_code	varchar	24	ubicacion
+47	bold_gold_growth	dim_client_georeference	address_status_description	varchar	25	ubicacion
+48	bold_gold_growth	dim_merchant_onboarding	economic_activity_mcc	varchar	9	categoria
+49	bold_gold_growth	dim_merchant_onboarding	economic_activity_category_id	varchar	10	categoria
+50	bold_gold_growth	dim_merchant_onboarding	contact_info_email	varchar	12	contacto_base
+51	bold_gold_growth	dim_merchant_onboarding	contact_info_phone_number_country	varchar	13	contacto_base
+52	bold_gold_growth	dim_merchant_onboarding	contact_info_phone_number	varchar	14	contacto_base
+53	bold_gold_growth	dim_merchant_onboarding	acquisition_channel_sales_agent_email	varchar	33	contacto_base
+54	bold_gold_growth	dim_merchant_onboarding	identification_document_type	varchar	19	documento
+55	bold_gold_growth	dim_merchant_onboarding	identification_document_number	varchar	20	documento
+56	bold_gold_growth	dim_merchant_onboarding	identification_document_verification_digit	varchar	21	documento
+57	bold_gold_growth	dim_merchant_onboarding	bank_account_holder_id_document_type	varchar	43	documento
+58	bold_gold_growth	dim_merchant_onboarding	bank_account_holder_id_document_number	varchar	44	documento
+59	bold_gold_growth	dim_merchant_onboarding	bank_account_holder_document_number_prefix	varchar	47	documento
+60	bold_gold_growth	dim_merchant_onboarding	legal_representative_info_identification_document_type	varchar	48	documento
+61	bold_gold_growth	dim_merchant_onboarding	legal_representative_info_identification_document_number	varchar	49	documento
+62	bold_gold_growth	dim_merchant_onboarding	legal_representative_info_identification_document_verification_digit	varchar	50	documento
+63	bold_gold_growth	dim_merchant_onboarding	onboarding_completion_date	timestamp(3)	4	fecha_frescura
+64	bold_gold_growth	dim_merchant_onboarding	onboarding_completed_date	timestamp(3)	54	fecha_frescura
+65	bold_gold_growth	dim_merchant_onboarding	acquisition_channel_sales_agent_code	varchar	35	jerarquia_comercial
+66	bold_gold_growth	dim_merchant_onboarding	merchant_id	varchar	5	llave_merchant
+67	bold_gold_growth	dim_merchant_onboarding	merchant_key	varchar	2	otro
+68	bold_gold_growth	dim_merchant_onboarding	selected_payment_method_methods	array(varchar)	58	productos
+69	bold_gold_growth	dim_merchant_onboarding	business_link	varchar	59	productos
+70	bold_gold_growth	dim_merchant_onboarding	address_department_code	varchar	17	ubicacion
+71	bold_gold_growth	dim_merchant_onboarding	address_country_code	varchar	18	ubicacion
+72	bold_gold_growth	dim_onboarding_client	contact_info_legal_email	varchar	24	contacto_base
+73	bold_gold_growth	dim_onboarding_client	acquisition_channel_sales_agent_email	varchar	28	contacto_base
+74	bold_gold_growth	dim_onboarding_client	identification_document_type	varchar	33	documento
+75	bold_gold_growth	dim_onboarding_client	identification_document_number	varchar	34	documento
+76	bold_gold_growth	dim_onboarding_client	identification_document_verification_digit	varchar	35	documento
+77	bold_gold_growth	dim_onboarding_client	attorney_in_fact_info_identification_document_type	varchar	39	documento
+78	bold_gold_growth	dim_onboarding_client	attorney_in_fact_info_identification_document_number	varchar	40	documento
+79	bold_gold_growth	dim_onboarding_client	attorney_in_fact_info_identification_document_verification_digit	varchar	41	documento
+80	bold_gold_growth	dim_onboarding_client	legal_representative_info_identification_document_type	varchar	47	documento
+81	bold_gold_growth	dim_onboarding_client	legal_representative_info_identification_document_number	varchar	48	documento
+82	bold_gold_growth	dim_onboarding_client	legal_representative_info_identification_document_verification_digit	varchar	49	documento
+83	bold_gold_growth	dim_onboarding_client	event_datetime	timestamp(3)	7	fecha_frescura
+84	bold_gold_growth	dim_onboarding_client	load_datetime	timestamp(3)	9	fecha_frescura
+85	bold_gold_growth	dim_onboarding_client	creation_date	timestamp(3)	15	fecha_frescura
+86	bold_gold_growth	dim_onboarding_client	completion_date	timestamp(3)	16	fecha_frescura
+87	bold_gold_growth	dim_onboarding_client	last_update_date	timestamp(3)	17	fecha_frescura
+88	bold_gold_growth	dim_onboarding_client	acquisition_channel_sales_agent_code	varchar	30	jerarquia_comercial
+89	bold_gold_growth	dim_onboarding_client	ip_address	varchar	19	ubicacion
+90	bold_gold_growth	dim_onboarding_client	location_address_department_code	varchar	52	ubicacion
+91	bold_gold_growth	dim_onboarding_client	location_address_country_code	varchar	53	ubicacion
+92	bold_gold_growth	dim_onboarding_client	location_address_complementary	varchar	54	ubicacion
+93	bold_gold_growth	fact_client_economic_activity	activity_mcc	varchar	8	categoria
+94	bold_gold_growth	fact_client_economic_activity	activity_category_id	varchar	9	categoria
+95	bold_gold_growth	fact_client_economic_activity	kyc_registry_date	varchar	11	fecha_frescura
+96	bold_gold_growth	fact_payment_and_recharge_transaction	service_provider_category	varchar	10	categoria
+97	bold_gold_growth	fact_payment_and_recharge_transaction	creation_date	bigint	16	fecha_frescura
+98	bold_gold_growth	fact_payment_and_recharge_transaction	update_date	bigint	17	fecha_frescura
+99	bold_gold_growth	fact_payment_and_recharge_transaction	amount	decimal(10,0)	13	tpv
+100	bold_gold_growth	mart_master_client_lineage	load_datetime	timestamp(6)	2	fecha_frescura
+
+
+
+-- -------------------------------------------------------------------------
+-- BLOQUE 4: validar si las tablas sugeridas existen
+-- -------------------------------------------------------------------------
+WITH expected_tables(table_name, uso_esperado) AS (
+    VALUES
+        ('dim_client', 'datos_base_comercio'),
+        ('mart_master_merchant_enrich', 'maestro_enriquecido_comercio'),
+        ('mart_master_merchant_lineage', 'linaje_homologacion_merchant'),
+        ('mart_tpv_daily_by_merchant', 'tpv_por_comercio'),
+        ('mart_tpv_daily_by_transaction', 'tpv_productos_transacciones'),
+        ('dim_terminal', 'dimension_terminal'),
+        ('fact_terminal_history', 'historia_terminal'),
+        ('mart_terminal_enrich', 'terminales_enriquecidas')
+)
+SELECT
+    e.table_name,
+    e.uso_esperado,
+    CASE WHEN t.table_name IS NULL THEN 'NO_ENCONTRADA' ELSE 'ENCONTRADA' END AS estado
+FROM expected_tables e
+LEFT JOIN information_schema.tables t
+    ON t.table_schema = 'bold_gold_growth'
+   AND t.table_name = e.table_name
+ORDER BY e.table_name;
+
+
+#	table_name	uso_esperado	estado
+1	dim_client	datos_base_comercio	ENCONTRADA
+2	dim_terminal	dimension_terminal	NO_ENCONTRADA
+3	fact_terminal_history	historia_terminal	NO_ENCONTRADA
+4	mart_master_merchant_enrich	maestro_enriquecido_comercio	ENCONTRADA
+5	mart_master_merchant_lineage	linaje_homologacion_merchant	ENCONTRADA
+6	mart_terminal_enrich	terminales_enriquecidas	NO_ENCONTRADA
+7	mart_tpv_daily_by_merchant	tpv_por_comercio	NO_ENCONTRADA
+8	mart_tpv_daily_by_transaction	tpv_productos_transacciones	NO_ENCONTRADA
+
+-- -------------------------------------------------------------------------
+-- BLOQUE 5: columnas de las tablas sugeridas encontradas
+-- -------------------------------------------------------------------------
+SELECT
+    table_name,
+    ordinal_position,
+    column_name,
+    data_type
+FROM information_schema.columns
+WHERE table_schema = 'bold_gold_growth'
+  AND table_name IN (
+      'dim_client',
+      'mart_master_merchant_enrich',
+      'mart_master_merchant_lineage',
+      'mart_tpv_daily_by_merchant',
+      'mart_tpv_daily_by_transaction',
+      'dim_terminal',
+      'fact_terminal_history',
+      'mart_terminal_enrich'
+  )
+ORDER BY table_name, ordinal_position;
+
+#	table_name	ordinal_position	column_name	data_type
+1	dim_client	1	client_key	varchar
+2	dim_client	2	occupation_ciiu	varchar
+3	dim_client	3	origin_country	varchar
+4	dim_client	4	kyc_company_name_normalized	varchar
+5	dim_client	5	sales_source	varchar
+6	dim_client	6	marketing_source	varchar
+7	dim_client	7	contact_info_legal_name	varchar
+8	dim_client	8	last_update_event_date	timestamp(3)
+9	dim_client	9	client_id	varchar
+10	dim_client	10	person_type	varchar
+11	dim_client	11	status	varchar
+12	dim_client	12	reason	varchar
+13	dim_client	13	creation_date	timestamp(3)
+14	dim_client	14	onboarding_status	varchar
+15	dim_client	15	onboarding_reason	varchar
+16	dim_client	16	onboarding_completion_date	timestamp(3)
+17	dim_client	17	contact_info_business_name	varchar
+18	dim_client	18	identification_document_type	varchar
+19	dim_client	19	identification_document_number	varchar
+20	dim_client	20	identification_document_verification_digit	varchar
+21	dim_client	21	legal_representative_identification_document_type	varchar
+22	dim_client	22	legal_representative_identification_document_number	varchar
+23	dim_client	23	legal_representative_identification_document_verification_digit	varchar
+24	dim_client	24	risk_assessment_score	decimal(10,0)
+25	dim_client	25	risk_assessment_status	varchar
+26	dim_client	26	risk_assessment_last_recalculated_date	timestamp(3)
+27	dim_client	27	birth_information_date	timestamp(3)
+28	dim_client	28	birth_information_country_code	varchar
+29	dim_client	29	location_address_department_code	varchar
+30	dim_client	30	is_foreign_currency_handled	boolean
+31	dim_client	31	is_politically_exposed_person	boolean
+32	dim_client	32	monthly_expenses_currency	varchar
+33	dim_client	33	monthly_expenses_value	decimal(10,0)
+34	dim_client	34	monthly_incomes_currency	varchar
+35	dim_client	35	monthly_incomes_value	decimal(10,0)
+36	dim_client	36	selected_products	varchar
+37	dim_client	37	tac_version	varchar
+38	dim_client	38	tac_signing_date	timestamp(3)
+39	dim_client	39	tac_type	varchar
+40	dim_client	40	tac_acceptance_date	timestamp(3)
+41	dim_client	41	forced_migrated	boolean
+42	dim_client	42	migration_merchants	varchar
+43	dim_client	43	migration_end_date	timestamp(3)
+44	dim_client	44	merchant_name	varchar
+45	dim_client	45	merchant_person_type	varchar
+46	dim_client	46	merchant_id	varchar
+47	dim_client	47	merchant_acquisition_channel_extra_reference	varchar
+48	dim_client	48	merchant_acquisition_channel_referred_by	varchar
+49	dim_client	49	merchant_acquisition_channel_sales_agent_email	varchar
+50	dim_client	50	merchant_acquisition_channel_source	varchar
+51	dim_client	51	merchant_acquisition_channel_value	varchar
+52	dim_client	52	merchant_identification_document_type	varchar
+53	dim_client	53	merchant_identification_document_number	varchar
+54	dim_client	54	merchant_identification_document_verification_digit	varchar
+55	dim_client	55	occupation_name	varchar
+56	dim_client	56	is_deposit_retrofit_enabled	boolean
+57	dim_client	57	authentication_provider_id	varchar
+58	dim_client	58	terms_and_conditions	varchar
+59	dim_client	59	commercial_activity_start_date	timestamp(3)
+60	dim_client	60	user_economic_activity_ciiu	varchar
+61	dim_client	61	user_economic_activity_description	varchar
+62	dim_client	62	kyc_primary_economic_activity_ciiu	varchar
+63	dim_client	63	kyc_primary_economic_activity_description	varchar
+64	dim_client	64	calculated_economic_activity_ciiu	varchar
+65	dim_client	65	calculated_economic_activity_description	varchar
+66	dim_client	66	kyc_registry_date	varchar
+67	dim_client	67	kyc_organization_type	varchar
+68	dim_client	68	kyc_legal_entity_type	varchar
+69	dim_client	69	last_update_event	varchar
+70	dim_client	70	occupations	array(varchar)
+71	dim_client	71	economic_activity_id	varchar
+72	dim_client	72	economic_activity_name	varchar
+73	dim_client	73	economic_activity_ciiu	varchar
+74	dim_client	74	economic_activity_mcc	varchar
+75	dim_client	75	economic_activity_category_id	varchar
+76	dim_client	76	economic_activity_description	varchar
+77	mart_master_merchant_enrich	1	load_datetime	timestamp(6)
+78	mart_master_merchant_enrich	2	master_merchant_id	varchar
+79	mart_master_merchant_enrich	3	kyc_verification_status_date	timestamp(6)
+80	mart_master_merchant_enrich	4	_1st_transaction_approved_date	timestamp(6)
+81	mart_master_merchant_enrich	5	_4th_transaction_approved_date	timestamp(6)
+82	mart_master_merchant_enrich	6	_10th_transaction_approved_date	timestamp(6)
+83	mart_master_merchant_enrich	7	last_transaction_approved_date	timestamp(6)
+84	mart_master_merchant_enrich	8	_1st_transaction_approved_id	varchar
+85	mart_master_merchant_enrich	9	_1st_btn_transaction_approved_id	varchar
+86	mart_master_merchant_enrich	10	_1st_btn_transaction_approved_date	timestamp(6)
+87	mart_master_merchant_enrich	11	_1st_mpos_transaction_approved_id	varchar
+88	mart_master_merchant_enrich	12	_1st_mpos_transaction_approved_date	timestamp(6)
+89	mart_master_merchant_enrich	13	_1st_link_transaction_approved_id	varchar
+90	mart_master_merchant_enrich	14	_1st_link_transaction_approved_date	timestamp(6)
+91	mart_master_merchant_enrich	15	_1st_nequi_transaction_approved_id	varchar
+92	mart_master_merchant_enrich	16	_1st_nequi_transaction_approved_date	timestamp(6)
+93	mart_master_merchant_enrich	17	_1st_qr_transaction_approved_id	varchar
+94	mart_master_merchant_enrich	18	_1st_qr_transaction_approved_date	timestamp(6)
+95	mart_master_merchant_enrich	19	tpv_total_m0	decimal(38,2)
+96	mart_master_merchant_enrich	20	tpv_total_m1	decimal(38,2)
+97	mart_master_merchant_enrich	21	tpv_total_m2	decimal(38,2)
+98	mart_master_merchant_enrich	22	tpv_total_last_month	decimal(38,2)
+99	mart_master_merchant_enrich	23	tpv_historic	decimal(38,2)
+100	mart_master_merchant_enrich	24	tpv_last_quarter	decimal(38,2)
+
