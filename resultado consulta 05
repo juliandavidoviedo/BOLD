@@ -1,0 +1,828 @@
+
+-- -------------------------------------------------------------------------
+-- BLOQUE 1: buscar schemas que puedan contener usuarios, empleados, CRM,
+-- jerarquia comercial, coverage, geo, merchant o onboarding
+-- -------------------------------------------------------------------------
+SELECT
+    catalog_name,
+    schema_name
+FROM information_schema.schemata
+WHERE lower(schema_name) LIKE '%growth%'
+   OR lower(schema_name) LIKE '%sales%'
+   OR lower(schema_name) LIKE '%commercial%'
+   OR lower(schema_name) LIKE '%crm%'
+   OR lower(schema_name) LIKE '%agent%'
+   OR lower(schema_name) LIKE '%employee%'
+   OR lower(schema_name) LIKE '%people%'
+   OR lower(schema_name) LIKE '%user%'
+   OR lower(schema_name) LIKE '%coverage%'
+   OR lower(schema_name) LIKE '%geo%'
+   OR lower(schema_name) LIKE '%merchant%'
+   OR lower(schema_name) LIKE '%client%'
+ORDER BY catalog_name, schema_name;
+
+#	catalog_name	schema_name
+1	awsdatacatalog	bold_gold_growth
+2	awsdatacatalog	bold_gold_growth_accounting
+3	awsdatacatalog	bold_gold_sales
+4	awsdatacatalog	bold_users_uploads
+5	awsdatacatalog	bold_users_uploads_sales
+
+
+-- -------------------------------------------------------------------------
+-- BLOQUE 2: tablas candidatas en schemas relevantes
+-- Ajustar la lista de schemas si el bloque 1 revela otros nombres relevantes.
+-- -------------------------------------------------------------------------
+SELECT
+    table_schema,
+    table_name,
+    table_type
+FROM information_schema.tables
+WHERE table_schema IN (
+    'bold_gold_growth',
+    'bold_gold_growth_accounting',
+    'bold_gold_terminals'
+)
+  AND (
+      lower(table_name) LIKE '%sales%'
+      OR lower(table_name) LIKE '%commercial%'
+      OR lower(table_name) LIKE '%agent%'
+      OR lower(table_name) LIKE '%seller%'
+      OR lower(table_name) LIKE '%executive%'
+      OR lower(table_name) LIKE '%team%'
+      OR lower(table_name) LIKE '%lead%'
+      OR lower(table_name) LIKE '%leader%'
+      OR lower(table_name) LIKE '%manager%'
+      OR lower(table_name) LIKE '%kam%'
+      OR lower(table_name) LIKE '%assignment%'
+      OR lower(table_name) LIKE '%portfolio%'
+      OR lower(table_name) LIKE '%book%'
+      OR lower(table_name) LIKE '%owner%'
+      OR lower(table_name) LIKE '%user%'
+      OR lower(table_name) LIKE '%employee%'
+      OR lower(table_name) LIKE '%person%'
+      OR lower(table_name) LIKE '%coverage%'
+      OR lower(table_name) LIKE '%zone%'
+      OR lower(table_name) LIKE '%geo%'
+      OR lower(table_name) LIKE '%address%'
+      OR lower(table_name) LIKE '%location%'
+      OR lower(table_name) LIKE '%client%'
+      OR lower(table_name) LIKE '%merchant%'
+      OR lower(table_name) LIKE '%economic%'
+      OR lower(table_name) LIKE '%category%'
+  )
+ORDER BY table_schema, table_name;
+
+#	table_schema	table_name	table_type
+1	bold_gold_growth	dim_client	BASE TABLE
+2	bold_gold_growth	dim_client_georeference	BASE TABLE
+3	bold_gold_growth	dim_coverage_zones	BASE TABLE
+4	bold_gold_growth	dim_merchant_onboarding	BASE TABLE
+5	bold_gold_growth	dim_onboarding_client	BASE TABLE
+6	bold_gold_growth	dim_person	BASE TABLE
+7	bold_gold_growth	dim_person_v2	BASE TABLE
+8	bold_gold_growth	dim_profiling_sales_channels	BASE TABLE
+9	bold_gold_growth	fact_client_economic_activity	BASE TABLE
+10	bold_gold_growth	mart_master_client_lineage	BASE TABLE
+11	bold_gold_growth	mart_master_merchant_enrich	BASE TABLE
+12	bold_gold_growth	mart_master_merchant_lineage	BASE TABLE
+13	bold_gold_growth	mart_merchant_enrich	BASE TABLE
+14	bold_gold_growth_accounting	dim_master_merchants	BASE TABLE
+15	bold_gold_growth_accounting	fact_merchant_tx_device_lifecycle_monthly	BASE TABLE
+
+
+-- -------------------------------------------------------------------------
+-- BLOQUE 3: columnas candidatas para jerarquia comercial en schemas relevantes
+-- -------------------------------------------------------------------------
+SELECT
+    table_schema,
+    table_name,
+    column_name,
+    data_type,
+    ordinal_position,
+    CASE
+        WHEN lower(column_name) IN ('merchant_id', 'master_merchant_id') THEN 'join_merchant'
+        WHEN lower(column_name) = 'client_id' THEN 'join_client'
+        WHEN lower(column_name) LIKE '%sales%agent%email%' THEN 'join_sales_agent_email'
+        WHEN lower(column_name) LIKE '%acquisition%channel%sales%agent%email%' THEN 'join_sales_agent_email'
+        WHEN lower(column_name) LIKE '%sales%agent%code%' THEN 'join_sales_agent_code'
+        WHEN lower(column_name) LIKE '%agent%code%' THEN 'join_agent_code'
+        WHEN lower(column_name) LIKE '%agent%email%' THEN 'agent_email'
+        WHEN lower(column_name) LIKE '%seller%email%' THEN 'seller_email'
+        WHEN lower(column_name) LIKE '%executive%' THEN 'executive'
+        WHEN lower(column_name) LIKE '%team%lead%' THEN 'team_lead'
+        WHEN lower(column_name) LIKE '%leader%' THEN 'leader'
+        WHEN lower(column_name) LIKE '%manager%' THEN 'manager'
+        WHEN lower(column_name) LIKE '%kam%' THEN 'kam'
+        WHEN lower(column_name) LIKE '%owner%' THEN 'owner'
+        WHEN lower(column_name) LIKE '%channel%' THEN 'channel'
+        WHEN lower(column_name) LIKE '%segment%' THEN 'segment'
+        WHEN lower(column_name) LIKE '%updated%' OR lower(column_name) LIKE '%load%' OR lower(column_name) LIKE '%date%' THEN 'fecha_frescura'
+        ELSE 'otro'
+    END AS concepto_sugerido
+FROM information_schema.columns
+WHERE table_schema IN (
+    'bold_gold_growth',
+    'bold_gold_growth_accounting',
+    'bold_gold_terminals'
+)
+  AND (
+      lower(column_name) LIKE '%merchant%'
+      OR lower(column_name) LIKE '%client%'
+      OR lower(column_name) LIKE '%sales%'
+      OR lower(column_name) LIKE '%agent%'
+      OR lower(column_name) LIKE '%seller%'
+      OR lower(column_name) LIKE '%executive%'
+      OR lower(column_name) LIKE '%team%'
+      OR lower(column_name) LIKE '%lead%'
+      OR lower(column_name) LIKE '%leader%'
+      OR lower(column_name) LIKE '%manager%'
+      OR lower(column_name) LIKE '%kam%'
+      OR lower(column_name) LIKE '%owner%'
+      OR lower(column_name) LIKE '%channel%'
+      OR lower(column_name) LIKE '%segment%'
+      OR lower(column_name) LIKE '%updated%'
+      OR lower(column_name) LIKE '%load%'
+      OR lower(column_name) LIKE '%date%'
+  )
+ORDER BY table_schema, table_name, concepto_sugerido, ordinal_position;
+
+#	table_schema	table_name	column_name	data_type	ordinal_position	concepto_sugerido
+1	bold_gold_growth	dim_client	merchant_acquisition_channel_extra_reference	varchar	47	channel
+2	bold_gold_growth	dim_client	merchant_acquisition_channel_referred_by	varchar	48	channel
+3	bold_gold_growth	dim_client	merchant_acquisition_channel_source	varchar	50	channel
+4	bold_gold_growth	dim_client	merchant_acquisition_channel_value	varchar	51	channel
+5	bold_gold_growth	dim_client	last_update_event_date	timestamp(3)	8	fecha_frescura
+6	bold_gold_growth	dim_client	creation_date	timestamp(3)	13	fecha_frescura
+7	bold_gold_growth	dim_client	onboarding_completion_date	timestamp(3)	16	fecha_frescura
+8	bold_gold_growth	dim_client	risk_assessment_last_recalculated_date	timestamp(3)	26	fecha_frescura
+9	bold_gold_growth	dim_client	birth_information_date	timestamp(3)	27	fecha_frescura
+10	bold_gold_growth	dim_client	tac_signing_date	timestamp(3)	38	fecha_frescura
+11	bold_gold_growth	dim_client	tac_acceptance_date	timestamp(3)	40	fecha_frescura
+12	bold_gold_growth	dim_client	migration_end_date	timestamp(3)	43	fecha_frescura
+13	bold_gold_growth	dim_client	commercial_activity_start_date	timestamp(3)	59	fecha_frescura
+14	bold_gold_growth	dim_client	kyc_registry_date	varchar	66	fecha_frescura
+15	bold_gold_growth	dim_client	last_update_event	varchar	69	fecha_frescura
+16	bold_gold_growth	dim_client	client_id	varchar	9	join_client
+17	bold_gold_growth	dim_client	merchant_id	varchar	46	join_merchant
+18	bold_gold_growth	dim_client	merchant_acquisition_channel_sales_agent_email	varchar	49	join_sales_agent_email
+19	bold_gold_growth	dim_client	client_key	varchar	1	otro
+20	bold_gold_growth	dim_client	sales_source	varchar	5	otro
+21	bold_gold_growth	dim_client	migration_merchants	varchar	42	otro
+22	bold_gold_growth	dim_client	merchant_name	varchar	44	otro
+23	bold_gold_growth	dim_client	merchant_person_type	varchar	45	otro
+24	bold_gold_growth	dim_client	merchant_identification_document_type	varchar	52	otro
+25	bold_gold_growth	dim_client	merchant_identification_document_number	varchar	53	otro
+26	bold_gold_growth	dim_client	merchant_identification_document_verification_digit	varchar	54	otro
+27	bold_gold_growth	dim_client_georeference	date_key	integer	1	fecha_frescura
+28	bold_gold_growth	dim_client_georeference	load_datetime	timestamp(6)	39	fecha_frescura
+29	bold_gold_growth	dim_client_georeference	client_id	varchar	3	join_client
+30	bold_gold_growth	dim_client_georeference	merchant_id	varchar	4	join_merchant
+31	bold_gold_growth	dim_coverage_zones	date_key	integer	1	fecha_frescura
+32	bold_gold_growth	dim_coverage_zones	load_datetime	timestamp(3)	15	fecha_frescura
+33	bold_gold_growth	dim_merchant_onboarding	acquisition_channel_extra_reference	varchar	31	channel
+34	bold_gold_growth	dim_merchant_onboarding	acquisition_channel_referred_by	varchar	32	channel
+35	bold_gold_growth	dim_merchant_onboarding	acquisition_channel_source	varchar	34	channel
+36	bold_gold_growth	dim_merchant_onboarding	acquisition_channel	varchar	36	channel
+37	bold_gold_growth	dim_merchant_onboarding	onboarding_completion_date	timestamp(3)	4	fecha_frescura
+38	bold_gold_growth	dim_merchant_onboarding	onboarding_completed_date	timestamp(3)	54	fecha_frescura
+39	bold_gold_growth	dim_merchant_onboarding	client_id	varchar	3	join_client
+40	bold_gold_growth	dim_merchant_onboarding	merchant_id	varchar	5	join_merchant
+41	bold_gold_growth	dim_merchant_onboarding	acquisition_channel_sales_agent_code	varchar	35	join_sales_agent_code
+42	bold_gold_growth	dim_merchant_onboarding	acquisition_channel_sales_agent_email	varchar	33	join_sales_agent_email
+43	bold_gold_growth	dim_merchant_onboarding	client_key	varchar	1	otro
+44	bold_gold_growth	dim_merchant_onboarding	merchant_key	varchar	2	otro
+45	bold_gold_growth	dim_onboarding_banking	event_datetime	timestamp(3)	6	fecha_frescura
+46	bold_gold_growth	dim_onboarding_banking	load_datetime	timestamp(3)	8	fecha_frescura
+47	bold_gold_growth	dim_onboarding_banking	load_source	varchar	9	fecha_frescura
+48	bold_gold_growth	dim_onboarding_banking	load_identity	varchar	10	fecha_frescura
+49	bold_gold_growth	dim_onboarding_banking	creation_date	timestamp(3)	14	fecha_frescura
+50	bold_gold_growth	dim_onboarding_banking	completion_date	timestamp(3)	15	fecha_frescura
+51	bold_gold_growth	dim_onboarding_banking	last_update_date	timestamp(3)	16	fecha_frescura
+52	bold_gold_growth	dim_onboarding_banking	client_id	varchar	22	join_client
+53	bold_gold_growth	dim_onboarding_banking	client_key	varchar	3	otro
+54	bold_gold_growth	dim_onboarding_banking	merchants_pricing_plans	varchar	25	otro
+55	bold_gold_growth	dim_onboarding_client	acquisition_channel_extra_reference	varchar	26	channel
+56	bold_gold_growth	dim_onboarding_client	acquisition_channel_referred_by	varchar	27	channel
+57	bold_gold_growth	dim_onboarding_client	acquisition_channel_source	varchar	29	channel
+58	bold_gold_growth	dim_onboarding_client	acquisition_channel	varchar	31	channel
+59	bold_gold_growth	dim_onboarding_client	acquisition_channel_utm_campaign	varchar	32	channel
+60	bold_gold_growth	dim_onboarding_client	event_datetime	timestamp(3)	7	fecha_frescura
+61	bold_gold_growth	dim_onboarding_client	load_datetime	timestamp(3)	9	fecha_frescura
+62	bold_gold_growth	dim_onboarding_client	load_source	varchar	10	fecha_frescura
+63	bold_gold_growth	dim_onboarding_client	load_identity	varchar	11	fecha_frescura
+64	bold_gold_growth	dim_onboarding_client	creation_date	timestamp(3)	15	fecha_frescura
+65	bold_gold_growth	dim_onboarding_client	completion_date	timestamp(3)	16	fecha_frescura
+66	bold_gold_growth	dim_onboarding_client	last_update_date	timestamp(3)	17	fecha_frescura
+67	bold_gold_growth	dim_onboarding_client	client_id	varchar	25	join_client
+68	bold_gold_growth	dim_onboarding_client	acquisition_channel_sales_agent_code	varchar	30	join_sales_agent_code
+69	bold_gold_growth	dim_onboarding_client	acquisition_channel_sales_agent_email	varchar	28	join_sales_agent_email
+70	bold_gold_growth	dim_onboarding_client	client_key	varchar	3	otro
+71	bold_gold_growth	dim_onboarding_legacy	load_datetime	timestamp(3)	2	fecha_frescura
+72	bold_gold_growth	dim_onboarding_legacy	onboarding_end_date	timestamp(3)	11	fecha_frescura
+73	bold_gold_growth	dim_onboarding_legacy	creation_date	timestamp(3)	12	fecha_frescura
+74	bold_gold_growth	dim_onboarding_legacy	update_reason	varchar	25	fecha_frescura
+75	bold_gold_growth	dim_onboarding_legacy	updated_by_user_email	varchar	26	fecha_frescura
+76	bold_gold_growth	dim_onboarding_legacy	updated_by_user_id	varchar	27	fecha_frescura
+77	bold_gold_growth	dim_onboarding_legacy	updated_date	varchar	28	fecha_frescura
+78	bold_gold_growth	dim_onboarding_legacy	merchant_id	varchar	7	join_merchant
+79	bold_gold_growth	dim_onboarding_legacy	merchant_key	varchar	3	otro
+80	bold_gold_growth	dim_onboarding_legacy	client_type	varchar	13	otro
+81	bold_gold_growth	dim_onboarding_payments	acquisition_channel_extra_reference	varchar	28	channel
+82	bold_gold_growth	dim_onboarding_payments	acquisition_channel_referred_by	varchar	29	channel
+83	bold_gold_growth	dim_onboarding_payments	acquisition_channel_source	varchar	31	channel
+84	bold_gold_growth	dim_onboarding_payments	acquisition_channel	varchar	33	channel
+85	bold_gold_growth	dim_onboarding_payments	event_datetime	timestamp(3)	8	fecha_frescura
+86	bold_gold_growth	dim_onboarding_payments	load_datetime	timestamp(3)	10	fecha_frescura
+87	bold_gold_growth	dim_onboarding_payments	load_source	varchar	11	fecha_frescura
+88	bold_gold_growth	dim_onboarding_payments	load_identity	varchar	12	fecha_frescura
+89	bold_gold_growth	dim_onboarding_payments	creation_date	timestamp(3)	16	fecha_frescura
+90	bold_gold_growth	dim_onboarding_payments	completion_date	timestamp(3)	17	fecha_frescura
+91	bold_gold_growth	dim_onboarding_payments	last_update_date	timestamp(3)	18	fecha_frescura
+92	bold_gold_growth	dim_onboarding_payments	onboarding_approved_date	timestamp(3)	27	fecha_frescura
+93	bold_gold_growth	dim_onboarding_payments	client_id	varchar	24	join_client
+94	bold_gold_growth	dim_onboarding_payments	merchant_id	varchar	25	join_merchant
+95	bold_gold_growth	dim_onboarding_payments	acquisition_channel_sales_agent_code	varchar	32	join_sales_agent_code
+96	bold_gold_growth	dim_onboarding_payments	acquisition_channel_sales_agent_email	varchar	30	join_sales_agent_email
+97	bold_gold_growth	dim_onboarding_payments	client_key	varchar	3	otro
+98	bold_gold_growth	dim_onboarding_payments	merchant_key	varchar	4	otro
+99	bold_gold_growth	dim_onboarding_payments	merchants_pricing_plans	varchar	26	otro
+100	bold_gold_growth	dim_onboarding_payments	merchants_pricing_plan_bundle_id	varchar	46	otro
+
+
+-- -------------------------------------------------------------------------
+-- BLOQUE 4: columnas candidatas para ubicacion y contacto base
+-- -------------------------------------------------------------------------
+SELECT
+    table_schema,
+    table_name,
+    column_name,
+    data_type,
+    ordinal_position,
+    CASE
+        WHEN lower(column_name) IN ('merchant_id', 'master_merchant_id') THEN 'join_merchant'
+        WHEN lower(column_name) = 'client_id' THEN 'join_client'
+        WHEN lower(column_name) LIKE '%city%' THEN 'city'
+        WHEN lower(column_name) LIKE '%municip%' THEN 'municipality'
+        WHEN lower(column_name) LIKE '%department%' THEN 'department'
+        WHEN lower(column_name) LIKE '%address%' THEN 'address'
+        WHEN lower(column_name) LIKE '%location%' THEN 'location'
+        WHEN lower(column_name) LIKE '%email%' THEN 'email'
+        WHEN lower(column_name) LIKE '%phone%' THEN 'phone'
+        WHEN lower(column_name) LIKE '%cell%' THEN 'cellphone'
+        WHEN lower(column_name) LIKE '%mobile%' THEN 'mobile'
+        WHEN lower(column_name) LIKE '%contact%' THEN 'contact'
+        WHEN lower(column_name) LIKE '%updated%' OR lower(column_name) LIKE '%load%' OR lower(column_name) LIKE '%date%' THEN 'fecha_frescura'
+        ELSE 'otro'
+    END AS concepto_sugerido
+FROM information_schema.columns
+WHERE table_schema IN (
+    'bold_gold_growth',
+    'bold_gold_growth_accounting',
+    'bold_gold_terminals'
+)
+  AND (
+      lower(column_name) LIKE '%merchant%'
+      OR lower(column_name) LIKE '%client%'
+      OR lower(column_name) LIKE '%city%'
+      OR lower(column_name) LIKE '%municip%'
+      OR lower(column_name) LIKE '%department%'
+      OR lower(column_name) LIKE '%address%'
+      OR lower(column_name) LIKE '%location%'
+      OR lower(column_name) LIKE '%email%'
+      OR lower(column_name) LIKE '%phone%'
+      OR lower(column_name) LIKE '%cell%'
+      OR lower(column_name) LIKE '%mobile%'
+      OR lower(column_name) LIKE '%contact%'
+      OR lower(column_name) LIKE '%updated%'
+      OR lower(column_name) LIKE '%load%'
+      OR lower(column_name) LIKE '%date%'
+  )
+ORDER BY table_schema, table_name, concepto_sugerido, ordinal_position;
+
+#	table_schema	table_name	column_name	data_type	ordinal_position	concepto_sugerido
+1	bold_gold_growth	dim_client	contact_info_legal_name	varchar	7	contact
+2	bold_gold_growth	dim_client	contact_info_business_name	varchar	17	contact
+3	bold_gold_growth	dim_client	location_address_department_code	varchar	29	department
+4	bold_gold_growth	dim_client	merchant_acquisition_channel_sales_agent_email	varchar	49	email
+5	bold_gold_growth	dim_client	last_update_event_date	timestamp(3)	8	fecha_frescura
+6	bold_gold_growth	dim_client	creation_date	timestamp(3)	13	fecha_frescura
+7	bold_gold_growth	dim_client	onboarding_completion_date	timestamp(3)	16	fecha_frescura
+8	bold_gold_growth	dim_client	risk_assessment_last_recalculated_date	timestamp(3)	26	fecha_frescura
+9	bold_gold_growth	dim_client	birth_information_date	timestamp(3)	27	fecha_frescura
+10	bold_gold_growth	dim_client	tac_signing_date	timestamp(3)	38	fecha_frescura
+11	bold_gold_growth	dim_client	tac_acceptance_date	timestamp(3)	40	fecha_frescura
+12	bold_gold_growth	dim_client	migration_end_date	timestamp(3)	43	fecha_frescura
+13	bold_gold_growth	dim_client	commercial_activity_start_date	timestamp(3)	59	fecha_frescura
+14	bold_gold_growth	dim_client	kyc_registry_date	varchar	66	fecha_frescura
+15	bold_gold_growth	dim_client	last_update_event	varchar	69	fecha_frescura
+16	bold_gold_growth	dim_client	client_id	varchar	9	join_client
+17	bold_gold_growth	dim_client	merchant_id	varchar	46	join_merchant
+18	bold_gold_growth	dim_client	client_key	varchar	1	otro
+19	bold_gold_growth	dim_client	migration_merchants	varchar	42	otro
+20	bold_gold_growth	dim_client	merchant_name	varchar	44	otro
+21	bold_gold_growth	dim_client	merchant_person_type	varchar	45	otro
+22	bold_gold_growth	dim_client	merchant_acquisition_channel_extra_reference	varchar	47	otro
+23	bold_gold_growth	dim_client	merchant_acquisition_channel_referred_by	varchar	48	otro
+24	bold_gold_growth	dim_client	merchant_acquisition_channel_source	varchar	50	otro
+25	bold_gold_growth	dim_client	merchant_acquisition_channel_value	varchar	51	otro
+26	bold_gold_growth	dim_client	merchant_identification_document_type	varchar	52	otro
+27	bold_gold_growth	dim_client	merchant_identification_document_number	varchar	53	otro
+28	bold_gold_growth	dim_client	merchant_identification_document_verification_digit	varchar	54	otro
+29	bold_gold_growth	dim_client_georeference	standardized_address	varchar	5	address
+30	bold_gold_growth	dim_client_georeference	address_principal_road	varchar	6	address
+31	bold_gold_growth	dim_client_georeference	address_plate_number	varchar	7	address
+32	bold_gold_growth	dim_client_georeference	address_generating_road	varchar	8	address
+33	bold_gold_growth	dim_client_georeference	address_aggregation	varchar	9	address
+34	bold_gold_growth	dim_client_georeference	address_remainder	varchar	10	address
+35	bold_gold_growth	dim_client_georeference	address_complement	varchar	11	address
+36	bold_gold_growth	dim_client_georeference	alternate_address	varchar	12	address
+37	bold_gold_growth	dim_client_georeference	address_status_code	varchar	24	address
+38	bold_gold_growth	dim_client_georeference	address_status_description	varchar	25	address
+39	bold_gold_growth	dim_client_georeference	department	varchar	21	department
+40	bold_gold_growth	dim_client_georeference	date_key	integer	1	fecha_frescura
+41	bold_gold_growth	dim_client_georeference	load_datetime	timestamp(6)	39	fecha_frescura
+42	bold_gold_growth	dim_client_georeference	client_id	varchar	3	join_client
+43	bold_gold_growth	dim_client_georeference	merchant_id	varchar	4	join_merchant
+44	bold_gold_growth	dim_client_georeference	municipality	varchar	20	municipality
+45	bold_gold_growth	dim_coverage_zones	city	varchar	8	city
+46	bold_gold_growth	dim_coverage_zones	department	varchar	9	department
+47	bold_gold_growth	dim_coverage_zones	date_key	integer	1	fecha_frescura
+48	bold_gold_growth	dim_coverage_zones	load_datetime	timestamp(3)	15	fecha_frescura
+49	bold_gold_growth	dim_coverage_zones	location_zone	varchar	7	location
+50	bold_gold_growth	dim_merchant_onboarding	address_country_code	varchar	18	address
+51	bold_gold_growth	dim_merchant_onboarding	contact_info_legal_name	varchar	15	contact
+52	bold_gold_growth	dim_merchant_onboarding	contact_info_business_name	varchar	16	contact
+53	bold_gold_growth	dim_merchant_onboarding	address_department_code	varchar	17	department
+54	bold_gold_growth	dim_merchant_onboarding	contact_info_email	varchar	12	email
+55	bold_gold_growth	dim_merchant_onboarding	acquisition_channel_sales_agent_email	varchar	33	email
+56	bold_gold_growth	dim_merchant_onboarding	onboarding_completion_date	timestamp(3)	4	fecha_frescura
+57	bold_gold_growth	dim_merchant_onboarding	onboarding_completed_date	timestamp(3)	54	fecha_frescura
+58	bold_gold_growth	dim_merchant_onboarding	client_id	varchar	3	join_client
+59	bold_gold_growth	dim_merchant_onboarding	merchant_id	varchar	5	join_merchant
+60	bold_gold_growth	dim_merchant_onboarding	location_coordinate_latitude	varchar	22	location
+61	bold_gold_growth	dim_merchant_onboarding	location_coordinate_longitude	varchar	23	location
+62	bold_gold_growth	dim_merchant_onboarding	client_key	varchar	1	otro
+63	bold_gold_growth	dim_merchant_onboarding	merchant_key	varchar	2	otro
+64	bold_gold_growth	dim_merchant_onboarding	contact_info_phone_number_country	varchar	13	phone
+65	bold_gold_growth	dim_merchant_onboarding	contact_info_phone_number	varchar	14	phone
+66	bold_gold_growth	dim_onboarding_banking	event_datetime	timestamp(3)	6	fecha_frescura
+67	bold_gold_growth	dim_onboarding_banking	load_datetime	timestamp(3)	8	fecha_frescura
+68	bold_gold_growth	dim_onboarding_banking	load_source	varchar	9	fecha_frescura
+69	bold_gold_growth	dim_onboarding_banking	load_identity	varchar	10	fecha_frescura
+70	bold_gold_growth	dim_onboarding_banking	creation_date	timestamp(3)	14	fecha_frescura
+71	bold_gold_growth	dim_onboarding_banking	completion_date	timestamp(3)	15	fecha_frescura
+72	bold_gold_growth	dim_onboarding_banking	last_update_date	timestamp(3)	16	fecha_frescura
+73	bold_gold_growth	dim_onboarding_banking	client_id	varchar	22	join_client
+74	bold_gold_growth	dim_onboarding_banking	client_key	varchar	3	otro
+75	bold_gold_growth	dim_onboarding_banking	merchants_pricing_plans	varchar	25	otro
+76	bold_gold_growth	dim_onboarding_client	ip_address	varchar	19	address
+77	bold_gold_growth	dim_onboarding_client	location_address_country_code	varchar	53	address
+78	bold_gold_growth	dim_onboarding_client	location_address_complementary	varchar	54	address
+79	bold_gold_growth	dim_onboarding_client	contact_info_legal_name	varchar	22	contact
+80	bold_gold_growth	dim_onboarding_client	contact_info_business_name	varchar	23	contact
+81	bold_gold_growth	dim_onboarding_client	attorney_in_fact_info_birth_information_department_code	varchar	42	department
+82	bold_gold_growth	dim_onboarding_client	legal_representative_info_birth_information_department_code	varchar	50	department
+83	bold_gold_growth	dim_onboarding_client	location_address_department_code	varchar	52	department
+84	bold_gold_growth	dim_onboarding_client	contact_info_legal_email	varchar	24	email
+85	bold_gold_growth	dim_onboarding_client	acquisition_channel_sales_agent_email	varchar	28	email
+86	bold_gold_growth	dim_onboarding_client	event_datetime	timestamp(3)	7	fecha_frescura
+87	bold_gold_growth	dim_onboarding_client	load_datetime	timestamp(3)	9	fecha_frescura
+88	bold_gold_growth	dim_onboarding_client	load_source	varchar	10	fecha_frescura
+89	bold_gold_growth	dim_onboarding_client	load_identity	varchar	11	fecha_frescura
+90	bold_gold_growth	dim_onboarding_client	creation_date	timestamp(3)	15	fecha_frescura
+91	bold_gold_growth	dim_onboarding_client	completion_date	timestamp(3)	16	fecha_frescura
+92	bold_gold_growth	dim_onboarding_client	last_update_date	timestamp(3)	17	fecha_frescura
+93	bold_gold_growth	dim_onboarding_client	client_id	varchar	25	join_client
+94	bold_gold_growth	dim_onboarding_client	location_dane_code	varchar	55	location
+95	bold_gold_growth	dim_onboarding_client	client_key	varchar	3	otro
+96	bold_gold_growth	dim_onboarding_legacy	location_city__code	varchar	19	city
+97	bold_gold_growth	dim_onboarding_legacy	location_city__name	varchar	20	city
+98	bold_gold_growth	dim_onboarding_legacy	location_department__code	varchar	21	department
+99	bold_gold_growth	dim_onboarding_legacy	location_department__name	varchar	22	department
+100	bold_gold_growth	dim_onboarding_legacy	updated_by_user_email	varchar	26	email
+
+
+-- -------------------------------------------------------------------------
+-- BLOQUE 5: columnas candidatas para categoria/subcategoria
+-- -------------------------------------------------------------------------
+SELECT
+    table_schema,
+    table_name,
+    column_name,
+    data_type,
+    ordinal_position,
+    CASE
+        WHEN lower(column_name) IN ('merchant_id', 'master_merchant_id') THEN 'join_merchant'
+        WHEN lower(column_name) = 'client_id' THEN 'join_client'
+        WHEN lower(column_name) LIKE '%subcategor%' THEN 'subcategory'
+        WHEN lower(column_name) LIKE '%category%' THEN 'category'
+        WHEN lower(column_name) LIKE '%categor%' THEN 'categoria'
+        WHEN lower(column_name) LIKE '%mcc%' THEN 'mcc'
+        WHEN lower(column_name) LIKE '%ciiu%' THEN 'ciiu'
+        WHEN lower(column_name) LIKE '%economic%activity%' THEN 'economic_activity'
+        WHEN lower(column_name) LIKE '%occupation%' THEN 'occupation'
+        WHEN lower(column_name) LIKE '%updated%' OR lower(column_name) LIKE '%load%' OR lower(column_name) LIKE '%date%' THEN 'fecha_frescura'
+        ELSE 'otro'
+    END AS concepto_sugerido
+FROM information_schema.columns
+WHERE table_schema IN (
+    'bold_gold_growth',
+    'bold_gold_growth_accounting',
+    'bold_gold_terminals'
+)
+  AND (
+      lower(column_name) LIKE '%merchant%'
+      OR lower(column_name) LIKE '%client%'
+      OR lower(column_name) LIKE '%subcategor%'
+      OR lower(column_name) LIKE '%category%'
+      OR lower(column_name) LIKE '%categor%'
+      OR lower(column_name) LIKE '%mcc%'
+      OR lower(column_name) LIKE '%ciiu%'
+      OR lower(column_name) LIKE '%economic%activity%'
+      OR lower(column_name) LIKE '%occupation%'
+      OR lower(column_name) LIKE '%updated%'
+      OR lower(column_name) LIKE '%load%'
+      OR lower(column_name) LIKE '%date%'
+  )
+ORDER BY table_schema, table_name, concepto_sugerido, ordinal_position;
+
+#	table_schema	table_name	column_name	data_type	ordinal_position	concepto_sugerido
+1	bold_gold_growth	dim_client	economic_activity_category_id	varchar	75	category
+2	bold_gold_growth	dim_client	occupation_ciiu	varchar	2	ciiu
+3	bold_gold_growth	dim_client	user_economic_activity_ciiu	varchar	60	ciiu
+4	bold_gold_growth	dim_client	kyc_primary_economic_activity_ciiu	varchar	62	ciiu
+5	bold_gold_growth	dim_client	calculated_economic_activity_ciiu	varchar	64	ciiu
+6	bold_gold_growth	dim_client	economic_activity_ciiu	varchar	73	ciiu
+7	bold_gold_growth	dim_client	user_economic_activity_description	varchar	61	economic_activity
+8	bold_gold_growth	dim_client	kyc_primary_economic_activity_description	varchar	63	economic_activity
+9	bold_gold_growth	dim_client	calculated_economic_activity_description	varchar	65	economic_activity
+10	bold_gold_growth	dim_client	economic_activity_id	varchar	71	economic_activity
+11	bold_gold_growth	dim_client	economic_activity_name	varchar	72	economic_activity
+12	bold_gold_growth	dim_client	economic_activity_description	varchar	76	economic_activity
+13	bold_gold_growth	dim_client	last_update_event_date	timestamp(3)	8	fecha_frescura
+14	bold_gold_growth	dim_client	creation_date	timestamp(3)	13	fecha_frescura
+15	bold_gold_growth	dim_client	onboarding_completion_date	timestamp(3)	16	fecha_frescura
+16	bold_gold_growth	dim_client	risk_assessment_last_recalculated_date	timestamp(3)	26	fecha_frescura
+17	bold_gold_growth	dim_client	birth_information_date	timestamp(3)	27	fecha_frescura
+18	bold_gold_growth	dim_client	tac_signing_date	timestamp(3)	38	fecha_frescura
+19	bold_gold_growth	dim_client	tac_acceptance_date	timestamp(3)	40	fecha_frescura
+20	bold_gold_growth	dim_client	migration_end_date	timestamp(3)	43	fecha_frescura
+21	bold_gold_growth	dim_client	commercial_activity_start_date	timestamp(3)	59	fecha_frescura
+22	bold_gold_growth	dim_client	kyc_registry_date	varchar	66	fecha_frescura
+23	bold_gold_growth	dim_client	last_update_event	varchar	69	fecha_frescura
+24	bold_gold_growth	dim_client	client_id	varchar	9	join_client
+25	bold_gold_growth	dim_client	merchant_id	varchar	46	join_merchant
+26	bold_gold_growth	dim_client	economic_activity_mcc	varchar	74	mcc
+27	bold_gold_growth	dim_client	occupation_name	varchar	55	occupation
+28	bold_gold_growth	dim_client	occupations	array(varchar)	70	occupation
+29	bold_gold_growth	dim_client	client_key	varchar	1	otro
+30	bold_gold_growth	dim_client	migration_merchants	varchar	42	otro
+31	bold_gold_growth	dim_client	merchant_name	varchar	44	otro
+32	bold_gold_growth	dim_client	merchant_person_type	varchar	45	otro
+33	bold_gold_growth	dim_client	merchant_acquisition_channel_extra_reference	varchar	47	otro
+34	bold_gold_growth	dim_client	merchant_acquisition_channel_referred_by	varchar	48	otro
+35	bold_gold_growth	dim_client	merchant_acquisition_channel_sales_agent_email	varchar	49	otro
+36	bold_gold_growth	dim_client	merchant_acquisition_channel_source	varchar	50	otro
+37	bold_gold_growth	dim_client	merchant_acquisition_channel_value	varchar	51	otro
+38	bold_gold_growth	dim_client	merchant_identification_document_type	varchar	52	otro
+39	bold_gold_growth	dim_client	merchant_identification_document_number	varchar	53	otro
+40	bold_gold_growth	dim_client	merchant_identification_document_verification_digit	varchar	54	otro
+41	bold_gold_growth	dim_client_georeference	geo_quality_category	varchar	37	category
+42	bold_gold_growth	dim_client_georeference	date_key	integer	1	fecha_frescura
+43	bold_gold_growth	dim_client_georeference	load_datetime	timestamp(6)	39	fecha_frescura
+44	bold_gold_growth	dim_client_georeference	client_id	varchar	3	join_client
+45	bold_gold_growth	dim_client_georeference	merchant_id	varchar	4	join_merchant
+46	bold_gold_growth	dim_coverage_zones	date_key	integer	1	fecha_frescura
+47	bold_gold_growth	dim_coverage_zones	load_datetime	timestamp(3)	15	fecha_frescura
+48	bold_gold_growth	dim_merchant_onboarding	economic_activity_category_id	varchar	10	category
+49	bold_gold_growth	dim_merchant_onboarding	economic_activity_ciiu	varchar	8	ciiu
+50	bold_gold_growth	dim_merchant_onboarding	economic_activity_id	varchar	6	economic_activity
+51	bold_gold_growth	dim_merchant_onboarding	economic_activity_name	varchar	7	economic_activity
+52	bold_gold_growth	dim_merchant_onboarding	economic_activity_description	varchar	11	economic_activity
+53	bold_gold_growth	dim_merchant_onboarding	onboarding_completion_date	timestamp(3)	4	fecha_frescura
+54	bold_gold_growth	dim_merchant_onboarding	onboarding_completed_date	timestamp(3)	54	fecha_frescura
+55	bold_gold_growth	dim_merchant_onboarding	client_id	varchar	3	join_client
+56	bold_gold_growth	dim_merchant_onboarding	merchant_id	varchar	5	join_merchant
+57	bold_gold_growth	dim_merchant_onboarding	economic_activity_mcc	varchar	9	mcc
+58	bold_gold_growth	dim_merchant_onboarding	client_key	varchar	1	otro
+59	bold_gold_growth	dim_merchant_onboarding	merchant_key	varchar	2	otro
+60	bold_gold_growth	dim_onboarding_banking	event_datetime	timestamp(3)	6	fecha_frescura
+61	bold_gold_growth	dim_onboarding_banking	load_datetime	timestamp(3)	8	fecha_frescura
+62	bold_gold_growth	dim_onboarding_banking	load_source	varchar	9	fecha_frescura
+63	bold_gold_growth	dim_onboarding_banking	load_identity	varchar	10	fecha_frescura
+64	bold_gold_growth	dim_onboarding_banking	creation_date	timestamp(3)	14	fecha_frescura
+65	bold_gold_growth	dim_onboarding_banking	completion_date	timestamp(3)	15	fecha_frescura
+66	bold_gold_growth	dim_onboarding_banking	last_update_date	timestamp(3)	16	fecha_frescura
+67	bold_gold_growth	dim_onboarding_banking	client_id	varchar	22	join_client
+68	bold_gold_growth	dim_onboarding_banking	client_key	varchar	3	otro
+69	bold_gold_growth	dim_onboarding_banking	merchants_pricing_plans	varchar	25	otro
+70	bold_gold_growth	dim_onboarding_client	event_datetime	timestamp(3)	7	fecha_frescura
+71	bold_gold_growth	dim_onboarding_client	load_datetime	timestamp(3)	9	fecha_frescura
+72	bold_gold_growth	dim_onboarding_client	load_source	varchar	10	fecha_frescura
+73	bold_gold_growth	dim_onboarding_client	load_identity	varchar	11	fecha_frescura
+74	bold_gold_growth	dim_onboarding_client	creation_date	timestamp(3)	15	fecha_frescura
+75	bold_gold_growth	dim_onboarding_client	completion_date	timestamp(3)	16	fecha_frescura
+76	bold_gold_growth	dim_onboarding_client	last_update_date	timestamp(3)	17	fecha_frescura
+77	bold_gold_growth	dim_onboarding_client	client_id	varchar	25	join_client
+78	bold_gold_growth	dim_onboarding_client	occupations	array(varchar)	57	occupation
+79	bold_gold_growth	dim_onboarding_client	client_key	varchar	3	otro
+80	bold_gold_growth	dim_onboarding_legacy	load_datetime	timestamp(3)	2	fecha_frescura
+81	bold_gold_growth	dim_onboarding_legacy	onboarding_end_date	timestamp(3)	11	fecha_frescura
+82	bold_gold_growth	dim_onboarding_legacy	creation_date	timestamp(3)	12	fecha_frescura
+83	bold_gold_growth	dim_onboarding_legacy	update_reason	varchar	25	fecha_frescura
+84	bold_gold_growth	dim_onboarding_legacy	updated_by_user_email	varchar	26	fecha_frescura
+85	bold_gold_growth	dim_onboarding_legacy	updated_by_user_id	varchar	27	fecha_frescura
+86	bold_gold_growth	dim_onboarding_legacy	updated_date	varchar	28	fecha_frescura
+87	bold_gold_growth	dim_onboarding_legacy	merchant_id	varchar	7	join_merchant
+88	bold_gold_growth	dim_onboarding_legacy	merchant_key	varchar	3	otro
+89	bold_gold_growth	dim_onboarding_legacy	client_type	varchar	13	otro
+90	bold_gold_growth	dim_onboarding_payments	economic_activity_category_id	varchar	63	category
+91	bold_gold_growth	dim_onboarding_payments	economic_activity_ciiu	varchar	61	ciiu
+92	bold_gold_growth	dim_onboarding_payments	economic_activity_id	varchar	59	economic_activity
+93	bold_gold_growth	dim_onboarding_payments	economic_activity_name	varchar	60	economic_activity
+94	bold_gold_growth	dim_onboarding_payments	economic_activity_description	varchar	64	economic_activity
+95	bold_gold_growth	dim_onboarding_payments	event_datetime	timestamp(3)	8	fecha_frescura
+96	bold_gold_growth	dim_onboarding_payments	load_datetime	timestamp(3)	10	fecha_frescura
+97	bold_gold_growth	dim_onboarding_payments	load_source	varchar	11	fecha_frescura
+98	bold_gold_growth	dim_onboarding_payments	load_identity	varchar	12	fecha_frescura
+99	bold_gold_growth	dim_onboarding_payments	creation_date	timestamp(3)	16	fecha_frescura
+100	bold_gold_growth	dim_onboarding_payments	completion_date	timestamp(3)	17	fecha_frescura
+
+
+
+-- -------------------------------------------------------------------------
+-- BLOQUE 6: columnas completas de tablas candidatas ya detectadas
+-- -------------------------------------------------------------------------
+SELECT
+    table_schema,
+    table_name,
+    ordinal_position,
+    column_name,
+    data_type
+FROM information_schema.columns
+WHERE table_schema = 'bold_gold_growth'
+  AND table_name IN (
+      'dim_client',
+      'dim_client_georeference',
+      'dim_merchant_onboarding',
+      'dim_onboarding_client',
+      'dim_onboarding_payments',
+      'dim_profiling_sales_channels',
+      'dim_coverage_zones',
+      'dim_person',
+      'dim_person_v2',
+      'dim_product',
+      'mart_merchant_enrich',
+      'mart_master_merchant_enrich',
+      'mart_master_merchant_lineage'
+  )
+ORDER BY table_schema, table_name, ordinal_position;
+
+
+#	table_schema	table_name	ordinal_position	column_name	data_type
+1	bold_gold_growth	dim_client	1	client_key	varchar
+2	bold_gold_growth	dim_client	2	occupation_ciiu	varchar
+3	bold_gold_growth	dim_client	3	origin_country	varchar
+4	bold_gold_growth	dim_client	4	kyc_company_name_normalized	varchar
+5	bold_gold_growth	dim_client	5	sales_source	varchar
+6	bold_gold_growth	dim_client	6	marketing_source	varchar
+7	bold_gold_growth	dim_client	7	contact_info_legal_name	varchar
+8	bold_gold_growth	dim_client	8	last_update_event_date	timestamp(3)
+9	bold_gold_growth	dim_client	9	client_id	varchar
+10	bold_gold_growth	dim_client	10	person_type	varchar
+11	bold_gold_growth	dim_client	11	status	varchar
+12	bold_gold_growth	dim_client	12	reason	varchar
+13	bold_gold_growth	dim_client	13	creation_date	timestamp(3)
+14	bold_gold_growth	dim_client	14	onboarding_status	varchar
+15	bold_gold_growth	dim_client	15	onboarding_reason	varchar
+16	bold_gold_growth	dim_client	16	onboarding_completion_date	timestamp(3)
+17	bold_gold_growth	dim_client	17	contact_info_business_name	varchar
+18	bold_gold_growth	dim_client	18	identification_document_type	varchar
+19	bold_gold_growth	dim_client	19	identification_document_number	varchar
+20	bold_gold_growth	dim_client	20	identification_document_verification_digit	varchar
+21	bold_gold_growth	dim_client	21	legal_representative_identification_document_type	varchar
+22	bold_gold_growth	dim_client	22	legal_representative_identification_document_number	varchar
+23	bold_gold_growth	dim_client	23	legal_representative_identification_document_verification_digit	varchar
+24	bold_gold_growth	dim_client	24	risk_assessment_score	decimal(10,0)
+25	bold_gold_growth	dim_client	25	risk_assessment_status	varchar
+26	bold_gold_growth	dim_client	26	risk_assessment_last_recalculated_date	timestamp(3)
+27	bold_gold_growth	dim_client	27	birth_information_date	timestamp(3)
+28	bold_gold_growth	dim_client	28	birth_information_country_code	varchar
+29	bold_gold_growth	dim_client	29	location_address_department_code	varchar
+30	bold_gold_growth	dim_client	30	is_foreign_currency_handled	boolean
+31	bold_gold_growth	dim_client	31	is_politically_exposed_person	boolean
+32	bold_gold_growth	dim_client	32	monthly_expenses_currency	varchar
+33	bold_gold_growth	dim_client	33	monthly_expenses_value	decimal(10,0)
+34	bold_gold_growth	dim_client	34	monthly_incomes_currency	varchar
+35	bold_gold_growth	dim_client	35	monthly_incomes_value	decimal(10,0)
+36	bold_gold_growth	dim_client	36	selected_products	varchar
+37	bold_gold_growth	dim_client	37	tac_version	varchar
+38	bold_gold_growth	dim_client	38	tac_signing_date	timestamp(3)
+39	bold_gold_growth	dim_client	39	tac_type	varchar
+40	bold_gold_growth	dim_client	40	tac_acceptance_date	timestamp(3)
+41	bold_gold_growth	dim_client	41	forced_migrated	boolean
+42	bold_gold_growth	dim_client	42	migration_merchants	varchar
+43	bold_gold_growth	dim_client	43	migration_end_date	timestamp(3)
+44	bold_gold_growth	dim_client	44	merchant_name	varchar
+45	bold_gold_growth	dim_client	45	merchant_person_type	varchar
+46	bold_gold_growth	dim_client	46	merchant_id	varchar
+47	bold_gold_growth	dim_client	47	merchant_acquisition_channel_extra_reference	varchar
+48	bold_gold_growth	dim_client	48	merchant_acquisition_channel_referred_by	varchar
+49	bold_gold_growth	dim_client	49	merchant_acquisition_channel_sales_agent_email	varchar
+50	bold_gold_growth	dim_client	50	merchant_acquisition_channel_source	varchar
+51	bold_gold_growth	dim_client	51	merchant_acquisition_channel_value	varchar
+52	bold_gold_growth	dim_client	52	merchant_identification_document_type	varchar
+53	bold_gold_growth	dim_client	53	merchant_identification_document_number	varchar
+54	bold_gold_growth	dim_client	54	merchant_identification_document_verification_digit	varchar
+55	bold_gold_growth	dim_client	55	occupation_name	varchar
+56	bold_gold_growth	dim_client	56	is_deposit_retrofit_enabled	boolean
+57	bold_gold_growth	dim_client	57	authentication_provider_id	varchar
+58	bold_gold_growth	dim_client	58	terms_and_conditions	varchar
+59	bold_gold_growth	dim_client	59	commercial_activity_start_date	timestamp(3)
+60	bold_gold_growth	dim_client	60	user_economic_activity_ciiu	varchar
+61	bold_gold_growth	dim_client	61	user_economic_activity_description	varchar
+62	bold_gold_growth	dim_client	62	kyc_primary_economic_activity_ciiu	varchar
+63	bold_gold_growth	dim_client	63	kyc_primary_economic_activity_description	varchar
+64	bold_gold_growth	dim_client	64	calculated_economic_activity_ciiu	varchar
+65	bold_gold_growth	dim_client	65	calculated_economic_activity_description	varchar
+66	bold_gold_growth	dim_client	66	kyc_registry_date	varchar
+67	bold_gold_growth	dim_client	67	kyc_organization_type	varchar
+68	bold_gold_growth	dim_client	68	kyc_legal_entity_type	varchar
+69	bold_gold_growth	dim_client	69	last_update_event	varchar
+70	bold_gold_growth	dim_client	70	occupations	array(varchar)
+71	bold_gold_growth	dim_client	71	economic_activity_id	varchar
+72	bold_gold_growth	dim_client	72	economic_activity_name	varchar
+73	bold_gold_growth	dim_client	73	economic_activity_ciiu	varchar
+74	bold_gold_growth	dim_client	74	economic_activity_mcc	varchar
+75	bold_gold_growth	dim_client	75	economic_activity_category_id	varchar
+76	bold_gold_growth	dim_client	76	economic_activity_description	varchar
+77	bold_gold_growth	dim_client_georeference	1	date_key	integer
+78	bold_gold_growth	dim_client_georeference	2	provider_id	varchar
+79	bold_gold_growth	dim_client_georeference	3	client_id	varchar
+80	bold_gold_growth	dim_client_georeference	4	merchant_id	varchar
+81	bold_gold_growth	dim_client_georeference	5	standardized_address	varchar
+82	bold_gold_growth	dim_client_georeference	6	address_principal_road	varchar
+83	bold_gold_growth	dim_client_georeference	7	address_plate_number	varchar
+84	bold_gold_growth	dim_client_georeference	8	address_generating_road	varchar
+85	bold_gold_growth	dim_client_georeference	9	address_aggregation	varchar
+86	bold_gold_growth	dim_client_georeference	10	address_remainder	varchar
+87	bold_gold_growth	dim_client_georeference	11	address_complement	varchar
+88	bold_gold_growth	dim_client_georeference	12	alternate_address	varchar
+89	bold_gold_growth	dim_client_georeference	13	latitude	double
+90	bold_gold_growth	dim_client_georeference	14	longitude	double
+91	bold_gold_growth	dim_client_georeference	15	block	varchar
+92	bold_gold_growth	dim_client_georeference	16	neighborhood	varchar
+93	bold_gold_growth	dim_client_georeference	17	neighborhood_code	varchar
+94	bold_gold_growth	dim_client_georeference	18	locality	varchar
+95	bold_gold_growth	dim_client_georeference	19	locality_code	varchar
+96	bold_gold_growth	dim_client_georeference	20	municipality	varchar
+97	bold_gold_growth	dim_client_georeference	21	department	varchar
+98	bold_gold_growth	dim_client_georeference	22	dane_code	varchar
+99	bold_gold_growth	dim_client_georeference	23	postal_code	varchar
+100	bold_gold_growth	dim_client_georeference	24	address_status_code	varchar
+
+
+-- -------------------------------------------------------------------------
+-- BLOQUE 7: validar si dim_profiling_sales_channels sirve para mapear
+-- sales_agent_email -> team_lead / manager
+-- -------------------------------------------------------------------------
+SELECT
+    *
+FROM awsdatacatalog.bold_gold_growth.dim_profiling_sales_channels
+LIMIT 50;
+
+
+#	sales_channel	record_id
+1	ON_THE_MOVE	037d8bf2-e1aa-4290-8703-c820c848aa84
+2	SOCIAL_MEDIA	037d8bf2-e1aa-4290-8703-c820c848aa84
+3	SOCIAL_MEDIA	29491d94-d209-44c2-bf98-bf37e656cc53
+4	PHYSICAL_STORE	85d5cab0-49fa-42ba-be8c-3bd5c04787e0
+5	PHYSICAL_STORE	5294fa6c-a183-46c3-9647-cc0faaa4bd2a
+6	PHYSICAL_STORE	29491d94-d209-44c2-bf98-bf37e656cc53
+7	ON_THE_MOVE	29491d94-d209-44c2-bf98-bf37e656cc53
+8	SOCIAL_MEDIA	564bfcc4-1cf4-46b6-982b-d475a675d16c
+9	PHYSICAL_STORE	564bfcc4-1cf4-46b6-982b-d475a675d16c
+10	PHYSICAL_STORE	6c280789-d665-437e-b927-74fb8525ce02
+11	ON_THE_MOVE	6c280789-d665-437e-b927-74fb8525ce02
+12	WEBSITE	580dda7e-859a-4ae9-b7b7-af630c828bea
+13	PHYSICAL_STORE	580dda7e-859a-4ae9-b7b7-af630c828bea
+14	SOCIAL_MEDIA	580dda7e-859a-4ae9-b7b7-af630c828bea
+15	PHYSICAL_STORE	32c3d8d3-1f24-4327-8b08-6e3dbcd153e7
+16	PHYSICAL_STORE	508d4e42-19c3-4fd5-b113-bd951c443c3d
+17	SOCIAL_MEDIA	65cf9615-f6ff-47ed-b174-0c7822360ac2
+18	SOCIAL_MEDIA	049465ad-bf1e-4bdd-bcff-16573d56c8c1
+19	SOCIAL_MEDIA	0b79f726-b972-4346-9460-d94e113c5af4
+20	WEBSITE	508d4e42-19c3-4fd5-b113-bd951c443c3d
+21	SOCIAL_MEDIA	508d4e42-19c3-4fd5-b113-bd951c443c3d
+22	PHYSICAL_STORE	0b79f726-b972-4346-9460-d94e113c5af4
+23	ON_THE_MOVE	0b79f726-b972-4346-9460-d94e113c5af4
+24	WEBSITE	0b79f726-b972-4346-9460-d94e113c5af4
+25	SOCIAL_MEDIA	10803e22-191a-4c72-a471-567ec34db022
+26	PHYSICAL_STORE	16007930-51cd-41d8-9187-fc560952412e
+27	PHYSICAL_STORE	2b93fbbb-870b-46de-84d0-87a9b29db16d
+28	PHYSICAL_STORE	7706ea48-774d-40b8-bb94-5367be05b6c6
+29	WEBSITE	4ca7810a-32e2-4f07-890b-33cb27c19c0d
+30	PHYSICAL_STORE	9b368c90-5445-4795-9df1-f2fc73cdb4a3
+31	PHYSICAL_STORE	9c7fca09-7bc8-458e-99f0-44025e243690
+32	PHYSICAL_STORE	8622b3f3-03eb-4257-be0c-ee27bf02e725
+33	ON_THE_MOVE	7706ea48-774d-40b8-bb94-5367be05b6c6
+34	SOCIAL_MEDIA	7706ea48-774d-40b8-bb94-5367be05b6c6
+35	PHYSICAL_STORE	443e6998-8dea-4210-b748-b2521847f9b7
+36	ON_THE_MOVE	2aa3736f-76db-4f07-b368-65500c9054a9
+37	PHYSICAL_STORE	73253e88-2678-4e69-9cd5-d2144d2af8da
+38	WEBSITE	8622b3f3-03eb-4257-be0c-ee27bf02e725
+39	SOCIAL_MEDIA	8622b3f3-03eb-4257-be0c-ee27bf02e725
+40	SOCIAL_MEDIA	2aa3736f-76db-4f07-b368-65500c9054a9
+41	PHYSICAL_STORE	0b8f019c-25f7-4da2-a5f3-0f118451d69c
+42	PHYSICAL_STORE	918abab8-4e51-4809-8bfe-534d27ca7a82
+43	PHYSICAL_STORE	046a7824-f553-48ec-8919-05f2638bd0e9
+44	PHYSICAL_STORE	7a8b9f44-6308-4f31-9441-79320f212409
+45	PHYSICAL_STORE	8654e2a1-fefa-4424-afaa-12c91703822a
+46	PHYSICAL_STORE	4b320eca-b937-4154-ba6c-e3b96b6ee81d
+47	PHYSICAL_STORE	4478c167-c4e5-4ef5-83b5-6f777e3106a1
+48	PHYSICAL_STORE	85d538eb-96bc-4642-86a7-85367c8f42bd
+49	WEBSITE	6ee4b118-2b85-4d40-a8f3-47079f89c68d
+50	PHYSICAL_STORE	8c1fb8b0-0399-43a6-90d3-912b4cd96129
+
+
+
+-- -------------------------------------------------------------------------
+-- BLOQUE 8: validar si dim_client_georeference completa direccion/ciudad
+-- para los 10 merchants de prueba
+-- -------------------------------------------------------------------------
+WITH validation_merchants (merchant_id) AS (
+    VALUES
+        ('0CZTLXEOXY'),
+        ('7DVLTIUMHX'),
+        ('RMCVFJO3D8'),
+        ('60WPJO2DZX'),
+        ('8R8UIAMUC6'),
+        ('PA1LA4GGYD'),
+        ('WFK9N0809K'),
+        ('3SQNBLP4ZN'),
+        ('LG773V6IUV'),
+        ('VMKYJPDVD1')
+)
+SELECT
+    g.*
+FROM awsdatacatalog.bold_gold_growth.dim_client_georeference g
+INNER JOIN validation_merchants vm
+    ON cast(g.merchant_id AS varchar) = vm.merchant_id
+LIMIT 50;
+
+
+#	date_key	provider_id	client_id	merchant_id	standardized_address	address_principal_road	address_plate_number	address_generating_road	address_aggregation	address_remainder	address_complement	alternate_address	latitude	longitude	block	neighborhood	neighborhood_code	locality	locality_code	municipality	department	dane_code	postal_code	address_status_code	address_status_description	validation_code	plate_validation_code	source_provider	socioeconomic_level	provider_hub_name	hub_name	hub_custom_id	is_hub_zone	is_delivery_zone	is_visit_zone	geo_quality_score	geo_quality_category	idempotency_hash	load_datetime
+1	20260622		6R4NSTOTKQ	WFK9N0809K									6.156588	-75.626889																				true				ed8efbd451bb250a35fbadf1afc2da93	2026-08-27 06:03:46.913000
+2	20260622		OE6AG43RR5	RMCVFJO3D8									4.614378	-74.102753																	Hub Tequendama	HUBTEQBOG		true				004d03d1c84efb75557af91d859feaee	2026-08-27 06:03:46.913000
+3	20260622		TO87CK5OFY	8R8UIAMUC6									6.214154	-75.576793																	Hub Ciudad del Rio	HUBRIOMED		true				44ed923012cb82998e7fb271ec03463b	2026-08-27 06:03:46.913000
+4	20260622		43T9HOMMX6	LG773V6IUV									4.693238	-74.038986																	Hub Usaquen	HUBUSABOG		true				f5a4c5cdaa4c0372f228043db8cc3b8e	2026-08-27 06:03:46.913000
+5	20260622		38M3KH6JCS	60WPJO2DZX									4.64523	-74.147682																	Hub Kennedy	HUBKENBOG		true				73fbf8f0824682272f46f0760fa1be0e	2026-08-27 06:03:46.913000
+6	20260622		N1B5IVK9T3	7DVLTIUMHX									11.005408	-74.81987																	Hub Palladium	HUBPALLBQ		true				b870e2e7a7b95ae1fe4abdd610c00ea5	2026-08-27 06:03:46.913000
+7	20260622		YZTGJW0CUW	0CZTLXEOXY									11.250811	-74.203926																	Hub Santa Marta	HUBSTAMAR		true				2ceb2259f214ba762d8cddcb1269afb7	2026-08-27 06:03:46.913000
+8	20260622		SDQDF8BYT2	PA1LA4GGYD									10.857582	-74.774683																				true				5463e784ffa896c662280bd851f5879f	2026-08-27 06:03:46.913000
+9	20260622		VN7KEXXC8W	VMKYJPDVD1									11.004456	-74.80771																	Hub Palladium	HUBPALLBQ		true				4960a8b66199a2a1aa80731ac735383e	2026-08-27 06:03:46.913000
+
+
+
+
+-- -------------------------------------------------------------------------
+-- BLOQUE 9: validar si onboarding contiene email/telefono/direccion completos
+-- para los 10 merchants de prueba
+-- -------------------------------------------------------------------------
+WITH validation_merchants (merchant_id) AS (
+    VALUES
+        ('0CZTLXEOXY'),
+        ('7DVLTIUMHX'),
+        ('RMCVFJO3D8'),
+        ('60WPJO2DZX'),
+        ('8R8UIAMUC6'),
+        ('PA1LA4GGYD'),
+        ('WFK9N0809K'),
+        ('3SQNBLP4ZN'),
+        ('LG773V6IUV'),
+        ('VMKYJPDVD1')
+)
+SELECT
+    o.*
+FROM awsdatacatalog.bold_gold_growth.dim_merchant_onboarding o
+INNER JOIN validation_merchants vm
+    ON cast(o.merchant_id AS varchar) = vm.merchant_id
+LIMIT 50;
+
+
+#	client_key	merchant_key	client_id	onboarding_completion_date	merchant_id	economic_activity_id	economic_activity_name	economic_activity_ciiu	economic_activity_mcc	economic_activity_category_id	economic_activity_description	contact_info_email	contact_info_phone_number_country	contact_info_phone_number	contact_info_legal_name	contact_info_business_name	address_department_code	address_country_code	identification_document_type	identification_document_number	identification_document_verification_digit	location_coordinate_latitude	location_coordinate_longitude	name	onboarding_status	onboarding_status_reason	person_type	status	status_reason	legal_partners_information	acquisition_channel_extra_reference	acquisition_channel_referred_by	acquisition_channel_sales_agent_email	acquisition_channel_source	acquisition_channel_sales_agent_code	acquisition_channel	attachment_status	bank_account_id	bank_account_name	bank_account_ally_id	bank_account_citi_ally_id	bank_account_type	bank_account_holder_id_document_type	bank_account_holder_id_document_number	bank_account_holder_id_verification_digit	bank_account_holder_fullname	bank_account_holder_document_number_prefix	legal_representative_info_identification_document_type	legal_representative_info_identification_document_number	legal_representative_info_identification_document_verification_digit	legal_representative_info_name_first	legal_representative_info_name_last	legal_representative_info_name_full	onboarding_completed_date	seon_fingerprint	terms_and_conditions	user_id	selected_payment_method_methods	business_link
+1	860e3a2314cf27f8b78dacc9af58a133	ed1b66d94214f32cb5dd84af18cd8a56	38M3KH6JCS		60WPJO2DZX	BAR_CLUB_DISCO	Bar / Club / Discoteca	5630	5813	FOOD_AND_DRINK		enrique1888@hotmail.com	Colombia	3214258045		Altapone	CUNDINAMARCA	CO	CEDULA	1026555886				Altapone	APPROVED	SUCCESSFUL_VERIFY	NATURAL_PERSON										ATTACHED																						
+2	1ec88b2873830f877d0d0824e488bb7e	19b1c4a3403835f60918301a565d55ac	5J8QAM22E6		3SQNBLP4ZN	RESTAURANT_CAFE	Restaurante / Café	5611	5812	FOOD_AND_DRINK		latierritadelberriondo@gmail.com	Colombia	3227438193	La Tierrita Del Berriondo	La Tierrita del berriondo	CUNDINAMARCA	CO	NIT	902017706	8	0	0	La Tierrita del berriondo	APPROVED	SUCCESSFUL_VERIFY	LEGAL_PERSON			[{"identification_document":{"document_type":"CEDULA","document_number":"1193145851","document_expedition_date":{"posix_time_ns":1531440000000000000},"verification_digit":null},"name":{"first_name":"Julián Andres","last_name":"Pinilla Sierra","full_name":"Julián Andres Pinilla Sierra"},"equity_percentage":"100","legal_representative_identification_document":null}]							ATTACHED																						
+3	c877b10734633601ecc85807e0f6e63c	280aa6296039666c614c1cd74cac0505	OE6AG43RR5		RMCVFJO3D8	TECHNOLOGY_RETAIL_TRADE	Tecnología	4741	4812	RETAIL_TRADE		gustav.bonilla@gmail.com	Colombia	3045302294	Gustavo Alfonso Bonilla Gómez	Negocio de Gustavo Alfonso	CUNDINAMARCA	CO	CEDULA	1018408383		4.6144182	-74.1027962	Negocio de Gustavo Alfonso	IN_PROCESS	PENDING_INFORMATION	NATURAL_PERSON										ATTACHED																						
+4	87bd5659901a0e46bb1ceb1165f2625e	0fdf2e1184d54beb7148391aa11662bd	YZTGJW0CUW		0CZTLXEOXY	GROCERY_AND_MARKET	Abarrotes / Mercado	4781	5411	FOOD_AND_DRINK		baratondela6@gmail.com	Colombia	3239751330	jose eliberto luis tocarruncho	Negocio de jose eliberto	MAGDALENA	CO	CEDULA	4050698		11.1932493	-74.2206838	Negocio de jose eliberto	APPROVED	SUCCESSFUL_VERIFY	NATURAL_PERSON										ATTACHED																						
+5	a0e8c9560a689313b44063d438acc3ed	d67d828250c747bcb1095e4ef31f91d6	6R4NSTOTKQ		WFK9N0809K	FOUNDATION	Fundación	9499	8398	SERVICES		reportedepagos@tuhabitat.co	Colombia	3206872022	HABITAT ADULTO MAYOR SAS	HABITAT ADULTO MAYOR SAS	ANTIOQUIA	CO	NIT	900165652	5	6.1937013	-75.5677112	HABITAT ADULTO MAYOR SAS	APPROVED	SUCCESSFUL_VERIFY	LEGAL_PERSON			[{"identification_document":{"document_type":"CEDULA","document_number":"71781192","document_expedition_date":{"posix_time_ns":833846400000000000},"verification_digit":null},"name":{"first_name":"Hernán","last_name":"Ramírez López","full_name":"Hernán Ramírez López"},"equity_percentage":"100","legal_representative_identification_document":null}]							ATTACHED																						
+6	5553caf0aeb82fc7ff95dc94fd87e6ff	125de27e74ae7a1f5ce7c033e811e0c9	43T9HOMMX6		LG773V6IUV	SPA	Spa	9609	7298	BEAUTY_AND_PERSONAL_CARE		directorgeneral@trafalgarco.com.co	Colombia	3203553324	Trafalgar holdings de Colombia sas	BODYBRITE	CUNDINAMARCA	CO	NIT	901303792	4			BODYBRITE	APPROVED	SUCCESSFUL_VERIFY	LEGAL_PERSON			[{"identification_document":{"document_type":"CEDULA","document_number":"74380307","document_expedition_date":{"posix_time_ns":1025827200000000000},"verification_digit":null},"name":{"first_name":"Jorge Andres","last_name":"Brijaldo Rojas","full_name":"Jorge Andres Brijaldo Rojas"},"equity_percentage":"100","type_of_beneficiary":"LEGAL_REPRESENTATIVE","legal_representative_identification_document":null}]							ATTACHED																						
+7	deecd3d1570b42bd04626a43ab82b124	32df382b64475c2d4dca3725281f0719	N1B5IVK9T3		7DVLTIUMHX	MEDICINE_AND_DENTISTRY	Medicina / Odontología	8622	8011	SERVICES		jesusperezorozco@gmail.com	Colombia	3008001157	JM ENDOSCOPY SAS	JM ENDOSCOPY SAS	ATLANTICO	CO	NIT	900771314	1			JM ENDOSCOPY SAS	IN_PROCESS	PENDING_INFORMATION	LEGAL_PERSON			[{"identification_document":{"document_type":"CEDULA","document_number":"43206898","document_expedition_date":null,"verification_digit":null},"name":{"first_name":"NATALIA MARIA","last_name":"GUTIERREZ HENAO","full_name":"NATALIA MARIA GUTIERREZ HENAO"},"equity_percentage":"50","legal_representative_identification_document":null}]							ATTACHED																						
+8	4bb67816e7c601390561d6a5b21d2346	3e698a6f22f268182e611fa8869db95d	SDQDF8BYT2		PA1LA4GGYD	BUTCHER_SHOP	Carnicería	4723	5422	FOOD_AND_DRINK		gerencia.frigoecol@gmail.com	Colombia	3017171104	Frigoecol sas 	FRIOCARNES FRIGOECOL	ATLANTICO	CO	NIT	830501536	7			FRIOCARNES FRIGOECOL	APPROVED	SUCCESSFUL_VERIFY	LEGAL_PERSON			[{"identification_document":{"document_type":"CEDULA","document_number":"22444980","document_expedition_date":null,"verification_digit":null},"name":{"first_name":"Cielo","last_name":"Campo","full_name":"Cielo Campo"},"equity_percentage":"32","legal_representative_identification_document":null}, {"identification_document":{"document_type":"CEDULA","document_number":"1140817028","document_expedition_date":null,"verification_digit":null},"name":{"first_name":"Jeysson","last_name":"Diaz","full_name":"Jeysson  Diaz"},"equity_percentage":"25","legal_representative_identification_document":null}, {"identification_document":{"document_type":"CEDULA","document_number":"1140841521","document_expedition_date":null,"verification_digit":null},"name":{"first_name":"Julieth","last_name":"Diaz","full_name":"Julieth Diaz"},"equity_percentage":"15","legal_representative_identification_document":null}, {"identification_document":{"document_type":"CEDULA","document_number":"1140869841","document_expedition_date":null,"verification_digit":null},"name":{"first_name":"Juneisy","last_name":"Disz","full_name":"Juneisy  Disz"},"equity_percentage":"15","legal_representative_identification_document":null}, {"identification_document":{"document_type":"CEDULA","document_number":"9137229","document_expedition_date":null,"verification_digit":null},"name":{"first_name":"Guido","last_name":"Menco","full_name":"Guido Menco"},"equity_percentage":"8","legal_representative_identification_document":null}]							ATTACHED																						
+9	e9c47884404e50f92ab0e5cf92d83f20	d1bb9302d2470d3b58f4cc9a7136af1d	VN7KEXXC8W		VMKYJPDVD1	CLOTHES_AND_ACCESSORIES	Ropa / Accesorios	4771	5651	RETAIL_TRADE		tesoreria@reviewmoda.com	Colombia	3222792945	FENAJEDA SAS	REVIEW 	ATLANTICO	CO	NIT	900315753	5			REVIEW 	IN_PROCESS	PENDING_INFORMATION	LEGAL_PERSON			[{"identification_document":{"document_type":"CEDULA","document_number":"8702475","document_expedition_date":{"posix_time_ns":281163600000000000},"verification_digit":null},"name":{"first_name":"Jorge Alberto","last_name":"Castillo Astralaga","full_name":null},"equity_percentage":"100","type_of_beneficiary":"LEGAL_REPRESENTATIVE","legal_representative_identification_document":null}]							ATTACHED																						
+10	b1dd4bdc5e1d9946c5b60d56793c660b	59c4db38faab24408846ef8b0c4a8f0f	TO87CK5OFY		8R8UIAMUC6	TECHNOLOGY_RETAIL_TRADE	Tecnología	4741	4812	RETAIL_TRADE		wikielectronic18@gmail.com	Colombia	3504687921	Wiki Electrónic SAS	Wiki Electrónic	ANTIOQUIA	CO	NIT	901374005	1			Wiki Electrónic	IN_PROCESS	PENDING_INFORMATION	LEGAL_PERSON			[{"identification_document":{"document_type":"CEDULA_EXTRANJERIA","document_number":"785409","document_expedition_date":null,"verification_digit":null},"name":{"first_name":"Elvis Arnaldo","last_name":"Rivas Barrios","full_name":"Elvis Arnaldo Rivas Barrios"},"equity_percentage":"100","type_of_beneficiary":null,"legal_representative_identification_document":null}]							ATTACHED																						
+
+
+
+
