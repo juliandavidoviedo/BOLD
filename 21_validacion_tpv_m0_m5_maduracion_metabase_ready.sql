@@ -61,3 +61,9 @@ LEFT JOIN maturity m
     ON vm.merchant_id = m.merchant_id
 GROUP BY vm.merchant_id
 ORDER BY vm.merchant_id
+
+
+##resultado
+#	merchant_id	mes_m0	mes_m5	tpv_m0	tpv_m1	tpv_m2	tpv_m3	tpv_m4	tpv_m5	tx_m0	tx_m1	tx_m2	tx_m3	tx_m4	tx_m5	meses_con_tpv_m0_m5
+1	0CZTLXEOXY	2026-01-01		29710980.0000	16182220.0000	0.0000	0.0000	0.0000	0.0000	704	392	0	0	0	0	2
+2	LG773V6IUV	2026-01-01	2026-06-01	71125136.0000	358055722.0000	450311189.0000	413367068.0000	493601740.0000	511800632.0000	141	764	747	761	867	884	6
