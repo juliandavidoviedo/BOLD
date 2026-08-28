@@ -1,0 +1,429 @@
+
+-- 1) Revisar todas las columnas disponibles para personas y jerarquía
+SELECT table_schema, table_name, ordinal_position, column_name, data_type
+FROM information_schema.columns
+WHERE (
+    (table_schema = 'bold_gold_sales' AND table_name IN (
+        'dim_crm_users', 'dim_user_bamboo_information',
+        'dim_user_bamboo_information_history'
+    ))
+    OR (table_schema = 'bold_gold_growth' AND table_name IN (
+        'dim_person', 'dim_person_v2'
+    ))
+)
+ORDER BY table_schema, table_name, ordinal_position;
+
+#	table_schema	table_name	ordinal_position	column_name	data_type
+1	bold_gold_growth	dim_person	1	id	varchar
+2	bold_gold_growth	dim_person	2	load_identity	varchar
+3	bold_gold_growth	dim_person	3	event_partition	integer
+4	bold_gold_growth	dim_person	4	business_datetime	timestamp(3)
+5	bold_gold_growth	dim_person	5	event_datetime	timestamp(3)
+6	bold_gold_growth	dim_person	6	event_timestamp	bigint
+7	bold_gold_growth	dim_person	7	terms_and_conditions__acceptance_date	timestamp(3)
+8	bold_gold_growth	dim_person	8	birth_day	timestamp(3)
+9	bold_gold_growth	dim_person	9	load_datetime	timestamp(3)
+10	bold_gold_growth	dim_person	10	merchant_id	varchar
+11	bold_gold_growth	dim_person	11	resource_id	varchar
+12	bold_gold_growth	dim_person	12	birth_place	varchar
+13	bold_gold_growth	dim_person	13	birthplace_city__code	varchar
+14	bold_gold_growth	dim_person	14	birthplace_city__name	varchar
+15	bold_gold_growth	dim_person	15	birthplace_department__code	varchar
+16	bold_gold_growth	dim_person	16	birthplace_department__name	varchar
+17	bold_gold_growth	dim_person	17	birthplace_country__code	varchar
+18	bold_gold_growth	dim_person	18	birthplace_country__name	varchar
+19	bold_gold_growth	dim_person	19	name	varchar
+20	bold_gold_growth	dim_person	20	last_name	varchar
+21	bold_gold_growth	dim_person	21	terms_and_conditions__version	varchar
+22	bold_gold_growth	dim_person	22	update_reason	varchar
+23	bold_gold_growth	dim_person	23	updated_by_user_email	varchar
+24	bold_gold_growth	dim_person	24	updated_by_user_id	varchar
+25	bold_gold_growth	dim_person	25	person_type	varchar
+26	bold_gold_growth	dim_person	26	role	varchar
+27	bold_gold_growth	dim_person	27	user_status	varchar
+28	bold_gold_growth	dim_person_v2	1	id	varchar
+29	bold_gold_growth	dim_person_v2	2	load_identity	varchar
+30	bold_gold_growth	dim_person_v2	3	business_datetime	timestamp(6)
+31	bold_gold_growth	dim_person_v2	4	event_datetime	timestamp(6)
+32	bold_gold_growth	dim_person_v2	5	event_timestamp	bigint
+33	bold_gold_growth	dim_person_v2	6	terms_and_conditions__acceptance_date	timestamp(6)
+34	bold_gold_growth	dim_person_v2	7	birth_day	timestamp(6)
+35	bold_gold_growth	dim_person_v2	8	load_datetime	timestamp(6)
+36	bold_gold_growth	dim_person_v2	9	merchant_id	varchar
+37	bold_gold_growth	dim_person_v2	10	resource_id	varchar
+38	bold_gold_growth	dim_person_v2	11	birth_place	varchar
+39	bold_gold_growth	dim_person_v2	12	birthplace_city__code	varchar
+40	bold_gold_growth	dim_person_v2	13	birthplace_city__name	varchar
+41	bold_gold_growth	dim_person_v2	14	birthplace_department__code	varchar
+42	bold_gold_growth	dim_person_v2	15	birthplace_department__name	varchar
+43	bold_gold_growth	dim_person_v2	16	birthplace_country__code	varchar
+44	bold_gold_growth	dim_person_v2	17	birthplace_country__name	varchar
+45	bold_gold_growth	dim_person_v2	18	name	varchar
+46	bold_gold_growth	dim_person_v2	19	last_name	varchar
+47	bold_gold_growth	dim_person_v2	20	terms_and_conditions__version	varchar
+48	bold_gold_growth	dim_person_v2	21	update_reason	varchar
+49	bold_gold_growth	dim_person_v2	22	updated_by_user_email	varchar
+50	bold_gold_growth	dim_person_v2	23	updated_by_user_id	varchar
+51	bold_gold_growth	dim_person_v2	24	person_type	varchar
+52	bold_gold_growth	dim_person_v2	25	role	varchar
+53	bold_gold_growth	dim_person_v2	26	user_status	varchar
+54	bold_gold_sales	dim_crm_users	1	event_timestamp	bigint
+55	bold_gold_sales	dim_crm_users	2	load_datetime	timestamp(3)
+56	bold_gold_sales	dim_crm_users	3	user_id	varchar
+57	bold_gold_sales	dim_crm_users	4	company	varchar
+58	bold_gold_sales	dim_crm_users	5	email	varchar
+59	bold_gold_sales	dim_crm_users	6	parent_id	varchar
+60	bold_gold_sales	dim_crm_users	7	role	varchar
+61	bold_gold_sales	dim_crm_users	8	sales_channel	varchar
+62	bold_gold_sales	dim_crm_users	9	status	varchar
+63	bold_gold_sales	dim_crm_users	10	country_code	varchar
+64	bold_gold_sales	dim_crm_users	11	metadata	varchar
+65	bold_gold_sales	dim_crm_users	12	parent_previous_id	varchar
+66	bold_gold_sales	dim_crm_users	13	event_partition	integer
+67	bold_gold_sales	dim_user_bamboo_information	1	user_id	varchar
+68	bold_gold_sales	dim_user_bamboo_information	2	reports_to	varchar
+69	bold_gold_sales	dim_user_bamboo_information	3	supervisor_id	varchar
+70	bold_gold_sales	dim_user_bamboo_information	4	city	varchar
+71	bold_gold_sales	dim_user_bamboo_information	5	region	varchar
+72	bold_gold_sales	dim_user_bamboo_information	6	hub_custom_id	varchar
+73	bold_gold_sales	dim_user_bamboo_information	7	hub_name	varchar
+74	bold_gold_sales	dim_user_bamboo_information	8	job_title	varchar
+75	bold_gold_sales	dim_user_bamboo_information	9	channel	varchar
+76	bold_gold_sales	dim_user_bamboo_information	10	status	varchar
+77	bold_gold_sales	dim_user_bamboo_information	11	vinculation_status	varchar
+78	bold_gold_sales	dim_user_bamboo_information	12	division	varchar
+79	bold_gold_sales	dim_user_bamboo_information	13	career_level	varchar
+80	bold_gold_sales	dim_user_bamboo_information	14	is_temporary_position	varchar
+81	bold_gold_sales	dim_user_bamboo_information	15	new_position	varchar
+82	bold_gold_sales	dim_user_bamboo_information	16	is_double_position	varchar
+83	bold_gold_sales	dim_user_bamboo_information	17	length_of_service	varchar
+84	bold_gold_sales	dim_user_bamboo_information	18	hire_date	date
+85	bold_gold_sales	dim_user_bamboo_information	19	start_date	date
+86	bold_gold_sales	dim_user_bamboo_information	20	end_date	date
+87	bold_gold_sales	dim_user_bamboo_information	21	retirement_date	date
+88	bold_gold_sales	dim_user_bamboo_information	22	custom_date	date
+89	bold_gold_sales	dim_user_bamboo_information	23	squad	varchar
+90	bold_gold_sales	dim_user_bamboo_information	24	cost_center	varchar
+91	bold_gold_sales	dim_user_bamboo_information	25	retirement_type	varchar
+92	bold_gold_sales	dim_user_bamboo_information	26	termination_date	date
+93	bold_gold_sales	dim_user_bamboo_information	27	termination_reason	varchar
+94	bold_gold_sales	dim_user_bamboo_information	28	event_timestamp	bigint
+95	bold_gold_sales	dim_user_bamboo_information	29	event_datetime	timestamp(6)
+96	bold_gold_sales	dim_user_bamboo_information	30	load_datetime	timestamp(6)
+97	bold_gold_sales	dim_user_bamboo_information_history	1	user_id	varchar
+98	bold_gold_sales	dim_user_bamboo_information_history	2	reports_to	varchar
+99	bold_gold_sales	dim_user_bamboo_information_history	3	supervisor_id	varchar
+100	bold_gold_sales	dim_user_bamboo_information_history	4	city	varchar
+
+-- 2) Muestra segura de usuarios CRM.
+-- No usar SELECT *: metadata puede contener secretos o información sensible.
+SELECT
+    user_id,
+    email,
+    role,
+    parent_id,
+    sales_channel,
+    status,
+    country_code,
+    load_datetime
+FROM awsdatacatalog.bold_gold_sales.dim_crm_users
+LIMIT 100;
+
+#	user_id	email	role	parent_id	sales_channel	status	country_code	load_datetime
+1	0W36ZE75P1	maribel.gallego@bold.co	EXECUTIVE	A0YZFGCI1Y	SAAS	INACTIVE	CO	2026-07-09 19:05:54.117
+2	7B1NGNIJN7	jhon.martinez@bold.co	EXECUTIVE	F9K4DXL3C7	SMB	INACTIVE	CO	2026-07-09 19:05:54.117
+3	LPTMTUKBW7	daniela.carvajal@bold.co	EXECUTIVE	LPTMTUKBW7	HUBS	ACTIVE	CO	2026-07-10 07:06:12.535
+4	BAZ6OJFEW1	ruben.acevedo@bold.co	EXECUTIVE	KC1MMLIDE2	HUBS	INACTIVE	CO	2026-06-19 13:05:19.567
+5	D6SS6XTJ3B	jennifer.pineda@bold.co	EXECUTIVE	1YXZQ7ZE02	HUBS	INACTIVE	CO	2026-07-08 19:06:24.286
+6	QG9PO7M1DS	juan.ortiz@bold.co	MANAGER	0BANJI8FWQ	HUBS	INACTIVE	CO	2026-07-08 19:06:24.286
+7	MWOL97XV9T	carolina.gomez@bold.co	EXECUTIVE	MWOL97XV9T	SMB	INACTIVE	CO	2026-06-30 16:05:39.053
+8	N335BO6SK0	monica.albornoz@bold.co	EXECUTIVE	KC1MMLIDE2	HUBS	INACTIVE	CO	2026-06-30 13:05:44.625
+9	O3ZVFGDRHZ	roger.moscoso@bold.co	EXECUTIVE	UKO9SCKDNN	SMB	INACTIVE	CO	2026-06-30 19:06:02.795
+10	5Z5018FEEL	johan.moreno@bold.co	EXECUTIVE	UKO9SCKDNN	SMB	INACTIVE	CO	2026-07-01 10:05:48.949
+11	YXI9D2Y3H5	isidro.gavilan@bold.co	EXECUTIVE	UKO9SCKDNN	SMB	INACTIVE	CO	2026-07-01 07:05:46.704
+12	ODAAAKMVGQ	alexandra.acevedo@bold.co	EXECUTIVE	ODAAAKMVGQ	SMB	INACTIVE	CO	2026-06-18 10:06:59.009
+13	FJTJ3S0ZCQ	jorlys.aragon@bold.co	EXECUTIVE	0QMD0EGI0T	HUBS	INACTIVE	CO	2026-06-18 10:06:59.009
+14	WGNAPHFS4B	luis.trujillo@bold.co	SPIDER_EXECUTIVE	6TO5TNYLK2	SMB	INACTIVE	CO	2026-06-18 10:06:59.009
+15	YOHI3XCVGZ	luz.parrado@bold.co	EXECUTIVE	1IB8L2O8KE	HUBS	INACTIVE	CO	2026-07-06 13:06:19.430
+16	9N9R74WHB1	andrea.florez@bold.co	EXECUTIVE	9N9R74WHB1	HUBS	INACTIVE	CO	2026-08-12 13:04:55.409
+17	CZ8A1BOPN6	rafael.gonzalez@bold.co	SUPER_ADMIN	CZ8A1BOPN6	INBOUND	ACTIVE	CO	2026-07-10 13:05:50.916
+18	DT467Y65IN	jeancarlo.victoria@bold.co	EXECUTIVE	DT467Y65IN	BOLD_STORE	ACTIVE	CO	2026-08-25 19:06:11.538
+19	4I9BE8VQ4Y	angela.ramirez@bold.co	SUPER_ADMIN	4I9BE8VQ4Y	HUBS	ACTIVE	PE	2026-08-18 16:04:42.029
+20	RM0W34H9ZA	felipe.mojica@bold.co	SUPER_ADMIN	RM0W34H9ZA	INBOUND	ACTIVE	PE	2026-08-11 13:04:37.010
+21	IXDDCFJ7LM	paula.restrepo@bold.co	EXECUTIVE	XWC0Q87QHB	SMB	INACTIVE	CO	2026-08-19 13:04:47.532
+22	I3R6CBRPA5	johanna.suarez@bold.co	SPIDER_EXECUTIVE	HKSVUY2MZ1	SMB	INACTIVE	CO	2026-08-19 13:04:47.532
+23	9VFXYZLS11	jessica.gonzalez@bold.co	SPIDER_EXECUTIVE	6TO5TNYLK2	SMB	INACTIVE	CO	2026-07-15 19:05:29.133
+24	30OE6M3YSL	alejandro.garcia@bold.co	EXECUTIVE	30OE6M3YSL	SMB	INACTIVE	CO	2026-07-15 19:05:29.133
+25	WQPV5TDUJ4	leidy.marin@bold.co	EXECUTIVE	1YXZQ7ZE02	HUBS	INACTIVE	CO	2026-07-15 19:05:29.133
+26	KV3B3G4E2M	paola.olarte@bold.co	EXECUTIVE	1YXZQ7ZE02	HUBS	INACTIVE	CO	2026-07-15 19:05:29.133
+27	FGYHUQ3E9I	wilmar.vanegas@bold.co	LEADER	3UQQ20EJ2M	SMB	INACTIVE	CO	2026-08-10 13:04:29.179
+28	FGTBIEJ54Q	xavier.jauregui@bold.co	EXECUTIVE	CU8M8OY22N	HUBS	INACTIVE	CO	2026-08-10 13:04:29.179
+29	DIGIB2BNHL	richard.sanchez@bold.co	EXECUTIVE	L3DLIW2SZR	HUBS	INACTIVE	CO	2026-08-10 13:04:29.179
+30	1NT740J2VW	jeisson.alvis@bold.co	SUPER_ADMIN	1NT740J2VW	INBOUND	ACTIVE	PE	2026-08-10 13:04:29.179
+31	TMBGI6JK9O	juan.urrego@boldcf.co	SUPER_ADMIN	TMBGI6JK9O	INBOUND	ACTIVE	PE	2026-08-10 13:04:29.179
+32	VLFRCLI8WY	jose.mazo@boldcf.co	SUPER_ADMIN	VLFRCLI8WY	INBOUND	ACTIVE	PE	2026-08-10 13:04:29.179
+33	XEULPNODV1	nicolas.rocha@bold.co	SUPER_ADMIN	XEULPNODV1	INBOUND	ACTIVE	PE	2026-08-10 13:04:29.179
+34	ED48ICJV3L	jonathan.garzon@bold.co	SUPER_ADMIN	ED48ICJV3L	INBOUND	ACTIVE	PE	2026-08-10 13:04:29.179
+35	NQ795WTJH6	fabiola.morales@bold.co	MANAGER	NQ795WTJH6	HUBS	ACTIVE	PE	2026-08-10 16:04:41.174
+36	LFSWHI522E	andres.vallejo.inactivo@bold.co	EXECUTIVE	UKO9SCKDNN	SAAS	INACTIVE	CO	2026-07-14 10:05:49.306
+37	ON4PBQTA0I	andrea.garcia@bold.co	EXECUTIVE	JB3J5VB1YZ	SMB	INACTIVE	CO	2026-07-14 10:05:49.306
+38	6TO5TNYLK2	manuel.capera@bold.co	SPIDER_LEADER	YD737L2WBC	SMB	INACTIVE	CO	2026-07-14 13:05:37.504
+39	ZV5QYEIRUX	sarita.garcia@bold.co	EXECUTIVE	HGGPZJQG4C	SMB	INACTIVE	CO	2026-06-25 10:06:15.578
+40	XUUP6RO19Z	mauricio.osorio@bold.co	EXECUTIVE	XUUP6RO19Z	HUBS	INACTIVE	CO	2026-06-25 13:06:49.277
+41	SCVYUG9XKR	gilber.arias@bold.co	EXECUTIVE	6RI9OWITNA	HUBS	INACTIVE	CO	2026-08-05 13:06:26.593
+42	5D8LLUP40V	manuel.carrillo@bold.co	EXECUTIVE	8M91US5I2E	HUBS	INACTIVE	CO	2026-08-05 13:06:26.593
+43	BVIZPNWIQN	jhon.cuta@bold.co	EXECUTIVE	0ATEG4USLQ	HUBS	INACTIVE	CO	2026-08-05 13:06:26.593
+44	YI79NFERK6	sebastian.zuleta@bold.co	EXECUTIVE	A2MWIY0A2Q	HUBS	INACTIVE	CO	2026-08-05 13:06:26.593
+45	ICHEM9NHF7	carolina.aguilar@bold.co	EXECUTIVE	VI41NLOPU6	SMB	INACTIVE	CO	2026-08-05 13:06:26.593
+46	70H3YHGDB4	rocio.siza@bold.co	EXECUTIVE	8M91US5I2E	HUBS	INACTIVE	CO	2026-08-05 13:06:26.593
+47	YC0H9PWL0H	daniela.giraldo@bold.co	EXECUTIVE	YC0H9PWL0H	HUBS	INACTIVE	CO	2026-08-05 13:06:26.593
+48	JGODHLESNB	stefany.lopez@bold.co	EXECUTIVE	YM406ZL574	HUBS	INACTIVE	CO	2026-08-05 13:06:26.593
+49	HTW4A5FU2S	rodolfo.robledo@bold.co	EXECUTIVE	K97U2C95M0	SMB	INACTIVE	CO	2026-08-05 13:06:26.593
+50	HM0RREGES3	sebastian.trujillo@bold.co	EXECUTIVE	FY3NTT3AG2	HUBS	INACTIVE	CO	2026-07-01 13:05:35.114
+51	AC2QUJFHL8	catalina.londono@bold.co	EXECUTIVE	HGGPZJQG4C	SMB	INACTIVE	CO	2026-07-01 13:05:35.114
+52	585M2N89R4	jordan.bermudez@bold.co	EXECUTIVE	RG9Z9RN9JA	HUBS	INACTIVE	CO	2026-08-26 10:05:48.353
+53	57NG4UDAAB	carolina.sanjuan@bold.co	SPIDER_EXECUTIVE	U8O1XFV6LL	SMB	INACTIVE	CO	2026-08-26 10:05:48.353
+54	T8DNJQP8KP	luisa.zapata@bold.co	EXECUTIVE	AHYFKZ8KDT	HUBS	INACTIVE	CO	2026-08-26 10:05:48.353
+55	EUVBEDPRDR	brian.torres@bold.co	ADMIN	EUVBEDPRDR	SMB	ACTIVE	PE	2026-08-26 16:05:28.033
+56	S7IYLXT3M0	alejandra.campo@bold.co	EXECUTIVE	F9K4DXL3C7	SMB	INACTIVE	CO	2026-08-26 10:05:48.353
+57	XYAWOK6TBR	diana.mejia@bold.co	EXECUTIVE	CU8M8OY22N	HUBS	INACTIVE	CO	2026-08-26 10:05:48.353
+58	UOZ0I99EMM	luis.alvarez@bold.co	EXECUTIVE	14DVZ0G1AM	HUBS	INACTIVE	CO	2026-08-26 10:05:48.353
+59	3IUZM8Z1EV	andres.espitia@bold.co	SUPER_ADMIN	3IUZM8Z1EV	INBOUND	ACTIVE	PE	2026-08-26 16:05:28.033
+60	5LCP2I7A4E	alfredo.deluque@bold.co	EXECUTIVE	5LCP2I7A4E	HUBS	INACTIVE	CO	2026-06-25 13:06:49.277
+61	CKXIJ28ANA	pedro.solano@bold.co	EXECUTIVE	NZGGG3QQGN	SMB	INACTIVE	CO	2026-06-25 13:06:49.277
+62	MNZCB3W9R8	jorge.marin@bold.co	ADMIN	MNZCB3W9R8	SMB	ACTIVE	CO	2026-08-07 07:04:31.424
+63	BJBW0VC44S	felipe.vargas@bold.co	ADMIN	7U7WI8VTRF	SMB	ACTIVE	CO	2026-08-06 19:04:45.189
+64	P223BYQ1US	jhostin.restrepo@bold.co	EXECUTIVE	LY2PQ36X7Q	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+65	T3KO22HS7A	cesar.giraldo@bold.co	EXECUTIVE	GTY0ZQ59R6	ENTERPRISE	ACTIVE	CO	2026-08-27 10:05:09.323
+66	PE4F0NZ0S0	ronald.torrenegra@bold.co	EXECUTIVE	0QMD0EGI0T	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+67	1B0COI8PNP	estefania.torres@bold.co	EXECUTIVE	F35417DS0R	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+68	LQL6AXXOSV	catalina.aleman@bold.co	EXECUTIVE	0ATEG4USLQ	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+69	OLVOQO3BQV	milena.charris@bold.co	EXECUTIVE	B1ETH8RKIY	SMB	ACTIVE	CO	2026-08-27 10:05:09.323
+70	B1ZFILII5W	marylin.rangel@bold.co	SPIDER_EXECUTIVE	B1ZFILII5W	SMB	ACTIVE	CO	2026-08-27 10:05:09.323
+71	YZ89OP820K	dilian.mosquera@bold.co	EXECUTIVE	BV03N200E9	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+72	P9CWP565OV	edinson.rodriguez@bold.co	EXECUTIVE	ICFPWBFX1A	SMB	ACTIVE	CO	2026-08-27 10:05:09.323
+73	WX2PAM845F	paola.casas@bold.co	EXECUTIVE	NZGGG3QQGN	SMB	ACTIVE	CO	2026-08-27 10:05:09.323
+74	VI41NLOPU6	aviluz.molina@bold.co	MANAGER	0BANJI8FWQ	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+75	70K072IEKF	victor.espana@bold.co	EXECUTIVE	BV03N200E9	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+76	ZUE6EBLIV8	viviana.mora@bold.co	EXECUTIVE	A0YZFGCI1Y	SAAS	ACTIVE	CO	2026-08-27 10:05:09.323
+77	2VFGMB4KKB	freddy.villanueva@bold.co	EXECUTIVE	8M91US5I2E	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+78	JB3J5VB1YZ	carolina.santos@bold.co	LEADER	D3TSS47WXG	SMB	ACTIVE	CO	2026-08-27 10:05:09.323
+79	5ZCEMG0GBJ	laura.pena@bold.co	EXECUTIVE	8CCTQMFQS4	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+80	49Z8OJM7NF	nicholas.rendon@bold.co	EXECUTIVE	F35417DS0R	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+81	H1SI8K0PNT	july.bula@bold.co	HUB_LEADER	46650BRTY1	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+82	475DJVOXXA	jordeth.munar@bold.co	EXECUTIVE	HKSVUY2MZ1	INBOUND	ACTIVE	CO	2026-08-27 10:05:09.323
+83	BY4O2NZZA3	yisela.ramirez@bold.co	EXECUTIVE	9K4A0SXV6N	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+84	12F9CXLH69	felipe.gutierrez@bold.co	EXECUTIVE	A0YZFGCI1Y	SAAS	ACTIVE	CO	2026-08-27 10:05:09.323
+85	3FEP41YH31	victor.garrido@bold.co	EXECUTIVE	L3DLIW2SZR	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+86	JZMNCQGNSU	pedro.pardo@bold.co	EXECUTIVE	HPKUFM5VAQ	SMB	ACTIVE	CO	2026-08-27 10:05:09.323
+87	JAU1RR2RGT	bairon.granada@bold.co	SPIDER_EXECUTIVE	U8O1XFV6LL	SMB	ACTIVE	CO	2026-08-27 10:05:09.323
+88	AJ3W5REF6S	andrea.espejo@bold.co	EXECUTIVE	77754JO5T3	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+89	K0YKCUU1WR	leidy.vaquiro@bold.co	EXECUTIVE	H1SI8K0PNT	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+90	IVCRHU79KH	felipe.loaiza@bold.co	SPIDER_EXECUTIVE	U8O1XFV6LL	SMB	ACTIVE	CO	2026-08-27 10:05:09.323
+91	Y5Y0JVX3UC	karen.barragan@bold.co	EXECUTIVE	A9J0LLB4KS	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+92	26HGP6Z1YI	laura.quintero@bold.co	EXECUTIVE	OGGVCZIA5X	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+93	F9K4DXL3C7	douglas.chica@bold.co	LEADER	BQU8H48L3N	SMB	ACTIVE	CO	2026-08-27 10:05:09.323
+94	9IQP229WPV	oscar.bustos@bold.co	EXECUTIVE	1YGYOELDY5	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+95	LHC1RC4IN9	stevens.espinosa@bold.co	EXECUTIVE	XWC0Q87QHB	SMB	ACTIVE	CO	2026-08-27 10:05:09.323
+96	SE5BEX29XR	carlos.vela@bold.co	EXECUTIVE	HTH0H9R77B	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+97	4D12LWJ6FI	camila.pineres@bold.co	EXECUTIVE	A2MWIY0A2Q	HUBS	ACTIVE	CO	2026-08-27 10:05:09.323
+98	KT91VIIYAX	claudia.romero@bold.co	EXECUTIVE	1KA41SKQ87	SMB	ACTIVE	CO	2026-08-27 10:05:09.323
+99	BDFORFIR83	carolina.duarte@bold.co	EXECUTIVE	HPKUFM5VAQ	SMB	ACTIVE	CO	2026-08-27 10:05:09.323
+100	JV7YOBZSRS	carolina.borja@bold.co	EXECUTIVE	F9K4DXL3C7	SMB	ACTIVE	CO	2026-08-27 10:05:09.323
+
+
+-- 3) Muestra de información Bamboo/personas
+SELECT *
+FROM awsdatacatalog.bold_gold_sales.dim_user_bamboo_information
+LIMIT 100;
+
+#	user_id	reports_to	supervisor_id	city	region	hub_custom_id	hub_name	job_title	channel	status	vinculation_status	division	career_level	is_temporary_position	new_position	is_double_position	length_of_service	hire_date	start_date	end_date	retirement_date	custom_date	squad	cost_center	retirement_type	termination_date	termination_reason	event_timestamp	event_datetime	load_datetime
+1	AC2QUJFHL8	Leslie Grajales  Morales	1045050082					SMB Sales Executive	SMB	Active	Bold.co		Beginner				7 months, 27 days	2025-11-04										1782921763642341757	2026-07-01 11:02:43.642000	2026-08-27 10:18:09.015000
+2	HM0RREGES3	Luz Sánchez Ladino	52535281					Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				5 months, 19 days	2026-01-13										1782921800111097508	2026-07-01 11:03:20.111000	2026-08-27 10:18:09.015000
+3	N335BO6SK0	Michael Restrepo Córdoba	1017214176					Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				3 months, 29 days	2026-03-09										1782838996088090350	2026-06-30 12:03:16.088000	2026-08-27 10:18:09.015000
+4	MWOL97XV9T	Martha Angarita Fuentes	27606444					SMB Sales Executive	SMB	Active	Bold.co						29 days	2026-06-01										1782839045755651981	2026-06-30 12:04:05.755000	2026-08-27 10:18:09.015000
+5	46650BRTY1	Diana Calvo Rodriguez	30230638					Hubs Farmer Sales Manager	Hubs	Active	Bold.co						3 months, 17 days	2026-04-06										1785160868972913760	2026-07-27 09:01:08.972000	2026-08-27 10:18:09.015000
+6	EPE72LVOJB	Sebastian Rojas Sierra	1128433591					SMB Sales Executive	SMB	Active	Bold.co						1 month, 22 days	2026-06-01										1785160812874565124	2026-07-27 09:00:12.874000	2026-08-27 10:18:09.015000
+7	QG9PO7M1DS	Diana Calvo Rodriguez	30230638		Oriente	NA	No Aplica	Hubs Sales Manager	Hubs	Active	Bold.co						1 year, 21 days	2025-06-16				2025-09-01						1783544337399445525	2026-07-08 15:58:57.399000	2026-08-27 10:18:09.015000
+8	IXDDCFJ7LM	Sebastian Rojas Sierra	1128433591					SMB Sales Executive	SMB	Active	Bold.co		Beginner				9 months, 15 days	2025-11-04										1787158260286897667	2026-08-19 11:51:00.286000	2026-08-27 10:18:09.015000
+9	I3R6CBRPA5	Santiago Vanegas Monroy	1020788968		Centro	NA	No Aplica	Sales Development Representative Outbound	SMB	Active	Bold.co		Beginner				1 year, 3 months, 7 days	2025-05-12				2025-09-01						1787158309315105037	2026-08-19 11:51:49.315000	2026-08-27 10:18:09.015000
+10	BAZ6OJFEW1	Michael Restrepo Córdoba	1017214176					Hubs Sales Executive Beginner	Hubs	Active	Bold.co						3 months, 18 days	2026-04-06										1781880503939485043	2026-06-19 09:48:23.939000	2026-08-27 10:18:09.015000
+11	YC0H9PWL0H	Leidy Casas Calle	65634280					Hubs Sales Executive Beginner	Hubs	Active	Bold.co						1 month, 24 days	2026-06-09										1785940269565588183	2026-08-05 09:31:09.565000	2026-08-27 10:18:09.015000
+12	JGODHLESNB	Javier Rico Garcia	1070306819					Hubs sales executive	Hubs	Active	Bold.co		Beginner				5 months, 22 days	2026-02-09										1785940195558414285	2026-08-05 09:29:55.558000	2026-08-27 10:18:09.015000
+13	YI79NFERK6	Fabian Corredor Suarez	80757037					Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				6 months, 1 day	2026-02-02										1785940212819596061	2026-08-05 09:30:12.819000	2026-08-27 10:18:09.015000
+14	70H3YHGDB4	Cristhian Salas Cardozo	1100956039		Oriente	HUBBUCARA	Hub Bucaramanga	Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				11 months, 30 days	2025-08-04				2025-09-01						1785940616268263411	2026-08-05 09:36:56.268000	2026-08-27 10:18:09.015000
+15	39924VE9T5	Martha Angarita Fuentes	27606444					SMB Sales Executive	SMB	Active	Desvinculado						4 years, 1 month, 26 days	2022-03-01										1781648837719130158	2026-06-16 17:27:17.719000	2026-08-27 10:18:09.015000
+16	2RWWBGH9OM	Jeimy Aponte Chacon	1012398611					Hubs sales executive	Hubs	Active	Desvinculado						2 years, 6 days	2024-04-22										1781648882467512600	2026-06-16 17:28:02.467000	2026-08-27 10:18:09.015000
+17	K22M5QXV5H	Javier Rico Garcia	1070306819					Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				2 months, 25 days	2026-02-09										1781648827448588695	2026-06-16 17:27:07.448000	2026-08-27 10:18:09.015000
+18	OS35QTLQFP	Javier Rico Garcia	1070306819					Hubs Sales Executive Beginner	Hubs	Active	Bold.co						8 days	2026-06-01										1781648865989117044	2026-06-16 17:27:45.989000	2026-08-27 10:18:09.015000
+19	I5GCO9HJWG	Lizeth Pontón Albor	1082929854					Hubs Sales Executive Beginner	Hubs	Active	Bold.co						3 months, 3 days	2026-04-13										1781648860010710219	2026-06-16 17:27:40.010000	2026-08-27 10:18:09.015000
+20	G2XBD281L3	Lizeth Pontón Albor	1082929854		Norte	HUBSTAMAR	Hub Santa Marta	Hubs sales executive	Hubs	Active	Bold.co		Professional				2 years, 27 days	2024-05-06				2025-09-01						1781648867092943538	2026-06-16 17:27:47.092000	2026-08-27 10:18:09.015000
+21	U7OWCZUUGH	Christian Escobar Morales	1019056174					Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				2 months, 3 days	2026-03-09										1781648816787111520	2026-06-16 17:26:56.787000	2026-08-27 10:18:09.015000
+22	DO3Q2SUWQ0	Paula Garcia Lujan	1032457834					POS Sales Executive	POS	Active	Bold.co						5 months, 17 days	2025-11-18										1781648841447946935	2026-06-16 17:27:21.447000	2026-08-27 10:18:09.015000
+23	8TNGE870E1	Lina Rosario Dorado	1032362684					Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				2 months, 5 days	2026-03-16										1781648849907412019	2026-06-16 17:27:29.907000	2026-08-27 10:18:09.015000
+24	DZB0IGWP55	Leslie Grajales  Morales	1045050082					SMB Sales Executive	SMB	Active	Bold.co						1 month, 0 days	2026-04-06										1781648871232538577	2026-06-16 17:27:51.232000	2026-08-27 10:18:09.015000
+25	RFU2PR89QN	Michael Restrepo Córdoba	1017214176					Hubs Sales Executive Beginner	Hubs	Active	Desvinculado						2 months, 12 days	2026-02-16										1781648819867408079	2026-06-16 17:26:59.867000	2026-08-27 10:18:09.015000
+26	4YJ0NLWPB2	Jose Capera Correa	80799819		Centro	NA	No Aplica	Sales Development Representative Outbound	SMB	Active	Bold.co		Beginner				11 months, 6 days	2025-06-09				2025-09-01						1781648844228908382	2026-06-16 17:27:24.228000	2026-08-27 10:18:09.015000
+27	1ESQ8W17NY	Lina Rosario Dorado	1032362684					Hubs Sales Executive Farmer	Hubs	Inactive	Bold.co		Beginner				2 months, 11 days	2026-03-16										1781648851190324059	2026-06-16 17:27:31.190000	2026-08-27 10:18:09.015000
+28	VNT2PT06G2	Francisco Sepulveda Florez	1090469776		Oriente	HUBCUCUTA	Hub Cúcuta	Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				11 months, 3 days	2025-06-03				2025-09-01						1781648832687879736	2026-06-16 17:27:12.687000	2026-08-27 10:18:09.015000
+29	W8P1HBDZMY	Fabian Luna Cubillos	79223125						Hubs	Active	Bold.co						3 months, 4 days	2026-01-13										1781648849329157235	2026-06-16 17:27:29.329000	2026-08-27 10:18:09.015000
+30	VHEZ7PB8E4	Kelly Hamburger Castellanos	32906758					Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				6 months, 14 days	2025-11-18										1781648812887578424	2026-06-16 17:26:52.887000	2026-08-27 10:18:09.015000
+31	WAMA91HYCO	Cristhian Salas Cardozo	1100956039		Oriente	HUBBUCARA	Hub Bucaramanga	Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				8 months, 24 days	2025-09-08				2025-09-01						1781648857389630066	2026-06-16 17:27:37.389000	2026-08-27 10:18:09.015000
+32	QNTDRPNMAH	Diana Santos Romero	52354634		Centro	NA	No Aplica	SMB Sales Executive	SMB	Active	Bold.co		Professional				1 year, 1 month, 25 days	2025-03-17				2025-09-01						1781648855928662372	2026-06-16 17:27:35.928000	2026-08-27 10:18:09.015000
+33	ILJVC8MBT9	Jeimy Aponte Chacon	1012398611					Hubs sales executive	Hubs	Active	Bold.co						4 years, 11 months, 16 days	2021-05-10										1781648829790101234	2026-06-16 17:27:09.790000	2026-08-27 10:18:09.015000
+34	0A7717S8AT	Ana Lopez Vergara	42127089		Antioquia & Eje	NA	No Aplica	SMB Sales Executive	SMB	Active	Bold.co		Professional				1 year, 8 months, 24 days	2024-08-26				2025-09-01						1781648856328656070	2026-06-16 17:27:36.328000	2026-08-27 10:18:09.015000
+35	QTAJX7AO8H	Luis De La Hoz Castellar	1045682575					Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				4 months, 28 days	2025-12-09										1781648820850462769	2026-06-16 17:27:00.850000	2026-08-27 10:18:09.015000
+36	5JQX0YFK49	Martha Angarita Fuentes	27606444		Centro	NA	No Aplica	SMB Sales Executive	SMB	Active	Bold.co		Beginner				1 year, 8 months, 6 days	2024-09-02				2025-09-01						1781648867192563981	2026-06-16 17:27:47.192000	2026-08-27 10:18:09.015000
+37	YJCR2VV261	Edwar Cossio Sinisterra	1000235846					Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				1 month, 28 days	2026-03-09										1781648884909947460	2026-06-16 17:28:04.909000	2026-08-27 10:18:09.015000
+38	5YI4TNKMWJ	Edwar Cossio Sinisterra	1000235846					Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				1 month, 28 days	2026-03-09										1781648851293161289	2026-06-16 17:27:31.293000	2026-08-27 10:18:09.015000
+39	IX9FWAB95F	Jeimy Aponte Chacon	1012398611					Hubs Sales Executive Farmer	Hubs	Active	Bold.co		Beginner				1 month, 28 days	2026-03-09										1781648822011695173	2026-06-16 17:27:02.011000	2026-08-27 10:18:09.015000
+40	6E3TBX3NWC	Cristian Cardona Bedoya	1088241545					Hubs Sales Executive Beginner	Hubs	Active	Bold.co						2 months, 18 days	2026-04-06										1781648842132343975	2026-06-16 17:27:22.132000	2026-08-27 10:18:09.015000
+41	9I192BFLDF	Christian Escobar Morales	1019056174		Centro	HUBKENBOG	Hub Kennedy	Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				11 months, 29 days	2025-06-03				2025-09-01						1781648819807649569	2026-06-16 17:26:59.807000	2026-08-27 10:18:09.015000
+42	ALQO1HMVN2	Javier Rico Garcia	1070306819		Semillero		Hub Virtual	Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				5 months, 11 days	2025-11-18				2025-12-30						1781648878847868206	2026-06-16 17:27:58.847000	2026-08-27 10:18:09.015000
+43	VD198BGT2Z	Kevin Villamizar Bohórquez	1096226515		Norte		Hub Virtual	Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				5 months, 18 days	2025-11-18				2025-12-30						1781648860929236842	2026-06-16 17:27:40.929000	2026-08-27 10:18:09.015000
+44	5SQLT1LU0W	José Aldana Castro	79688626					Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				2 months, 13 days	2026-02-16										1781648857610679720	2026-06-16 17:27:37.610000	2026-08-27 10:18:09.015000
+45	Z277YU09CZ	Kelly Hamburger Castellanos	32906758					Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				4 months, 28 days	2025-12-09										1781648853270950608	2026-06-16 17:27:33.270000	2026-08-27 10:18:09.015000
+46	5V17XUOXIE	Luis Alvarez Morales	1020784946		Norte	NA	No Aplica	SMB Sales Executive	SMB	Active	Bold.co		Professional				3 years, 3 months, 27 days	2023-01-23				2025-09-01						1781648856531689697	2026-06-16 17:27:36.531000	2026-08-27 10:18:09.015000
+47	1MT46RZRTB	Veronica Vargas Velez	32184123					Hubs Sales Executive Beginner	Hubs	Active	Bold.co						3 months, 2 days	2026-04-06										1781648826707129277	2026-06-16 17:27:06.707000	2026-08-27 10:18:09.015000
+48	7IMFDT1CCC	Nohora Varón Quimbayo	1110482731		Antioquia & Eje	HUBMANZ	Hub Manizales Centro	Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				11 months, 23 days	2025-06-09				2025-09-01						1781648847890915946	2026-06-16 17:27:27.890000	2026-08-27 10:18:09.015000
+49	VTJZVPZTYM	Ana Lopez Vergara	42127089					SMB Sales Executive	SMB	Active	Bold.co						1 month, 13 days	2026-04-06										1781648820468037864	2026-06-16 17:27:00.468000	2026-08-27 10:18:09.015000
+50	58RHTMRP82	Kelly Hamburger Castellanos	32906758		Norte	HUBCARTAG	Hub Cartagena	Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				1 year, 3 months, 3 days	2025-02-03				2025-09-01						1781648866508069707	2026-06-16 17:27:46.508000	2026-08-27 10:18:09.015000
+51	PYDYM1KMV9	Veronica Vargas Velez	32184123		Antioquia & Eje	HUBARM	Hub Armenia	Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				7 months, 26 days	2025-09-08				2025-09-01						1781648866808787387	2026-06-16 17:27:46.808000	2026-08-27 10:18:09.015000
+52	KFUIIQT0T5	Kevin Villamizar Bohórquez	1096226515						Hubs	Active	Bold.co						2 years, 5 months, 10 days	2023-11-07										1781648835329038027	2026-06-16 17:27:15.329000	2026-08-27 10:18:09.015000
+53	2F4SAEQD4W	Nohora Varón Quimbayo	1110482731		Antioquia & Eje	HUBIBAGUE	Hub Ibagué	Hubs sales executive	Hubs	Active	Bold.co		Professional				2 years, 27 days	2024-05-06				2025-09-01						1781648862347634375	2026-06-16 17:27:42.347000	2026-08-27 10:18:09.015000
+54	K97U2C95M0	Yudy Barrera Ospina	31321426		Antioquia & Eje	NA	No Aplica	SMB Team Lead	SMB	Active	Bold.co		Professional				1 year, 7 months, 17 days	2024-10-15				2025-09-01						1781648882972787204	2026-06-16 17:28:02.972000	2026-08-27 10:18:09.015000
+55	0W36ZE75P1	Paula Garcia Lujan	1032457834					POS Sales Executive	SMB	Active	Bold.co		Beginner				5 months, 0 days	2026-02-09										1783630240965515934	2026-07-09 15:50:40.965000	2026-08-27 10:18:09.015000
+56	7B1NGNIJN7	Douglas Chica García	1144050764					SMB Sales Executive	SMB	Active	Bold.co		Beginner				8 months, 26 days	2025-10-14										1783630294823323516	2026-07-09 15:51:34.823000	2026-08-27 10:18:09.015000
+57	YQJW45A1QQ	Maria Gil Gonzalez	1031129564					POS Sales Executive	SMB	Active	Bold.co						1 month, 13 days	2026-07-14					3220 - SaaS	CC2SM3220				1787864897068690787	2026-08-27 16:08:17.068000	2026-08-27 19:23:10.676000
+58	N8EZ6E31LF	Victor Figueroa Ramirez	16463815					Hubs sales executive	Hubs	Active	Bold.co		Professional				9 months, 23 days	2025-11-04					2130 - Hubs	CC2SM2130				1787861151734362538	2026-08-27 15:05:51.734000	2026-08-27 19:23:10.676000
+59	HGUWZ8Z1Q1	Nelson Saldarriaga Calderón	94154816					Hubs Sales Executive Beginner	Hubs	Active	Bold.co						2 months, 18 days	2026-06-09					2130 - Hubs	CC2SM2130				1787867701966492663	2026-08-27 16:55:01.966000	2026-08-27 19:23:10.676000
+60	2PEX00TW8V	Jhoanna Briones Rendon	42146475					Outbound Sales Executive	Sales	Active	Vendemas						24 days	2026-08-03					2130 - Hubs	CP1SM2130				1787861807425664082	2026-08-27 15:16:47.425000	2026-08-27 19:23:10.676000
+61	MFVUAORVQX	Martha Angarita Fuentes	27606444		Oriente	NA	No Aplica	SMB Sales Executive	SMB	Active	Bold.co		Beginner				1 year, 4 months, 20 days	2025-04-07				2025-09-01	2170 - SMBs	CC2SM2170				1787867887247490611	2026-08-27 16:58:07.247000	2026-08-27 19:23:10.676000
+62	QZO625ZHX1	Maira Bautista Peraza	1022363630		Centro	NA	No Aplica	SMB Sales Executive	SMB	Active	Bold.co		Professional				2 years, 4 months, 12 days	2024-04-15				2025-09-01	2170 - SMBs	CC2SM2170				1787863927327609314	2026-08-27 15:52:07.327000	2026-08-27 19:23:10.676000
+63	6TO5TNYLK2	Angelica Hernández Velásquez	1019081201		Centro	NA	No Aplica	SDR Team Lead	SMB	Active	Bold.co		Junior				1 year, 7 months, 22 days	2024-11-18				2025-09-01						1784035924546734413	2026-07-14 08:32:04.546000	2026-08-27 10:18:09.015000
+64	LFSWHI522E	Maria Gil Gonzalez	1031129564					POS Sales Executive	POS	Active	Bold.co						1 month, 22 days	2026-05-11										1784035728004125314	2026-07-14 08:28:48.004000	2026-08-27 10:18:09.015000
+65	VT759G26MW	Criselen Hernández Ruza	391959		Centro	HUBCHIA	Hub Chia	Hubs sales executive	Hubs	Active	Bold.co		Senior				4 years, 10 months, 14 days	2021-10-13				2025-09-01	2130 - Hubs	CC2SM2130				1787843350174371280	2026-08-27 10:09:10.174000	2026-08-27 13:18:08.377000
+66	OIHFXCA2HL	Jose Rodríguez Molina	81740518		Centro	HUBTEQBOG	Hub Tequendama	Hubs sales executive	Hubs	Active	Bold.co		Expert				3 years, 9 months, 25 days	2022-11-02				2025-09-01	2130 - Hubs	CC2SM2130				1787843105344111068	2026-08-27 10:05:05.344000	2026-08-27 13:18:08.377000
+67	ZGKWYT4YYD	Carolina Daza González	1129564784		Norte	NA	No Aplica	SMB Sales Executive	SMB	Active	Bold.co		Professional				1 year, 10 months, 20 days	2024-10-07				2025-09-01	2170 - SMBs	CC2SM2170				1787848198167640233	2026-08-27 11:29:58.167000	2026-08-27 13:18:08.377000
+68	WJJ5UGVYP4	Diana Santos Romero	52354634		Centro	NA	No Aplica	SMB Sales Executive	SMB	Active	Bold.co		Professional				1 year, 10 months, 12 days	2024-10-15				2025-09-01	2170 - SMBs	CC2SM2170				1787846941143141622	2026-08-27 11:09:01.143000	2026-08-27 13:18:08.377000
+69	2ERC6CUCPP	Luz Sánchez Ladino	52535281					Hubs Sales Executive Beginner	Hubs	Active	Bold.co						5 months, 26 days	2026-04-13					2130 - Hubs	CC2SM2130				1787845602835922084	2026-08-27 10:46:42.835000	2026-08-27 13:18:08.377000
+70	QIL3HC5TGN	Kelly Hamburger Castellanos	32906758		Norte	HUBCARTAG	Hub Cartagena	Hubs sales executive	Hubs	Active	Bold.co		Expert				3 years, 11 months, 1 day	2022-09-26				2025-09-01	2130 - Hubs	CC2SM2130				1787846917232663122	2026-08-27 11:08:37.232000	2026-08-27 13:18:08.377000
+71	OR07KB219G	Luz Sánchez Ladino	52535281					Hubs Sales Executive Beginner	Hubs	Active	Bold.co						5 months, 26 days	2026-04-06					2130 - Hubs	CC2SM2130				1787846076897529868	2026-08-27 10:54:36.897000	2026-08-27 13:18:08.377000
+72	APX7TJNVGZ	Fabian Corredor Suarez	80757037		Centro	HUBUSABOG	Hub Usaquen	Hubs sales executive	Hubs	Active	Bold.co		Expert				2 years, 3 months, 13 days	2024-05-14				2025-09-01	2130 - Hubs	CC2SM2130				1787846545116830694	2026-08-27 11:02:25.116000	2026-08-27 13:18:08.377000
+73	29J6DVLD7V	Veronica Vargas Velez	32184123					Hubs Sales Executive Beginner	Hubs	Active	Bold.co						1 month, 26 days	2026-07-01					2130 - Hubs	CC2SM2130				1787833859913383234	2026-08-27 07:30:59.913000	2026-08-27 13:18:08.377000
+74	BWQ0G9VG4G	Juan Villalobos Jaramillo	1107048739					SMB Sales Executive	SMB	Active	Bold.co		Professional				9 months, 23 days	2025-11-04					2170 - SMBs	CC2SM2170				1787844653636701707	2026-08-27 10:30:53.636000	2026-08-27 13:18:08.377000
+75	9VFXYZLS11	Angie Rodríguez Pulido	1022992000					Sales Development Representative Outbound	SMB	Active	Bold.co		Beginner				7 months, 26 days	2025-11-18										1784151066058260393	2026-07-15 16:31:06.058000	2026-08-27 10:18:09.015000
+76	WQPV5TDUJ4	Carlos Garnica Villabona	91178261		Antioquia & Eje	HUBLAUMED	Hub Laureles	Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				1 year, 13 days	2025-07-01				2025-09-01						1784150976522163838	2026-07-15 16:29:36.522000	2026-08-27 10:18:09.015000
+77	30OE6M3YSL	Douglas Chica García	1144050764					SMB Sales Executive	SMB	Active	Bold.co						1 month, 26 days	2026-05-19										1784150954160758643	2026-07-15 16:29:14.160000	2026-08-27 10:18:09.015000
+78	KV3B3G4E2M	Carlos Garnica Villabona	91178261					Hubs Sales Executive Beginner	Hubs	Active	Bold.co						1 month, 13 days	2026-06-01										1784151002181887529	2026-07-15 16:30:02.181000	2026-08-27 10:18:09.015000
+79	NINWR8CPCA	Diana Santos Romero	52354634		Centro	NA	No Aplica	SMB Sales Executive	SMB	Active	Bold.co		Professional				1 year, 6 months, 24 days	2025-02-03				2025-09-01	2170 - SMBs	CC2SM2170				1787859685027330655	2026-08-27 14:41:25.027000	2026-08-27 16:23:10.187000
+80	FY3NTT3AG2	Karen Díaz Sánchez	1013639481		Centro	HUBTEQBOG	Hub Tequendama	Hubs Team Lead	Hubs	Active	Bold.co		Master				3 years, 9 months, 25 days	2022-11-02				2025-09-01	2130 - Hubs	CC2SM2130				1787860205649757049	2026-08-27 14:50:05.649000	2026-08-27 16:23:10.187000
+81	NNPMKYB1NT	Diana Santos Romero	52354634		Centro	NA	No Aplica	SMB Sales Executive	SMB	Active	Bold.co		Expert				5 years, 2 months, 19 days	2021-06-08				2025-09-01	2170 - SMBs	CC2SM2170				1787849345017027638	2026-08-27 11:49:05.017000	2026-08-27 16:23:10.187000
+82	O7UDUH65J2	Nelly Mendez Gallego	53168040		Centro	NA	No Aplica	Online Sales Executive	Online Payments	Active	Bold.co		Professional				1 year, 9 months, 22 days	2024-11-05				2025-09-01	2120 - Online Payments Sales	CC2SM2120				1787854445656589743	2026-08-27 13:14:05.656000	2026-08-27 16:23:10.187000
+83	PLADLO3J74	Cristhian Salas Cardozo	1100956039		Oriente	HUBBUCARA	Hub Bucaramanga	Hubs sales executive	Hubs	Active	Bold.co		Expert Pro				4 years, 3 months, 11 days	2022-05-16				2025-09-01	2130 - Hubs	CC2SM2130				1787859995057352688	2026-08-27 14:46:35.057000	2026-08-27 16:23:10.187000
+84	B3GMS5FJ7W	Douglas Chica García	1144050764		Suroccidente	NA	No Aplica	SMB Sales Executive	SMB	Active	Bold.co		Professional				1 year, 3 months, 22 days	2025-05-05				2025-09-01	2170 - SMBs	CC2SM2170				1787858635987104489	2026-08-27 14:23:55.987000	2026-08-27 16:23:10.187000
+85	4ISQTCEH8W	Luis De La Hoz Castellar	1045682575					Hubs Sales Executive Beginner	Hubs	Active	Bold.co		Beginner				10 months, 7 days	2025-10-20					2130 - Hubs	CC2SM2130				1787859980415404638	2026-08-27 14:46:20.415000	2026-08-27 16:23:10.187000
+86	77EF7B4P89	Luz Sánchez Ladino	52535281					Hubs sales executive	Hubs	Active	Bold.co		Beginner				8 months, 18 days	2025-12-09					2130 - Hubs	CC2SM2130				1787852392273900671	2026-08-27 12:39:52.273000	2026-08-27 16:23:10.187000
+87	WU0B3OSHR4	Lizeth Pontón Albor	1082929854		Norte	HUBSTAMAR	Hub Santa Marta	Hubs sales executive	Hubs	Active	Bold.co		Beginner				11 months, 19 days	2025-09-08				2025-09-01	2130 - Hubs	CC2SM2130				1787851685526898356	2026-08-27 12:28:05.526000	2026-08-27 16:23:10.187000
+88	9568ULYM3S	Nelly Mendez Gallego	53168040		Centro	NA	No Aplica	Online Sales Executive	Online Payments	Active	Bold.co		Senior				1 year, 10 months, 26 days	2024-10-01				2025-09-01	2120 - Online Payments Sales	CC2SM2120				1787832050104411010	2026-08-27 07:00:50.104000	2026-08-27 10:18:09.015000
+89	VI41NLOPU6	Diana Calvo Rodriguez	30230638		Norte	NA	No Aplica	Hubs Sales Regional Manager	Hubs	Active	Bold.co						4 years, 11 months, 7 days	2021-09-20				2025-09-01	2130 - Hubs	CC2SM2130				1787832049047211165	2026-08-27 07:00:49.047000	2026-08-27 10:18:09.015000
+90	VOHOVWGMT6	Lina Rosario Dorado	1032362684		Centro		Hub Virtual	Hubs sales executive	Hubs	Active	Bold.co		Expert				4 years, 5 months, 13 days	2022-03-14				2025-12-30	2130 - Hubs	CC2SM2130				1787832086065371961	2026-08-27 07:01:26.065000	2026-08-27 10:18:09.015000
+91	TFL3KGSCVM	Nohora Varón Quimbayo	1110482731					Hubs Sales Executive Beginner	Hubs	Active	Bold.co						5 months, 26 days	2026-04-06					2130 - Hubs	CC2SM2130				1787832068463725543	2026-08-27 07:01:08.463000	2026-08-27 10:18:09.015000
+92	AHBM7DLOS5	Diana Álvarez Henao	24344145					Hubs Sales Executive Farmer	Hubs	Active	Bold.co						3 months, 16 days	2026-05-11					2130 - Hubs	CC2SM2130				1787832090265370564	2026-08-27 07:01:30.265000	2026-08-27 10:18:09.015000
+93	K0YKCUU1WR	July Bula Barrios	1018466650		Centro	NA	No Aplica	Sales Development Representative	Hubs	Active	Bold.co		Beginner				2 years, 6 months, 8 days	2024-02-19				2025-09-01	2130 - Hubs	CC2SM2130				1787832089704682415	2026-08-27 07:01:29.704000	2026-08-27 10:18:09.015000
+94	V8OV9AUZN6	Leidy Mantilla Sánchez	1016030998		Centro	NA	No Aplica	SMB Sales Executive	SMB	Active	Bold.co		Professional				1 year, 6 months, 24 days	2025-02-03				2025-09-01	2170 - SMBs	CC2SM2170				1787832065684972507	2026-08-27 07:01:05.684000	2026-08-27 10:18:09.015000
+95	7Z6NOFF8EU	Carlos Orozco Henao	75080046					SMB Sales Executive	SMB	Active	Bold.co		Professional				8 months, 18 days	2025-12-09					2170 - SMBs	CC2SM2170				1787832089822867983	2026-08-27 07:01:29.822000	2026-08-27 10:18:09.015000
+96	UC8YQONXB5	Jose Alba Hincapie	1010170021		Centro	NA	No Aplica	Commercial Planning Lead	Sales Strategy	Active	Bold.co						5 years, 6 months, 5 days	2021-02-22				2025-09-01	2100 - Sales Strategy	CC2SM2100				1787832090844675791	2026-08-27 07:01:30.844000	2026-08-27 10:18:09.015000
+97	WJRYDJ5PPN	Ivan Palomino Leguizamo	1031149205					Hubs Sales Executive Beginner	Hubs	Active	Bold.co						3 months, 23 days	2026-05-04					2130 - Hubs	CC2SM2130				1787832087229273579	2026-08-27 07:01:27.229000	2026-08-27 10:18:09.015000
+98	WJ88ET42YV	Cristian Cardona Bedoya	1088241545					Hubs Sales Executive Beginner	Hubs	Active	Bold.co						3 months, 16 days	2026-05-11					2130 - Hubs	CC2SM2130				1787832058285462760	2026-08-27 07:00:58.285000	2026-08-27 10:18:09.015000
+99	F9K4DXL3C7	Yudy Barrera Ospina	31321426		Suroccidente	NA	No Aplica	SMB Team Lead	SMB	Active	Bold.co		Professional				1 year, 4 months, 6 days	2025-04-21				2025-09-01	2170 - SMBs	CC2SM2170				1787832050405470514	2026-08-27 07:00:50.405000	2026-08-27 10:18:09.015000
+100	P8R6K1L5F8	Diana Prieto Domínguez	1026568649					Hubs Sales Executive Beginner	Hubs	Active	Bold.co						3 months, 23 days	2026-05-04					2130 - Hubs	CC2SM2130				1787832089144972163	2026-08-27 07:01:29.144000	2026-08-27 10:18:09.015000
+
+-- 4) Cadena propuesta: hub -> manager_email -> usuario -> supervisor.
+-- Esta consulta usa únicamente columnas confirmadas en el resultado 08.
+WITH hub_manager AS (
+    SELECT
+        custom_id,
+        manager_email,
+        row_number() OVER (
+            PARTITION BY custom_id
+            ORDER BY load_datetime DESC, event_datetime DESC
+        ) AS rn
+    FROM awsdatacatalog.bold_gold_sales.dim_crm_pos_locations
+    WHERE custom_id IS NOT NULL
+),
+manager_current AS (
+    SELECT custom_id, manager_email
+    FROM hub_manager
+    WHERE rn = 1
+)
+SELECT
+    hm.custom_id,
+    hm.manager_email,
+    u.user_id AS manager_user_id,
+    u.email AS manager_user_email,
+    u.role AS manager_role,
+    u.parent_id AS manager_parent_id,
+    b.reports_to AS bamboo_reports_to,
+    b.supervisor_id AS bamboo_supervisor_id,
+    b.job_title AS manager_job_title,
+    b.channel AS manager_channel
+FROM manager_current hm
+LEFT JOIN awsdatacatalog.bold_gold_sales.dim_crm_users u
+    ON lower(trim(u.email)) = lower(trim(hm.manager_email))
+LEFT JOIN awsdatacatalog.bold_gold_sales.dim_user_bamboo_information b
+    ON b.user_id = u.user_id
+ORDER BY hm.custom_id;
+
+
+#	custom_id	manager_email	manager_user_id	manager_user_email	manager_role	manager_parent_id	bamboo_reports_to	bamboo_supervisor_id	manager_job_title	manager_channel
+1	BSTORE	estefania.more@bold.co	KFTS4QLYSU	estefania.more@bold.co	HUB_LEADER	GA5GDLHHCD	Christian Escobar Morales	1019056174	Hubs sales executive	Hubs
+2	HUBALCPER	sebastian.loaiza@bold.co	3BJOQ2WWO8	sebastian.loaiza@bold.co	HUB_LEADER	D5KLXF3R5E				
+3	HUBARM	carolina.ramirez@bold.co	D5KLXF3R5E	carolina.ramirez@bold.co	HUB_LEADER	V2NXIGLQEO				
+4	HUBBARRANC	maria.parra@bold.co	ZR9JFYI386	maria.parra@bold.co	ADMIN	ZR9JFYI386				
+5	HUBBUCARA	jinna.jimenez@bold.co								
+6	HUBCARTAG	kelly.hamburger@bold.co	A9J0LLB4KS	kelly.hamburger@bold.co	HUB_LEADER	14DVZ0G1AM	Priscila Castaño Morelo	1047367467	Hubs Team Lead	Hubs
+7	HUBCARTPLA	kevin.villamizar@bold.co	F35417DS0R	kevin.villamizar@bold.co	HUB_LEADER	14DVZ0G1AM	Priscila Castaño Morelo	1047367467	Hubs Team Lead	Hubs
+8	HUBCHIA	carolina.aragon@bold.co	35XCVNNU0S	carolina.aragon@bold.co	MANAGER	0BANJI8FWQ	Diana Calvo Rodriguez	30230638	Hubs Sales Regional Manager	Hubs
+9	HUBCUCUTA	francisco.sepulveda@bold.co	CU8M8OY22N	francisco.sepulveda@bold.co	HUB_LEADER	VI41NLOPU6	Aviluz Molina Guzmán	55246915	Hubs Team Lead	Hubs
+10	HUBDUITAM	maria.parra@bold.co	ZR9JFYI386	maria.parra@bold.co	ADMIN	ZR9JFYI386				
+11	HUBENGBOG	vanessa.gonzalez@bold.co	8EXKPR4ZCU	vanessa.gonzalez@bold.co	HUB_LEADER	FD2K2DU0B0	Karen Díaz Sánchez	1013639481	Hubs sales executive	Hubs
+12	HUBENVI	veronica.vargas@bold.co	231GM80J1P	veronica.vargas@bold.co	HUB_LEADER	V2NXIGLQEO	Alemao Castellanos Diaz	1023891551	Hubs Team Lead	Hubs
+13	HUBGIRARD	maria.parra@bold.co	ZR9JFYI386	maria.parra@bold.co	ADMIN	ZR9JFYI386				
+14	HUBIBAGUE	nohora.varon@bold.co	9K4A0SXV6N	nohora.varon@bold.co	HUB_LEADER	UKFDM8Z3I3	Jhoan Vásquez Gómez	1088257229	Hubs Team Lead	Hubs
+15	HUBKENBOG	diana.prieto@bold.co	77754JO5T3	diana.prieto@bold.co	LEADER	19IHBCNKTZ	Fabian Luna Cubillos	79223125	Hubs Team Lead	Hubs
+16	HUBLAUMED	carlos.garnica@bold.co	1YXZQ7ZE02	carlos.garnica@bold.co	HUB_LEADER	V2NXIGLQEO	Alemao Castellanos Diaz	1023891551	Hubs Team Lead	Hubs
+17	HUBLIMCALI	victor.figueroa@bold.co	BV03N200E9	victor.figueroa@bold.co	HUB_LEADER	GU5GTOVD2D	Daniela Benitez Castrillon	1144071122	Hubs Team Lead	Hubs
+18	HUBMANZ	diana.alvarez@bold.co	HTH0H9R77B	diana.alvarez@bold.co	LEADER	UKFDM8Z3I3	Jhoan Vásquez Gómez	1088257229	Hubs Team Lead	Hubs
+19	HUBMODBOG	carolina.aragon@bold.co	35XCVNNU0S	carolina.aragon@bold.co	MANAGER	0BANJI8FWQ	Diana Calvo Rodriguez	30230638	Hubs Sales Regional Manager	Hubs
+20	HUBPALLBQ	luis.castellar@bold.co	KWP0YFGG1I	luis.castellar@bold.co	HUB_LEADER	VI41NLOPU6	Aviluz Molina Guzmán	55246915	Hubs Team Lead	Hubs
+21	HUBPASTO	maria.parra@bold.co	ZR9JFYI386	maria.parra@bold.co	ADMIN	ZR9JFYI386				
+22	HUBPLAZBQ	wilson.pedraza@bold.co	0QMD0EGI0T	wilson.pedraza@bold.co	HUB_LEADER	VI41NLOPU6	Aviluz Molina Guzmán	55246915	Hubs Team Lead	Hubs
+23	HUBPOPAYAN	maria.parra@bold.co	ZR9JFYI386	maria.parra@bold.co	ADMIN	ZR9JFYI386				
+24	HUBPRABOG	ingrid.soto@bold.co	1IB8L2O8KE	ingrid.soto@bold.co	HUB_LEADER	CR09O08FDF	Maria Pájaro Camino	1016082977	Hubs Team Lead	Hubs
+25	HUBRESBOG	luz.sanchez@bold.co	FY3NTT3AG2	luz.sanchez@bold.co	HUB_LEADER	FD2K2DU0B0	Karen Díaz Sánchez	1013639481	Hubs Team Lead	Hubs
+26	HUBRIOMED	carolina.casas@bold.co	FFNLVMKXUZ	carolina.casas@bold.co	HUB_LEADER	V2NXIGLQEO	Alemao Castellanos Diaz	1023891551	Hubs Team Lead	Hubs
+27	HUBSANGIL	maria.parra@bold.co	ZR9JFYI386	maria.parra@bold.co	ADMIN	ZR9JFYI386				
+28	HUBSOA	natalia.duran@bold.co	0ATEG4USLQ	natalia.duran@bold.co	HUB_LEADER	19IHBCNKTZ	Fabian Luna Cubillos	79223125	Hubs Team Lead	Hubs
+29	HUBSOGAM	maria.parra@bold.co	ZR9JFYI386	maria.parra@bold.co	ADMIN	ZR9JFYI386				
+30	HUBSTAMAR	carlos.gil@bold.co	T3YGFH49C8	carlos.gil@bold.co	HUB_LEADER	14DVZ0G1AM				
+31	HUBSUBBOG	carolina.aragon@bold.co	35XCVNNU0S	carolina.aragon@bold.co	MANAGER	0BANJI8FWQ	Diana Calvo Rodriguez	30230638	Hubs Sales Regional Manager	Hubs
+32	HUBTEQBOG	jose.rodriguez@bold.co	E0X2ZMPITA	jose.rodriguez@bold.co	HUB_LEADER	FD2K2DU0B0	Karen Díaz Sánchez	1013639481	Hubs Team Lead	Hubs
+33	HUBTESCALI	federico.romero@bold.co	CQLSTP3W7E	federico.romero@bold.co	EXECUTIVE	6RI9OWITNA				
+34	HUBTULUA	maria.parra@bold.co	ZR9JFYI386	maria.parra@bold.co	ADMIN	ZR9JFYI386				
+35	HUBTUNJA	maria.parra@bold.co	ZR9JFYI386	maria.parra@bold.co	ADMIN	ZR9JFYI386				
+36	HUBUSABOG	alejandra.pajaro@bold.co	CR09O08FDF	alejandra.pajaro@bold.co	MANAGER	35XCVNNU0S	Carolina Aragón Orduz	52901777	Hubs Sales Manager	Hubs
+37	HUBVALLEDU	maria.parra@bold.co	ZR9JFYI386	maria.parra@bold.co	ADMIN	ZR9JFYI386				
+38	HUBVILLAV	maria.parra@bold.co	ZR9JFYI386	maria.parra@bold.co	ADMIN	ZR9JFYI386				
+39	HUBYOPAL	maria.parra@bold.co	ZR9JFYI386	maria.parra@bold.co	ADMIN	ZR9JFYI386				
+40	ISLAFONTAN	alejandra.pajaro@bold.co	CR09O08FDF	alejandra.pajaro@bold.co	MANAGER	35XCVNNU0S	Carolina Aragón Orduz	52901777	Hubs Sales Manager	Hubs
+41	ISLAGPBOSA	carolina.aragon@bold.co	35XCVNNU0S	carolina.aragon@bold.co	MANAGER	0BANJI8FWQ	Diana Calvo Rodriguez	30230638	Hubs Sales Regional Manager	Hubs
+42	ISLAJARDIN	edward.pacheco@bold.co								
+43	ISLAMALLCL	edward.pacheco@bold.co								
+44	ISLAMALLCT	aviluz.molina@bold.co	VI41NLOPU6	aviluz.molina@bold.co	MANAGER	0BANJI8FWQ	Diana Calvo Rodriguez	30230638	Hubs Sales Regional Manager	Hubs
+45	ISLASANPED	carolina.aragon@bold.co	35XCVNNU0S	carolina.aragon@bold.co	MANAGER	0BANJI8FWQ	Diana Calvo Rodriguez	30230638	Hubs Sales Regional Manager	Hubs
+46	ISLASANTAM	sebastian.taborda@bold.co	TQC89PVF6T	sebastian.taborda@bold.co	EXECUTIVE	H1SI8K0PNT	July Bula Barrios	1018466650	Hubs Sales Executive Farmer	Hubs
+47	ISLASCM	carolina.aragon@bold.co	35XCVNNU0S	carolina.aragon@bold.co	MANAGER	0BANJI8FWQ	Diana Calvo Rodriguez	30230638	Hubs Sales Regional Manager	Hubs
+48	ISLAUNIBOG	carolina.aragon@bold.co	35XCVNNU0S	carolina.aragon@bold.co	MANAGER	0BANJI8FWQ	Diana Calvo Rodriguez	30230638	Hubs Sales Regional Manager	Hubs
+
+
