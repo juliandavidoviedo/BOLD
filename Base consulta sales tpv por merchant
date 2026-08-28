@@ -1,0 +1,88 @@
+SELECT
+  "__mb_source"."merchant_id" AS "merchant_id",
+  "__mb_source"."status_code" AS "status_code",
+  "__mb_source"."sales_source" AS "sales_source",
+  "__mb_source"."manual_verification_status_code" AS "manual_verification_status_code",
+  SUM("__mb_source"."tpv") AS "sum",
+  SUM("__mb_source"."tx") AS "sum_2",
+  SUM("__mb_source"."net_revenues") AS "sum_3",
+  SUM("__mb_source"."tpv_cuenta_bold") AS "sum_4",
+  SUM("__mb_source"."tpv_plan_otros_bancos_d1") AS "sum_5",
+  CAST(SUM("__mb_source"."net_revenues") AS double) / NULLIF(CAST(SUM("__mb_source"."tpv") AS double), 0.0) AS "NTR %"
+FROM
+  (
+    SELECT
+      m.id AS merchant_id,
+      m.status__status_code AS status_code,
+      m_enr.kyc_verification_status_date,
+      m.manual_verification_status__status_code AS manual_verification_status_code,
+      tpvd.plan_name,
+      (
+        CASE
+          WHEN m.sales_source IS NULL
+          OR (
+            CAST(m.onboarding_end_date AS DATE) < CAST('2020-12-01' AS DATE)
+          ) THEN 'INBOUND'
+          WHEN m.sales_source = 'REFERRED'
+          AND CAST(m.onboarding_end_date AS DATE) < CAST('2021-02-01' AS DATE) THEN 'INBOUND'
+          WHEN m.sales_source = 'DISTRIBUTOR'
+          AND CAST(m.onboarding_end_date AS DATE) < CAST('2021-06-01' AS DATE) THEN 'OUTBOUND'
+          WHEN m.sales_source = 'STANDS'
+          AND CAST(m.onboarding_end_date AS DATE) < CAST('2021-12-01' AS DATE) THEN 'OUTBOUND'
+          ELSE m.sales_source
+        END
+      ) AS sales_source,
+      d.date AS day,
+      count(tpvd.transaction_id) AS tx,
+      SUM(tpvd.tpv) AS tpv,
+      SUM(tpvd.net_revenues) as net_revenues,
+      SUM(
+        CASE
+          WHEN tpvd.plan_name IN ('Bold D+1', 'Bold D+0') THEN tpvd.tpv
+          ELSE 0
+        END
+      ) AS tpv_cuenta_bold,
+      SUM(
+        CASE
+          WHEN tpvd.plan_name IN ('QR_BOLD', 'Otros Bancos D+1', 'legacy') THEN tpvd.tpv
+          ELSE 0
+        END
+      ) AS tpv_plan_otros_bancos_d1
+    FROM
+      bold_gold_payments.dim_merchant AS m
+      INNER JOIN bold_gold_growth.mart_merchant_enrich AS m_enr ON m.merchant_key = m_enr.merchant_key
+      INNER JOIN bold_gold_finance.mart_tpv_daily_by_transaction AS tpvd ON m.id = tpvd.merchant_id
+      INNER JOIN bold_gold_core.dim_date AS d ON tpvd.date_key = d.date_key ---where m.id = 'NSSUNZ7WMN'
+    GROUP BY
+      m.id,
+      m.status__status_code,
+      m_enr.kyc_verification_status_date,
+      m.manual_verification_status__status_code,
+      tpvd.plan_name,
+      (
+        CASE
+          WHEN m.sales_source IS NULL
+          OR (
+            CAST(m.onboarding_end_date AS DATE) < CAST('2020-12-01' AS DATE)
+          ) THEN 'INBOUND'
+          WHEN m.sales_source = 'REFERRED'
+          AND CAST(m.onboarding_end_date AS DATE) < CAST('2021-02-01' AS DATE) THEN 'INBOUND'
+          WHEN m.sales_source = 'DISTRIBUTOR'
+          AND CAST(m.onboarding_end_date AS DATE) < CAST('2021-06-01' AS DATE) THEN 'OUTBOUND'
+          WHEN m.sales_source = 'STANDS'
+          AND CAST(m.onboarding_end_date AS DATE) < CAST('2021-12-01' AS DATE) THEN 'OUTBOUND'
+          ELSE m.sales_source
+        END
+      ),
+      d.date --tpvd.count_transaction
+  ) AS "__mb_source"
+GROUP BY
+  "__mb_source"."merchant_id",
+  "__mb_source"."status_code",
+  "__mb_source"."sales_source",
+  "__mb_source"."manual_verification_status_code"
+ORDER BY
+  "__mb_source"."merchant_id" ASC,
+  "__mb_source"."status_code" ASC,
+  "__mb_source"."sales_source" ASC,
+  "__mb_source"."manual_verification_status_code" ASC
