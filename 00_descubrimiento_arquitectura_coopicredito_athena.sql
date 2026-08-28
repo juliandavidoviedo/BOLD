@@ -256,3 +256,17 @@ ORDER BY table_schema, table_name;
 
 -- BLOQUE 6: validación posterior (rellenar SOLO con una tabla encontrada en BLOQUE 5)
 -- SELECT * FROM <tabla_real_encontrada> LIMIT 20;
+
+
+
+-- BLOQUE 7: explorar el schema de cargas de usuarios que sí está disponible
+SELECT table_schema, table_name, table_type
+FROM information_schema.tables
+WHERE table_schema = 'bold_users_uploads_sales'
+ORDER BY table_name;
+
+-- BLOQUE 8: columnas de las tablas de cargas de usuarios
+SELECT table_schema, table_name, ordinal_position, column_name, data_type
+FROM information_schema.columns
+WHERE table_schema = 'bold_users_uploads_sales'
+ORDER BY table_name, ordinal_position;
