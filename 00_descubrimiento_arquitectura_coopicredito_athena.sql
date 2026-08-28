@@ -270,3 +270,18 @@ SELECT table_schema, table_name, ordinal_position, column_name, data_type
 FROM information_schema.columns
 WHERE table_schema = 'bold_users_uploads_sales'
 ORDER BY table_name, ordinal_position;
+
+SHOW SCHEMAS FROM awsdatacatalog;
+
+SHOW TABLES FROM awsdatacatalog.bold_users_uploads_sales;
+
+-- Ejecutar también sobre el catálogo explícito para evitar depender del
+-- catálogo por defecto de la conexión.
+SELECT table_catalog, table_schema, table_name, table_type
+FROM awsdatacatalog.information_schema.tables
+WHERE lower(table_schema) LIKE '%upload%'
+   OR lower(table_schema) LIKE '%sales%'
+   OR lower(table_name) LIKE '%coopic%'
+   OR lower(table_name) LIKE '%drog%'
+   OR lower(table_name) LIKE '%vinculad%'
+ORDER BY table_catalog, table_schema, table_name;
