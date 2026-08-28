@@ -20,8 +20,17 @@ WHERE (
 )
 ORDER BY table_schema, table_name, ordinal_position;
 
--- 2) Muestra de usuarios CRM
-SELECT *
+-- 2) Muestra segura de usuarios CRM.
+-- No usar SELECT *: metadata puede contener secretos o información sensible.
+SELECT
+    user_id,
+    email,
+    role,
+    parent_id,
+    sales_channel,
+    status,
+    country_code,
+    load_datetime
 FROM awsdatacatalog.bold_gold_sales.dim_crm_users
 LIMIT 100;
 
