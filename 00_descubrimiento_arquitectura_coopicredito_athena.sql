@@ -272,8 +272,46 @@ WHERE table_schema = 'bold_users_uploads_sales'
 ORDER BY table_name, ordinal_position;
 
 SHOW SCHEMAS FROM awsdatacatalog;
+bold_gold_accounting
+bold_gold_acquiring
+bold_gold_ai_analytics
+bold_gold_analytics
+bold_gold_analytics_sandbox
+bold_gold_cdt
+bold_gold_core
+bold_gold_credit_card
+bold_gold_customer_360
+bold_gold_deposit
+bold_gold_engineering
+bold_gold_finance
+bold_gold_fraud
+bold_gold_growth
+bold_gold_growth_accounting
+bold_gold_issuing
+bold_gold_kyc
+bold_gold_loan
+bold_gold_loan_cf
+bold_gold_loan_cf_operative_reports
+bold_gold_logistic
+bold_gold_mlops
+bold_gold_online_payments
+bold_gold_payments
+bold_gold_pos
+bold_gold_pricing_core
+bold_gold_regulatory_reports
+bold_gold_sales
+bold_gold_terminals
+bold_gold_testops
+bold_gold_treasury
+bold_gold_underwriting
+bold_gold_vendemas
+bold_users_uploads
+bold_users_uploads_sales
+default
+
 
 SHOW TABLES FROM awsdatacatalog.bold_users_uploads_sales;
+La consulta se ha realizado correctamente.
 
 -- Ejecutar también sobre el catálogo explícito para evitar depender del
 -- catálogo por defecto de la conexión.
@@ -285,3 +323,46 @@ WHERE lower(table_schema) LIKE '%upload%'
    OR lower(table_name) LIKE '%drog%'
    OR lower(table_name) LIKE '%vinculad%'
 ORDER BY table_catalog, table_schema, table_name;
+
+#	table_catalog	table_schema	table_name	table_type
+1	awsdatacatalog	bold_gold_sales	dim_apolo_opportunities	BASE TABLE
+2	awsdatacatalog	bold_gold_sales	dim_crm_checkout	BASE TABLE
+3	awsdatacatalog	bold_gold_sales	dim_crm_checkout_items	BASE TABLE
+4	awsdatacatalog	bold_gold_sales	dim_crm_checkout_payments	BASE TABLE
+5	awsdatacatalog	bold_gold_sales	dim_crm_contacts	BASE TABLE
+6	awsdatacatalog	bold_gold_sales	dim_crm_leads	BASE TABLE
+7	awsdatacatalog	bold_gold_sales	dim_crm_leads_current_products	BASE TABLE
+8	awsdatacatalog	bold_gold_sales	dim_crm_leads_pictures	BASE TABLE
+9	awsdatacatalog	bold_gold_sales	dim_crm_leads_products_of_interest	BASE TABLE
+10	awsdatacatalog	bold_gold_sales	dim_crm_opportunities	BASE TABLE
+11	awsdatacatalog	bold_gold_sales	dim_crm_opportunities_notes	BASE TABLE
+12	awsdatacatalog	bold_gold_sales	dim_crm_pos_locations	BASE TABLE
+13	awsdatacatalog	bold_gold_sales	dim_crm_services	BASE TABLE
+14	awsdatacatalog	bold_gold_sales	dim_crm_services_sales_items	BASE TABLE
+15	awsdatacatalog	bold_gold_sales	dim_crm_tasks	BASE TABLE
+16	awsdatacatalog	bold_gold_sales	dim_crm_users	BASE TABLE
+17	awsdatacatalog	bold_gold_sales	dim_crm_work_locations	BASE TABLE
+18	awsdatacatalog	bold_gold_sales	dim_payment_order_c_r_u_d	BASE TABLE
+19	awsdatacatalog	bold_gold_sales	dim_user_bamboo_information	BASE TABLE
+20	awsdatacatalog	bold_gold_sales	dim_user_bamboo_information_history	BASE TABLE
+21	awsdatacatalog	bold_gold_sales	fact_crm_checkout	BASE TABLE
+22	awsdatacatalog	bold_gold_sales	fact_crm_checkout_status_change	BASE TABLE
+23	awsdatacatalog	bold_gold_sales	fact_crm_leads_daily	BASE TABLE
+24	awsdatacatalog	bold_gold_sales	fact_crm_leads_notes	BASE TABLE
+25	awsdatacatalog	bold_gold_sales	fact_crm_leads_status_change	BASE TABLE
+26	awsdatacatalog	bold_gold_sales	fact_crm_leads_status_history	BASE TABLE
+27	awsdatacatalog	bold_gold_sales	fact_crm_opportunities_daily	BASE TABLE
+28	awsdatacatalog	bold_gold_sales	fact_crm_opportunities_split_products	BASE TABLE
+29	awsdatacatalog	bold_gold_sales	fact_crm_opportunities_status_change	BASE TABLE
+30	awsdatacatalog	bold_gold_sales	fact_payment_order_items	BASE TABLE
+31	awsdatacatalog	bold_gold_sales	mart_channel_attribution_onboarding	BASE TABLE
+32	awsdatacatalog	bold_gold_sales	mart_sales_process_summary	BASE TABLE
+33	awsdatacatalog	bold_gold_sales	mart_sales_process_summary_checkout	BASE TABLE
+34	awsdatacatalog	bold_gold_sales	mart_sales_process_summary_ecommerce	BASE TABLE
+35	awsdatacatalog	bold_gold_sales	mart_sales_process_summary_opportunity	BASE TABLE
+36	awsdatacatalog	bold_gold_sales	mart_sales_process_summary_opportunity_with_apolo_opportunity	BASE TABLE
+37	awsdatacatalog	bold_gold_sales	mart_sales_process_summary_opportunity_with_checkout	BASE TABLE
+38	awsdatacatalog	bold_gold_sales	marts_int_apolo_opportunities_sale_items	BASE TABLE
+39	awsdatacatalog	bold_gold_sales	report_crm_leads_status_change_with_tasks	BASE TABLE
+40	awsdatacatalog	bold_gold_sales	report_crm_opportunities_offers	BASE TABLE
+
