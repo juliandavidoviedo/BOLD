@@ -1,0 +1,85 @@
+WITH schemas_relevantes AS (
+    SELECT schema_name
+    FROM information_schema.schemata
+    WHERE lower(schema_name) LIKE '%growth%'
+       OR lower(schema_name) LIKE '%merchant%'
+       OR lower(schema_name) LIKE '%tpv%'
+       OR lower(schema_name) LIKE '%transaction%'
+       OR lower(schema_name) LIKE '%acquiring%'
+       OR lower(schema_name) LIKE '%payment%'
+),
+tablas_candidatas AS (
+    SELECT
+        t.table_schema,
+        t.table_name,
+        t.table_type
+    FROM information_schema.tables t
+    INNER JOIN schemas_relevantes s
+        ON t.table_schema = s.schema_name
+    WHERE lower(t.table_name) LIKE '%tpv%'
+       OR lower(t.table_name) LIKE '%transaction%'
+       OR lower(t.table_name) LIKE '%merchant%enrich%'
+       OR lower(t.table_name) LIKE '%daily%merchant%'
+       OR lower(t.table_name) LIKE '%monthly%merchant%'
+       OR lower(t.table_name) LIKE '%payment%'
+),
+columnas_utiles AS (
+    SELECT
+        c.table_schema,
+        c.table_name,
+        max(CASE WHEN lower(c.column_name) IN ('merchant_id', 'master_merchant_id') THEN 1 ELSE 0 END) AS tiene_merchant_id,
+        max(CASE WHEN lower(c.column_name) LIKE '%tpv%' THEN 1 ELSE 0 END) AS tiene_tpv,
+        max(CASE WHEN lower(c.column_name) LIKE '%amount%' THEN 1 ELSE 0 END) AS tiene_amount,
+        max(CASE WHEN lower(c.column_name) LIKE '%transaction%date%' THEN 1 ELSE 0 END) AS tiene_transaction_date,
+        max(CASE WHEN lower(c.column_name) LIKE '%date%' THEN 1 ELSE 0 END) AS tiene_date,
+        array_join(array_sort(array_distinct(array_agg(
+            CASE
+                WHEN lower(c.column_name) IN ('merchant_id', 'master_merchant_id')
+                    OR lower(c.column_name) LIKE '%tpv%'
+                    OR lower(c.column_name) LIKE '%amount%'
+                    OR lower(c.column_name) LIKE '%transaction%date%'
+                    OR lower(c.column_name) LIKE '%date%'
+                THEN c.column_name
+            END
+        ))), ', ') AS columnas_candidatas
+    FROM information_schema.columns c
+    INNER JOIN tablas_candidatas t
+        ON c.table_schema = t.table_schema
+       AND c.table_name = t.table_name
+    GROUP BY c.table_schema, c.table_name
+)
+SELECT
+    t.table_schema,
+    t.table_name,
+    t.table_type,
+    CASE
+        WHEN cu.tiene_merchant_id = 1
+         AND cu.tiene_tpv = 1
+         AND (cu.tiene_transaction_date = 1 OR cu.tiene_date = 1)
+            THEN 'CANDIDATA_PARA_CALCULAR_M0_M5'
+        WHEN cu.tiene_merchant_id = 1
+         AND (cu.tiene_tpv = 1 OR cu.tiene_amount = 1)
+            THEN 'CANDIDATA_REVISAR_FECHA'
+        ELSE 'NO_PRIORITARIA'
+    END AS evaluacion,
+    cu.columnas_candidatas
+FROM tablas_candidatas t
+LEFT JOIN columnas_utiles cu
+    ON t.table_schema = cu.table_schema
+   AND t.table_name = cu.table_name
+WHERE cu.tiene_merchant_id = 1
+   OR cu.tiene_tpv = 1
+   OR cu.tiene_amount = 1
+ORDER BY
+    CASE
+        WHEN cu.tiene_merchant_id = 1
+         AND cu.tiene_tpv = 1
+         AND (cu.tiene_transaction_date = 1 OR cu.tiene_date = 1)
+            THEN 1
+        WHEN cu.tiene_merchant_id = 1
+         AND (cu.tiene_tpv = 1 OR cu.tiene_amount = 1)
+            THEN 2
+        ELSE 3
+    END,
+    t.table_schema,
+    t.table_name
