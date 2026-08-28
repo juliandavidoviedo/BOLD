@@ -148,3 +148,18 @@ LEFT JOIN crm_users_by_id manager
 LEFT JOIN bamboo_current manager_bamboo
     ON manager.user_id = manager_bamboo.user_id
 ORDER BY bm.merchant_id
+
+
+##resultado
+
+#	merchant_id	kam_asignado_email	ejecutivo_origen_email	creador_oportunidad_email	responsable_origen_email	responsable_origen_user_id	responsable_origen_role	responsable_origen_sales_channel	responsable_origen_status	responsable_origen_job_title	responsable_origen_reports_to	team_lead_origen_email	team_lead_origen_role	team_lead_origen_sales_channel	team_lead_origen_status	team_lead_origen_job_title	manager_origen_name	manager_origen_email	manager_origen_role	manager_origen_sales_channel	manager_origen_status	manager_origen_job_title	lead_origin	lead_merchant_name	lead_estimated_sale_date	opportunity_loaded_at	estado_responsable_cualitativo
+1	0CZTLXEOXY																										SIN_OPORTUNIDAD_APOLO
+2	3SQNBLP4ZN																										SIN_OPORTUNIDAD_APOLO
+3	60WPJO2DZX																										SIN_OPORTUNIDAD_APOLO
+4	7DVLTIUMHX																										SIN_OPORTUNIDAD_APOLO
+5	8R8UIAMUC6																										SIN_OPORTUNIDAD_APOLO
+6	LG773V6IUV																										SIN_OPORTUNIDAD_APOLO
+7	PA1LA4GGYD																										SIN_OPORTUNIDAD_APOLO
+8	RMCVFJO3D8																										SIN_OPORTUNIDAD_APOLO
+9	VMKYJPDVD1																										SIN_OPORTUNIDAD_APOLO
+10	WFK9N0809K																										SIN_OPORTUNIDAD_APOLO
