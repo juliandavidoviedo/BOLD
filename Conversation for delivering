@@ -1,0 +1,9 @@
+Hola Tati, te comparto la documentación y la consulta integrada para el dashboard de Handoff SMB.
+
+La lógica es la siguiente: cada mes el equipo SMB/KAM entrega la base curada de comercios a transferir. Esa base trae los `merchant_id` que deben entrar al handoff.
+
+La consulta no define qué comercios entran ni busca el KAM asignado. Solo recibe esos `merchant_id` como entrada y, desde Metabase/Athena, trae la información no cualitativa disponible para alimentar el dashboard: datos del comercio, oportunidad CRM, responsable origen, Team Lead origen, manager origen, terminales, productos y TPV M0-M5.
+
+La información cualitativa —historia del comercio, dolores, necesidades, compromisos y contexto comercial— no sale de Metabase. Esa se debe capturar en el formulario de handoff y cruzar por `merchant_id`.
+
+En resumen: la base mensual define el universo; la consulta en Metabase enriquece esos comercios; el formulario completa la información cualitativa.
