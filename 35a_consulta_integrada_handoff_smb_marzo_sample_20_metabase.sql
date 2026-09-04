@@ -1,0 +1,887 @@
+
+WITH
+-- La base mensual entregada por SMB/KAM define el universo de comercios.
+-- Campos gestionados fuera de esta consulta:
+--   - kam_asignado_email: viene en la base mensual y lo administra el manager de KAMs.
+--   - mes_transferencia: puede calcularlo el proceso de carga/automatizacion.
+base_mensual (merchant_id) AS (
+    -- Sample de validacion Marzo.
+    -- Fuente: Google Sheets publicado como CSV.
+    -- Columna usada: master_merchant_id.
+    -- Total esperado: 20 merchants unicos.
+    -- Si esta version corre correctamente, ejecutar la version completa 35.
+    VALUES
+        ('S6JEYLKRYY'),
+        ('K7KJF44M9M'),
+        ('TG13JB10WC'),
+        ('L2H68OYBPH'),
+        ('B5CQV2NUTO'),
+        ('B9D5LQS3NI'),
+        ('XMBF05XMZY'),
+        ('0N1SCSB6J7'),
+        ('PZ8TVXWXOS'),
+        ('UK6H9C345E'),
+        ('V1B0MX6PDW'),
+        ('BC56NE93DN'),
+        ('2DF1LQTJT7'),
+        ('NZM8XD56U1'),
+        ('VWESAT40CI'),
+        ('06SYNVA1PH'),
+        ('EPNEO0HB2R'),
+        ('PWUP9OQUQ9'),
+        ('INRLL9A4UN'),
+        ('H8PIGM8B5C')
+),
+
+payments_merchant_ranked AS (
+    SELECT
+        cast(m.id AS varchar) AS merchant_id,
+        m.name AS merchant_name_payments,
+        m.document_type AS document_type_payments,
+        cast(m.document_number AS varchar) AS document_number_payments,
+        m.category__slug AS category_id_payments,
+        m.category__subcategory__slug AS subcategory_id_payments,
+        m.address AS address_payments,
+        m.location_city__code AS city_code_payments,
+        p.email AS email_legal_representative,
+        p.cellphone_number AS cellphone_legal_representative,
+        m.manual_verification_status__reason_code AS manual_verification_status_code,
+        m.status__status_code AS merchant_status_code,
+        m.sales_agent_email AS sales_agent_email_payments,
+        m.sales_reference,
+        m.sales_source AS sales_source_payments_raw,
+        CASE
+            WHEN m.sales_source IS NULL THEN 'INBOUND'
+            WHEN m.sales_source = 'REFERRED' THEN 'REFERRED'
+            WHEN m.sales_source = 'RETAIL' THEN 'RETAIL'
+            WHEN m.sales_source IN ('HUBS', 'OUTBOUND', 'STANDS', 'BOLD_STORE', 'EVENTS') THEN 'HUBS'
+            WHEN m.sales_source IN ('DISTRIBUTOR', 'ALLIANCE') THEN 'DISTRIBUTOR'
+            WHEN m.sales_source = 'SMB' THEN 'SMB'
+            WHEN m.sales_source = 'ENTERPRISE' THEN 'ENTERPRISE'
+            WHEN m.sales_source = 'ONLINE_PAYM' THEN 'ONLINE_PAYMENTS'
+            ELSE m.sales_source
+        END AS sales_source_payments,
+        m.onboarding_end_date AS onboarding_end_date_payments,
+        row_number() OVER (
+            PARTITION BY m.id
+            ORDER BY m.onboarding_end_date DESC
+        ) AS rn
+    FROM awsdatacatalog.bold_gold_payments.dim_merchant m
+    LEFT JOIN awsdatacatalog.bold_gold_growth.dim_person p
+        ON m.id = p.merchant_id
+       AND m.legal_representative_id = p.id
+    INNER JOIN base_mensual bm
+        ON cast(m.id AS varchar) = bm.merchant_id
+    WHERE m.id IS NOT NULL
+),
+payments_merchant_current AS (
+    SELECT * FROM payments_merchant_ranked WHERE rn = 1
+),
+
+client_ranked AS (
+    SELECT
+        cast(c.merchant_id AS varchar) AS merchant_id,
+        cast(c.client_id AS varchar) AS client_id,
+        c.merchant_name,
+        c.merchant_person_type,
+        c.merchant_identification_document_type AS document_type,
+        cast(c.merchant_identification_document_number AS varchar) AS document_number,
+        c.economic_activity_id,
+        c.economic_activity_name,
+        c.economic_activity_ciiu,
+        c.economic_activity_mcc,
+        c.economic_activity_category_id,
+        c.economic_activity_description,
+        c.location_address_department_code,
+        c.merchant_acquisition_channel_sales_agent_email AS sales_agent_email,
+        c.sales_source,
+        c.marketing_source,
+        c.selected_products,
+        c.status AS client_status,
+        c.onboarding_status,
+        c.onboarding_completion_date,
+        c.creation_date,
+        c.last_update_event_date,
+        row_number() OVER (
+            PARTITION BY c.merchant_id
+            ORDER BY c.last_update_event_date DESC, c.creation_date DESC
+        ) AS rn
+    FROM awsdatacatalog.bold_gold_growth.dim_client c
+    INNER JOIN base_mensual bm
+        ON cast(c.merchant_id AS varchar) = bm.merchant_id
+    WHERE c.merchant_id IS NOT NULL
+),
+client_current AS (
+    SELECT * FROM client_ranked WHERE rn = 1
+),
+
+onboarding_ranked AS (
+    SELECT
+        cast(o.merchant_id AS varchar) AS merchant_id,
+        o.contact_info_email,
+        o.contact_info_phone_number,
+        o.economic_activity_category_id,
+        o.economic_activity_id,
+        o.economic_activity_name,
+        o.economic_activity_ciiu,
+        o.economic_activity_mcc,
+        o.economic_activity_description,
+        o.address_department_code,
+        o.acquisition_channel_sales_agent_email,
+        o.onboarding_completion_date,
+        o.onboarding_completed_date,
+        o.status AS onboarding_source_status,
+        row_number() OVER (
+            PARTITION BY o.merchant_id
+            ORDER BY o.onboarding_completed_date DESC, o.onboarding_completion_date DESC
+        ) AS rn
+    FROM awsdatacatalog.bold_gold_growth.dim_merchant_onboarding o
+    INNER JOIN base_mensual bm
+        ON cast(o.merchant_id AS varchar) = bm.merchant_id
+    WHERE o.merchant_id IS NOT NULL
+),
+onboarding_current AS (
+    SELECT * FROM onboarding_ranked WHERE rn = 1
+),
+
+geo_ranked AS (
+    SELECT
+        cast(g.merchant_id AS varchar) AS merchant_id,
+        cast(g.hub_custom_id AS varchar) AS hub_custom_id,
+        g.standardized_address,
+        g.municipality,
+        g.department,
+        g.dane_code,
+        g.latitude,
+        g.longitude,
+        g.load_datetime,
+        row_number() OVER (
+            PARTITION BY g.merchant_id
+            ORDER BY g.load_datetime DESC, g.date_key DESC
+        ) AS rn
+    FROM awsdatacatalog.bold_gold_growth.dim_client_georeference g
+    INNER JOIN base_mensual bm
+        ON cast(g.merchant_id AS varchar) = bm.merchant_id
+    WHERE g.merchant_id IS NOT NULL
+),
+geo_current AS (
+    SELECT * FROM geo_ranked WHERE rn = 1
+),
+
+merchant_enrich_ranked AS (
+    SELECT
+        cast(m.master_merchant_id AS varchar) AS merchant_id,
+        m.kyc_verification_status_date,
+        m."_1st_transaction_approved_date" AS first_transaction_approved_date,
+        m."_4th_transaction_approved_date" AS fourth_transaction_approved_date,
+        m."_10th_transaction_approved_date" AS tenth_transaction_approved_date,
+        m.last_transaction_approved_date,
+        m."_1st_btn_transaction_approved_date" AS first_btn_transaction_approved_date,
+        m."_1st_mpos_transaction_approved_date" AS first_mpos_transaction_approved_date,
+        m."_1st_link_transaction_approved_date" AS first_link_transaction_approved_date,
+        m."_1st_nequi_transaction_approved_date" AS first_nequi_transaction_approved_date,
+        m."_1st_qr_transaction_approved_date" AS first_qr_transaction_approved_date,
+        m.tpv_total_m0,
+        m.tpv_total_m1,
+        m.tpv_total_m2,
+        m.tpv_total_last_month,
+        m.tpv_historic,
+        m.tpv_last_quarter,
+        m.load_datetime,
+        row_number() OVER (
+            PARTITION BY m.master_merchant_id
+            ORDER BY m.load_datetime DESC
+        ) AS rn
+    FROM awsdatacatalog.bold_gold_growth.mart_master_merchant_enrich m
+    INNER JOIN base_mensual bm
+        ON cast(m.master_merchant_id AS varchar) = bm.merchant_id
+    WHERE m.master_merchant_id IS NOT NULL
+),
+merchant_enrich_current AS (
+    SELECT * FROM merchant_enrich_ranked WHERE rn = 1
+),
+
+merchant_enrich_1tx_ranked AS (
+    SELECT
+        cast(en.merchant_id AS varchar) AS merchant_id,
+        cast(en.master_merchant_id AS varchar) AS master_merchant_id,
+        en.kyc_verification_status_date AS kyc_verification_status_date_1tx,
+        en."_1st_transaction_approved_date" AS first_transaction_approved_date_1tx,
+        en."_1st_mpos_transaction_approved_date" AS first_mpos_transaction_approved_date_1tx,
+        en."_1st_link_transaction_approved_date" AS first_link_transaction_approved_date_1tx,
+        en."_1st_btn_transaction_approved_date" AS first_btn_transaction_approved_date_1tx,
+        en."_1st_nequi_transaction_approved_date" AS first_nequi_transaction_approved_date_1tx,
+        en."_1st_qr_transaction_approved_date" AS first_qr_transaction_approved_date_1tx,
+        en."_1st_match_date" AS match_date_1tx,
+        en.load_datetime AS merchant_enrich_1tx_loaded_at,
+        row_number() OVER (
+            PARTITION BY en.merchant_id
+            ORDER BY en.load_datetime DESC
+        ) AS rn
+    FROM awsdatacatalog.bold_gold_growth.mart_merchant_enrich en
+    INNER JOIN base_mensual bm
+        ON cast(en.merchant_id AS varchar) = bm.merchant_id
+    WHERE en.merchant_id IS NOT NULL
+),
+merchant_enrich_1tx_current AS (
+    SELECT * FROM merchant_enrich_1tx_ranked WHERE rn = 1
+),
+
+tpv_monthly_finance AS (
+    SELECT
+        cast(tpvd.merchant_id AS varchar) AS merchant_id,
+        date_trunc('month', cast(d.date AS date)) AS month_date,
+        count(DISTINCT tpvd.transaction_id) AS tx_month,
+        sum(coalesce(tpvd.tpv, 0)) AS tpv_month,
+        sum(coalesce(tpvd.mdr, 0) - coalesce(tpvd.processing_cost, 0)) AS net_revenues_month,
+        sum(CASE WHEN tpvd.plan_name IN ('Bold D+1', 'Bold D+0') THEN coalesce(tpvd.tpv, 0) ELSE 0 END) AS tpv_cuenta_bold_month,
+        sum(CASE WHEN tpvd.plan_name IN ('QR_BOLD', 'Otros Bancos D+1', 'legacy') THEN coalesce(tpvd.tpv, 0) ELSE 0 END) AS tpv_otros_bancos_month
+    FROM awsdatacatalog.bold_gold_finance.mart_tpv_daily_by_transaction tpvd
+    INNER JOIN awsdatacatalog.bold_gold_core.dim_date d
+        ON tpvd.date_key = d.date_key
+    INNER JOIN base_mensual bm
+        ON cast(tpvd.merchant_id AS varchar) = bm.merchant_id
+    GROUP BY
+        cast(tpvd.merchant_id AS varchar),
+        date_trunc('month', cast(d.date AS date))
+),
+tpv_monthly_maturity AS (
+    SELECT
+        tm.merchant_id,
+        date_trunc('month', cast(e1.first_transaction_approved_date_1tx AS date)) AS mes_m0,
+        tm.month_date,
+        date_diff(
+            'month',
+            date_trunc('month', cast(e1.first_transaction_approved_date_1tx AS date)),
+            tm.month_date
+        ) AS mes_maduracion,
+        tm.tx_month,
+        tm.tpv_month,
+        tm.net_revenues_month,
+        tm.tpv_cuenta_bold_month,
+        tm.tpv_otros_bancos_month
+    FROM tpv_monthly_finance tm
+    INNER JOIN merchant_enrich_1tx_current e1
+        ON tm.merchant_id = e1.merchant_id
+    WHERE e1.first_transaction_approved_date_1tx IS NOT NULL
+      AND date_diff(
+            'month',
+            date_trunc('month', cast(e1.first_transaction_approved_date_1tx AS date)),
+            tm.month_date
+        ) BETWEEN 0 AND 5
+),
+tpv_m0_m5_finance AS (
+    SELECT
+        merchant_id,
+        min(mes_m0) AS mes_m0,
+        max(month_date) AS mes_m5_o_ultimo_observado,
+        sum(CASE WHEN mes_maduracion = 0 THEN tpv_month ELSE 0 END) AS tpv_m0,
+        sum(CASE WHEN mes_maduracion = 1 THEN tpv_month ELSE 0 END) AS tpv_m1,
+        sum(CASE WHEN mes_maduracion = 2 THEN tpv_month ELSE 0 END) AS tpv_m2,
+        sum(CASE WHEN mes_maduracion = 3 THEN tpv_month ELSE 0 END) AS tpv_m3,
+        sum(CASE WHEN mes_maduracion = 4 THEN tpv_month ELSE 0 END) AS tpv_m4,
+        sum(CASE WHEN mes_maduracion = 5 THEN tpv_month ELSE 0 END) AS tpv_m5,
+        sum(CASE WHEN mes_maduracion = 0 THEN tx_month ELSE 0 END) AS tx_m0,
+        sum(CASE WHEN mes_maduracion = 1 THEN tx_month ELSE 0 END) AS tx_m1,
+        sum(CASE WHEN mes_maduracion = 2 THEN tx_month ELSE 0 END) AS tx_m2,
+        sum(CASE WHEN mes_maduracion = 3 THEN tx_month ELSE 0 END) AS tx_m3,
+        sum(CASE WHEN mes_maduracion = 4 THEN tx_month ELSE 0 END) AS tx_m4,
+        sum(CASE WHEN mes_maduracion = 5 THEN tx_month ELSE 0 END) AS tx_m5,
+        sum(CASE WHEN mes_maduracion = 0 THEN net_revenues_month ELSE 0 END) AS net_revenues_m0,
+        sum(CASE WHEN mes_maduracion = 1 THEN net_revenues_month ELSE 0 END) AS net_revenues_m1,
+        sum(CASE WHEN mes_maduracion = 2 THEN net_revenues_month ELSE 0 END) AS net_revenues_m2,
+        sum(CASE WHEN mes_maduracion = 3 THEN net_revenues_month ELSE 0 END) AS net_revenues_m3,
+        sum(CASE WHEN mes_maduracion = 4 THEN net_revenues_month ELSE 0 END) AS net_revenues_m4,
+        sum(CASE WHEN mes_maduracion = 5 THEN net_revenues_month ELSE 0 END) AS net_revenues_m5,
+        sum(CASE WHEN mes_maduracion = 0 THEN tpv_cuenta_bold_month ELSE 0 END) AS tpv_cuenta_bold_m0,
+        sum(CASE WHEN mes_maduracion = 1 THEN tpv_cuenta_bold_month ELSE 0 END) AS tpv_cuenta_bold_m1,
+        sum(CASE WHEN mes_maduracion = 0 THEN tpv_otros_bancos_month ELSE 0 END) AS tpv_otros_bancos_m0,
+        sum(CASE WHEN mes_maduracion = 1 THEN tpv_otros_bancos_month ELSE 0 END) AS tpv_otros_bancos_m1,
+        count(DISTINCT month_date) AS meses_con_tpv_m0_m5
+    FROM tpv_monthly_maturity
+    GROUP BY merchant_id
+),
+
+terminal_ranked AS (
+    SELECT
+        cast(t.last_terminal_match_merchant_id AS varchar) AS merchant_id,
+        cast(t.terminal_key AS varchar) AS terminal_key,
+        t.terminal_model,
+        t.current_terminal_status,
+        t.last_terminal_match_date,
+        t.last_transaction_approved_date,
+        t.tpv_m0_since_terminal_activation,
+        t.tpv_m1_since_terminal_activation,
+        t.tpv_m2_since_terminal_activation,
+        t.load_datetime,
+        row_number() OVER (
+            PARTITION BY t.last_terminal_match_merchant_id, t.terminal_key
+            ORDER BY t.load_datetime DESC, t.last_terminal_match_date DESC
+        ) AS rn
+    FROM awsdatacatalog.bold_gold_terminals.mart_terminal_enrich t
+    INNER JOIN base_mensual bm
+        ON cast(t.last_terminal_match_merchant_id AS varchar) = bm.merchant_id
+    WHERE t.last_terminal_match_merchant_id IS NOT NULL
+      AND t.terminal_key IS NOT NULL
+),
+terminals_by_merchant AS (
+    SELECT
+        merchant_id,
+        count(DISTINCT terminal_key) AS numero_terminales,
+        array_join(array_sort(array_distinct(array_agg(terminal_key))), ', ') AS terminales_asociadas,
+        array_join(array_sort(array_distinct(array_agg(terminal_model))), ', ') AS modelos_terminales,
+        array_join(array_sort(array_distinct(array_agg(current_terminal_status))), ', ') AS estados_terminales,
+        max(last_terminal_match_date) AS ultima_fecha_asociacion_terminal,
+        max(last_transaction_approved_date) AS ultima_transaccion_terminal,
+        sum(coalesce(tpv_m0_since_terminal_activation, 0)) AS tpv_terminales_m0,
+        sum(coalesce(tpv_m1_since_terminal_activation, 0)) AS tpv_terminales_m1,
+        sum(coalesce(tpv_m2_since_terminal_activation, 0)) AS tpv_terminales_m2,
+        max(load_datetime) AS terminales_loaded_at
+    FROM terminal_ranked
+    WHERE rn = 1
+    GROUP BY merchant_id
+),
+
+crm_users_ranked AS (
+    SELECT
+        cast(u.user_id AS varchar) AS user_id,
+        lower(trim(u.email)) AS email_key,
+        u.email,
+        cast(u.parent_id AS varchar) AS parent_id,
+        u.role,
+        u.sales_channel,
+        u.status,
+        u.country_code,
+        u.load_datetime,
+        row_number() OVER (
+            PARTITION BY u.user_id
+            ORDER BY
+                CASE WHEN upper(u.status) = 'ACTIVE' THEN 1 ELSE 0 END DESC,
+                u.load_datetime DESC
+        ) AS rn_user_id,
+        row_number() OVER (
+            PARTITION BY lower(trim(u.email))
+            ORDER BY
+                CASE WHEN upper(u.status) = 'ACTIVE' THEN 1 ELSE 0 END DESC,
+                u.load_datetime DESC
+        ) AS rn_email
+    FROM awsdatacatalog.bold_gold_sales.dim_crm_users u
+    WHERE u.user_id IS NOT NULL
+      AND u.email IS NOT NULL
+      AND u.email <> ''
+),
+crm_users_by_id AS (
+    SELECT user_id, email, email_key, parent_id, role, sales_channel, status, country_code, load_datetime
+    FROM crm_users_ranked
+    WHERE rn_user_id = 1
+),
+crm_users_by_email AS (
+    SELECT user_id, email, email_key, parent_id, role, sales_channel, status, country_code, load_datetime
+    FROM crm_users_ranked
+    WHERE rn_email = 1
+),
+
+bamboo_ranked AS (
+    SELECT
+        cast(b.user_id AS varchar) AS user_id,
+        b.reports_to,
+        cast(b.supervisor_id AS varchar) AS supervisor_id,
+        b.city,
+        b.region,
+        cast(b.hub_custom_id AS varchar) AS hub_custom_id,
+        b.hub_name,
+        b.job_title,
+        b.channel,
+        b.status,
+        b.vinculation_status,
+        b.load_datetime,
+        row_number() OVER (
+            PARTITION BY b.user_id
+            ORDER BY b.load_datetime DESC, b.event_datetime DESC
+        ) AS rn
+    FROM awsdatacatalog.bold_gold_sales.dim_user_bamboo_information b
+    WHERE b.user_id IS NOT NULL
+),
+bamboo_current AS (
+    SELECT *
+    FROM bamboo_ranked
+    WHERE rn = 1
+),
+
+location_ranked AS (
+    SELECT
+        cast(p.custom_id AS varchar) AS custom_id,
+        p.manager_email,
+        p.status,
+        p.load_datetime,
+        row_number() OVER (
+            PARTITION BY p.custom_id
+            ORDER BY p.load_datetime DESC, p.event_datetime DESC
+        ) AS rn
+    FROM awsdatacatalog.bold_gold_sales.dim_crm_pos_locations p
+    WHERE p.custom_id IS NOT NULL
+),
+location_current AS (
+    SELECT custom_id, manager_email, status, load_datetime
+    FROM location_ranked
+    WHERE rn = 1
+),
+
+opportunity_ranked AS (
+    SELECT
+        bm.merchant_id,
+        cast(o.opportunity_id AS varchar) AS opportunity_id,
+        o.status AS opportunity_status,
+        o.lost_status,
+        o.sales_channel AS opportunity_sales_channel,
+        o.opportunity_type,
+        o.management_type AS opportunity_management_type,
+        o.product_type AS opportunity_product_type,
+        o.product_name AS opportunity_product_name,
+        o.company_name AS opportunity_company_name,
+        o.origin_name AS opportunity_origin_name,
+        o.creation_date AS opportunity_creation_date,
+        o.last_update_date AS opportunity_last_update_date,
+        o.won_date AS opportunity_won_date,
+        o.activation_date AS opportunity_activation_date,
+        cast(o.user_id AS varchar) AS responsable_origen_user_id,
+        o.load_datetime AS opportunity_loaded_at,
+        row_number() OVER (
+            PARTITION BY bm.merchant_id
+            ORDER BY
+                CASE WHEN o.won_date IS NOT NULL THEN 1 ELSE 0 END DESC,
+                o.won_date DESC,
+                o.activation_date DESC,
+                o.last_update_date DESC,
+                o.creation_date DESC,
+                o.load_datetime DESC
+        ) AS rn
+    FROM base_mensual bm
+    INNER JOIN awsdatacatalog.bold_gold_sales.dim_crm_opportunities o
+        ON bm.merchant_id = cast(coalesce(o.product_merchant_id, o.metadata_merchant_id) AS varchar)
+    WHERE coalesce(o.product_merchant_id, o.metadata_merchant_id) IS NOT NULL
+),
+opportunity_current AS (
+    SELECT
+        merchant_id,
+        opportunity_id,
+        opportunity_status,
+        lost_status,
+        opportunity_sales_channel,
+        opportunity_type,
+        opportunity_management_type,
+        opportunity_product_type,
+        opportunity_product_name,
+        opportunity_company_name,
+        opportunity_origin_name,
+        opportunity_creation_date,
+        opportunity_last_update_date,
+        opportunity_won_date,
+        opportunity_activation_date,
+        responsable_origen_user_id,
+        opportunity_loaded_at
+    FROM opportunity_ranked
+    WHERE rn = 1
+),
+
+base_integrada AS (
+    SELECT
+        bm.merchant_id,
+        c.client_id,
+        coalesce(c.merchant_name, pm.merchant_name_payments) AS merchant_name,
+        c.merchant_person_type,
+        coalesce(c.document_type, pm.document_type_payments) AS document_type,
+        coalesce(c.document_number, pm.document_number_payments) AS document_number,
+        oc.opportunity_id,
+        oc.opportunity_status,
+        oc.lost_status,
+        oc.opportunity_sales_channel,
+        oc.opportunity_type,
+        oc.opportunity_management_type,
+        oc.opportunity_product_type,
+        oc.opportunity_product_name,
+        oc.opportunity_company_name,
+        oc.opportunity_origin_name,
+        oc.opportunity_creation_date,
+        oc.opportunity_last_update_date,
+        oc.opportunity_won_date,
+        oc.opportunity_activation_date,
+        responsable_origen.user_id AS responsable_origen_user_id,
+        responsable_origen.email AS responsable_origen_email,
+        responsable_origen.role AS responsable_origen_role,
+        responsable_origen.sales_channel AS responsable_origen_sales_channel,
+        responsable_origen.status AS responsable_origen_status,
+        responsable_origen_bamboo.job_title AS responsable_origen_job_title,
+        responsable_origen_bamboo.reports_to AS responsable_origen_reports_to,
+        tl_origen.user_id AS team_lead_origen_user_id,
+        tl_origen.email AS team_lead_origen_email,
+        tl_origen.role AS team_lead_origen_role,
+        tl_origen.sales_channel AS team_lead_origen_sales_channel,
+        tl_origen.status AS team_lead_origen_status,
+        tl_origen_bamboo.job_title AS team_lead_origen_job_title,
+        manager_origen.user_id AS manager_origen_user_id,
+        manager_origen.email AS manager_origen_email,
+        manager_origen.role AS manager_origen_role,
+        manager_origen.sales_channel AS manager_origen_sales_channel,
+        manager_origen.status AS manager_origen_status,
+        manager_origen_bamboo.job_title AS manager_origen_job_title,
+        oc.opportunity_loaded_at,
+        CASE
+            WHEN oc.opportunity_id IS NULL THEN 'SIN_OPORTUNIDAD_CRM'
+            WHEN oc.responsable_origen_user_id IS NULL THEN 'OPORTUNIDAD_SIN_USER_ID'
+            WHEN responsable_origen.user_id IS NULL THEN 'RESPONSABLE_NO_ENCONTRADO_EN_CRM_USERS'
+            WHEN tl_origen.user_id IS NULL THEN 'SIN_TEAM_LEAD_ORIGEN'
+            ELSE 'RESPONSABLE_ORIGEN_RESUELTO'
+        END AS estado_responsable_cualitativo,
+        coalesce(c.economic_activity_category_id, o.economic_activity_category_id, pm.category_id_payments) AS category_id,
+        pm.subcategory_id_payments AS subcategory_id,
+        coalesce(pm.city_code_payments, g.dane_code, g.municipality) AS city_code,
+        g.municipality AS city_name,
+        coalesce(c.location_address_department_code, o.address_department_code, g.department) AS department_code,
+        g.department AS department_name,
+        coalesce(pm.address_payments, g.standardized_address) AS address,
+        pm.manual_verification_status_code,
+        pm.merchant_status_code,
+        pm.sales_reference,
+        coalesce(o.contact_info_email, pm.email_legal_representative) AS email,
+        coalesce(o.contact_info_phone_number, pm.cellphone_legal_representative) AS cellphone_number,
+        coalesce(c.sales_agent_email, o.acquisition_channel_sales_agent_email, pm.sales_agent_email_payments) AS sales_agent_email,
+        g.hub_custom_id,
+        hu.email AS hub_manager_email,
+        hu.role AS hub_manager_role,
+        hb.job_title AS hub_manager_job_title,
+        lc.status AS hub_location_status,
+        agent.user_id AS sales_agent_user_id,
+        agent.role AS sales_agent_role,
+        agent.sales_channel AS sales_agent_sales_channel,
+        agent.status AS sales_agent_status,
+        agent_bamboo.job_title AS sales_agent_job_title,
+        agent_bamboo.channel AS sales_agent_bamboo_channel,
+        agent_bamboo.reports_to AS team_lead_name_from_bamboo,
+        tl.user_id AS team_lead_user_id,
+        tl.email AS team_lead_email,
+        tl.role AS team_lead_role,
+        tl.sales_channel AS team_lead_sales_channel,
+        tl.status AS team_lead_status,
+        tl_bamboo.job_title AS team_lead_job_title,
+        tl_bamboo.channel AS team_lead_bamboo_channel,
+        tl_bamboo.reports_to AS manager_name_from_bamboo,
+        mgr.user_id AS manager_user_id,
+        mgr.email AS manager_email,
+        mgr.role AS manager_role,
+        mgr.sales_channel AS manager_sales_channel,
+        mgr.status AS manager_status,
+        mgr_bamboo.job_title AS manager_job_title,
+        mgr_bamboo.channel AS manager_bamboo_channel,
+        coalesce(tf.tpv_m0, 0) AS tpv_m0,
+        coalesce(tf.tpv_m1, 0) AS tpv_m1,
+        coalesce(tf.tpv_m2, 0) AS tpv_m2,
+        coalesce(tf.tpv_m3, 0) AS tpv_m3,
+        coalesce(tf.tpv_m4, 0) AS tpv_m4,
+        coalesce(tf.tpv_m5, 0) AS tpv_m5,
+        coalesce(tf.tx_m0, 0) AS tx_m0,
+        coalesce(tf.tx_m1, 0) AS tx_m1,
+        coalesce(tf.tx_m2, 0) AS tx_m2,
+        coalesce(tf.tx_m3, 0) AS tx_m3,
+        coalesce(tf.tx_m4, 0) AS tx_m4,
+        coalesce(tf.tx_m5, 0) AS tx_m5,
+        coalesce(tf.net_revenues_m0, 0) AS net_revenues_m0,
+        coalesce(tf.net_revenues_m1, 0) AS net_revenues_m1,
+        coalesce(tf.net_revenues_m2, 0) AS net_revenues_m2,
+        coalesce(tf.net_revenues_m3, 0) AS net_revenues_m3,
+        coalesce(tf.net_revenues_m4, 0) AS net_revenues_m4,
+        coalesce(tf.net_revenues_m5, 0) AS net_revenues_m5,
+        coalesce(tf.tpv_cuenta_bold_m0, 0) AS tpv_cuenta_bold_m0,
+        coalesce(tf.tpv_cuenta_bold_m1, 0) AS tpv_cuenta_bold_m1,
+        coalesce(tf.tpv_otros_bancos_m0, 0) AS tpv_otros_bancos_m0,
+        coalesce(tf.tpv_otros_bancos_m1, 0) AS tpv_otros_bancos_m1,
+        CASE
+            WHEN coalesce(tf.tpv_m0, 0) = 0 THEN NULL
+            ELSE (coalesce(tf.tpv_m1, 0) - coalesce(tf.tpv_m0, 0)) / coalesce(tf.tpv_m0, 0)
+        END AS crecimiento_m1_vs_m0,
+        CASE
+            WHEN coalesce(tf.tpv_m0, 0) = 0 THEN NULL
+            ELSE (coalesce(tf.tpv_m5, 0) - coalesce(tf.tpv_m0, 0)) / coalesce(tf.tpv_m0, 0)
+        END AS crecimiento_m5_vs_m0,
+        CASE
+            WHEN (
+                coalesce(tf.tpv_m0, 0) + coalesce(tf.tpv_m1, 0) + coalesce(tf.tpv_m2, 0)
+            ) = 0 THEN NULL
+            ELSE (
+                coalesce(tf.tpv_m3, 0) + coalesce(tf.tpv_m4, 0) + coalesce(tf.tpv_m5, 0)
+                - coalesce(tf.tpv_m0, 0) - coalesce(tf.tpv_m1, 0) - coalesce(tf.tpv_m2, 0)
+            ) / nullif(
+                coalesce(tf.tpv_m0, 0) + coalesce(tf.tpv_m1, 0) + coalesce(tf.tpv_m2, 0),
+                0
+            )
+        END AS crecimiento_m3_m5_vs_m0_m2,
+        tf.mes_m0,
+        tf.mes_m5_o_ultimo_observado,
+        coalesce(tf.meses_con_tpv_m0_m5, 0) AS meses_con_tpv_m0_m5,
+        coalesce(e.tpv_total_m0, 0) AS tpv_total_m0_growth,
+        coalesce(e.tpv_total_m1, 0) AS tpv_total_m1_growth,
+        coalesce(e.tpv_total_m2, 0) AS tpv_total_m2_growth,
+        coalesce(e.tpv_total_last_month, 0) AS tpv_total_last_month,
+        coalesce(e.tpv_historic, 0) AS tpv_historic,
+        coalesce(e.tpv_last_quarter, 0) AS tpv_last_quarter,
+        greatest(
+            coalesce(tf.tpv_m0, 0),
+            coalesce(tf.tpv_m1, 0),
+            coalesce(tf.tpv_m2, 0),
+            coalesce(tf.tpv_m3, 0),
+            coalesce(tf.tpv_m4, 0),
+            coalesce(tf.tpv_m5, 0)
+        ) AS tpv_max,
+        c.selected_products,
+        coalesce(c.sales_source, pm.sales_source_payments) AS sales_source,
+        pm.sales_source_payments_raw,
+        c.marketing_source,
+        c.client_status,
+        c.onboarding_status,
+        coalesce(c.onboarding_completion_date, pm.onboarding_end_date_payments) AS onboarding_completion_date,
+        coalesce(e1.kyc_verification_status_date_1tx, e.kyc_verification_status_date) AS kyc_verification_status_date,
+        coalesce(e1.first_transaction_approved_date_1tx, e.first_transaction_approved_date) AS first_transaction_approved_date,
+        e.fourth_transaction_approved_date,
+        e.tenth_transaction_approved_date,
+        e.last_transaction_approved_date,
+        coalesce(e1.first_btn_transaction_approved_date_1tx, e.first_btn_transaction_approved_date) AS first_btn_transaction_approved_date,
+        coalesce(e1.first_mpos_transaction_approved_date_1tx, e.first_mpos_transaction_approved_date) AS first_mpos_transaction_approved_date,
+        coalesce(e1.first_link_transaction_approved_date_1tx, e.first_link_transaction_approved_date) AS first_link_transaction_approved_date,
+        coalesce(e1.first_nequi_transaction_approved_date_1tx, e.first_nequi_transaction_approved_date) AS first_nequi_transaction_approved_date,
+        coalesce(e1.first_qr_transaction_approved_date_1tx, e.first_qr_transaction_approved_date) AS first_qr_transaction_approved_date,
+        e1.match_date_1tx AS match_date,
+        coalesce(te.numero_terminales, 0) AS numero_terminales,
+        te.terminales_asociadas,
+        te.modelos_terminales,
+        te.estados_terminales,
+        te.ultima_fecha_asociacion_terminal,
+        te.ultima_transaccion_terminal,
+        coalesce(te.tpv_terminales_m0, 0) AS tpv_terminales_m0,
+        coalesce(te.tpv_terminales_m1, 0) AS tpv_terminales_m1,
+        coalesce(te.tpv_terminales_m2, 0) AS tpv_terminales_m2,
+        CASE WHEN coalesce(e1.first_mpos_transaction_approved_date_1tx, e.first_mpos_transaction_approved_date) IS NOT NULL THEN true ELSE false END AS tiene_pos,
+        CASE WHEN coalesce(e1.first_link_transaction_approved_date_1tx, e.first_link_transaction_approved_date) IS NOT NULL THEN true ELSE false END AS tiene_link_pago,
+        CASE WHEN coalesce(e1.first_btn_transaction_approved_date_1tx, e.first_btn_transaction_approved_date) IS NOT NULL THEN true ELSE false END AS tiene_boton_pago,
+        CASE WHEN coalesce(e1.first_qr_transaction_approved_date_1tx, e.first_qr_transaction_approved_date) IS NOT NULL THEN true ELSE false END AS tiene_qr,
+        c.last_update_event_date AS dim_client_updated_at,
+        e.load_datetime AS merchant_enrich_loaded_at,
+        e1.merchant_enrich_1tx_loaded_at,
+        g.load_datetime AS georeference_loaded_at,
+        te.terminales_loaded_at,
+        lc.load_datetime AS hub_location_loaded_at
+    FROM base_mensual bm
+    LEFT JOIN client_current c ON bm.merchant_id = c.merchant_id
+    LEFT JOIN onboarding_current o ON bm.merchant_id = o.merchant_id
+    LEFT JOIN payments_merchant_current pm ON bm.merchant_id = pm.merchant_id
+    LEFT JOIN geo_current g ON bm.merchant_id = g.merchant_id
+    LEFT JOIN merchant_enrich_current e ON bm.merchant_id = e.merchant_id
+    LEFT JOIN merchant_enrich_1tx_current e1 ON bm.merchant_id = e1.merchant_id
+    LEFT JOIN tpv_m0_m5_finance tf ON bm.merchant_id = tf.merchant_id
+    LEFT JOIN terminals_by_merchant te ON bm.merchant_id = te.merchant_id
+    LEFT JOIN opportunity_current oc ON bm.merchant_id = oc.merchant_id
+    LEFT JOIN crm_users_by_id responsable_origen ON oc.responsable_origen_user_id = responsable_origen.user_id
+    LEFT JOIN bamboo_current responsable_origen_bamboo ON responsable_origen.user_id = responsable_origen_bamboo.user_id
+    LEFT JOIN crm_users_by_id tl_origen ON responsable_origen.parent_id = tl_origen.user_id
+    LEFT JOIN bamboo_current tl_origen_bamboo ON tl_origen.user_id = tl_origen_bamboo.user_id
+    LEFT JOIN crm_users_by_id manager_origen ON tl_origen.parent_id = manager_origen.user_id
+    LEFT JOIN bamboo_current manager_origen_bamboo ON manager_origen.user_id = manager_origen_bamboo.user_id
+    LEFT JOIN location_current lc ON g.hub_custom_id = lc.custom_id
+    LEFT JOIN crm_users_by_email hu ON lower(trim(lc.manager_email)) = hu.email_key
+    LEFT JOIN bamboo_current hb ON hu.user_id = hb.user_id
+    LEFT JOIN crm_users_by_email agent
+        ON lower(trim(coalesce(c.sales_agent_email, o.acquisition_channel_sales_agent_email, pm.sales_agent_email_payments))) = agent.email_key
+    LEFT JOIN bamboo_current agent_bamboo ON agent.user_id = agent_bamboo.user_id
+    LEFT JOIN crm_users_by_id tl ON agent.parent_id = tl.user_id
+    LEFT JOIN bamboo_current tl_bamboo ON tl.user_id = tl_bamboo.user_id
+    LEFT JOIN crm_users_by_id mgr ON tl.parent_id = mgr.user_id
+    LEFT JOIN bamboo_current mgr_bamboo ON mgr.user_id = mgr_bamboo.user_id
+),
+
+base_enriquecida AS (
+    SELECT *
+    FROM base_integrada
+)
+
+SELECT
+    merchant_id,
+    client_id,
+    merchant_name,
+    merchant_person_type,
+    document_type,
+    document_number,
+    opportunity_id,
+    opportunity_status,
+    lost_status,
+    opportunity_sales_channel,
+    opportunity_type,
+    opportunity_management_type,
+    opportunity_product_type,
+    opportunity_product_name,
+    opportunity_company_name,
+    opportunity_origin_name,
+    opportunity_creation_date,
+    opportunity_last_update_date,
+    opportunity_won_date,
+    opportunity_activation_date,
+    responsable_origen_user_id,
+    responsable_origen_email,
+    responsable_origen_role,
+    responsable_origen_sales_channel,
+    responsable_origen_status,
+    responsable_origen_job_title,
+    responsable_origen_reports_to,
+    team_lead_origen_user_id,
+    team_lead_origen_email,
+    team_lead_origen_role,
+    team_lead_origen_sales_channel,
+    team_lead_origen_status,
+    team_lead_origen_job_title,
+    manager_origen_user_id,
+    manager_origen_email,
+    manager_origen_role,
+    manager_origen_sales_channel,
+    manager_origen_status,
+    manager_origen_job_title,
+    opportunity_loaded_at,
+    estado_responsable_cualitativo,
+    category_id,
+    subcategory_id,
+    city_code,
+    city_name,
+    department_code,
+    department_name,
+    address,
+    manual_verification_status_code,
+    merchant_status_code,
+    sales_reference,
+    email,
+    NULLIF(cellphone_number, '') AS cellphone_number,
+    sales_agent_email,
+    sales_agent_user_id,
+    sales_agent_role,
+    sales_agent_sales_channel,
+    sales_agent_status,
+    sales_agent_job_title,
+    sales_agent_bamboo_channel,
+    team_lead_name_from_bamboo AS team_lead_name,
+    team_lead_email,
+    team_lead_role,
+    team_lead_sales_channel,
+    team_lead_status,
+    team_lead_job_title,
+    team_lead_bamboo_channel,
+    manager_name_from_bamboo AS manager_name,
+    manager_email,
+    manager_role,
+    manager_sales_channel,
+    manager_status,
+    manager_job_title,
+    manager_bamboo_channel,
+    hub_custom_id,
+    hub_manager_email,
+    hub_manager_role,
+    hub_manager_job_title,
+    hub_location_status,
+    tpv_max,
+    CASE
+        WHEN tpv_max >= 40000000 THEN 'Mayor a 40M'
+        WHEN tpv_max >= 20000000 THEN 'Entre 20M y 40M'
+        ELSE 'Menor a 20M'
+    END AS clasificacion_calculada,
+    numero_terminales,
+    terminales_asociadas,
+    modelos_terminales,
+    estados_terminales,
+    ultima_fecha_asociacion_terminal,
+    ultima_transaccion_terminal,
+    tiene_pos,
+    tiene_link_pago,
+    tiene_boton_pago,
+    tiene_qr,
+    selected_products,
+    sales_source,
+    sales_source_payments_raw,
+    marketing_source,
+    client_status,
+    onboarding_status,
+    onboarding_completion_date,
+    kyc_verification_status_date,
+    first_transaction_approved_date,
+    fourth_transaction_approved_date,
+    tenth_transaction_approved_date,
+    last_transaction_approved_date,
+    first_btn_transaction_approved_date,
+    first_mpos_transaction_approved_date,
+    first_link_transaction_approved_date,
+    first_nequi_transaction_approved_date,
+    first_qr_transaction_approved_date,
+    match_date,
+    tpv_m0,
+    tpv_m1,
+    tpv_m2,
+    tpv_m3,
+    tpv_m4,
+    tpv_m5,
+    tx_m0,
+    tx_m1,
+    tx_m2,
+    tx_m3,
+    tx_m4,
+    tx_m5,
+    net_revenues_m0,
+    net_revenues_m1,
+    net_revenues_m2,
+    net_revenues_m3,
+    net_revenues_m4,
+    net_revenues_m5,
+    tpv_cuenta_bold_m0,
+    tpv_cuenta_bold_m1,
+    tpv_otros_bancos_m0,
+    tpv_otros_bancos_m1,
+    crecimiento_m1_vs_m0,
+    crecimiento_m5_vs_m0,
+    crecimiento_m3_m5_vs_m0_m2,
+    mes_m0,
+    mes_m5_o_ultimo_observado,
+    meses_con_tpv_m0_m5,
+    CASE
+        WHEN meses_con_tpv_m0_m5 = 6 THEN 'CUMPLE_6_MESES_TRANSACCIONALIDAD'
+        WHEN meses_con_tpv_m0_m5 BETWEEN 1 AND 5 THEN 'NO_CUMPLE_6_MESES_TRANSACCIONALIDAD'
+        ELSE 'SIN_TPV_EN_FUENTE_FINANCE'
+    END AS estado_maduracion_tpv,
+    tpv_total_m0_growth,
+    tpv_total_m1_growth,
+    tpv_total_m2_growth,
+    tpv_total_last_month,
+    tpv_historic,
+    tpv_last_quarter,
+    tpv_terminales_m0,
+    tpv_terminales_m1,
+    tpv_terminales_m2,
+    CASE
+        WHEN estado_responsable_cualitativo = 'RESPONSABLE_ORIGEN_RESUELTO' THEN 'JERARQUIA_ORIGEN_CRM_RESUELTA'
+        WHEN estado_responsable_cualitativo IN (
+            'SIN_OPORTUNIDAD_CRM',
+            'OPORTUNIDAD_SIN_USER_ID',
+            'RESPONSABLE_NO_ENCONTRADO_EN_CRM_USERS',
+            'SIN_TEAM_LEAD_ORIGEN'
+        ) THEN estado_responsable_cualitativo
+        WHEN sales_agent_email IS NULL THEN 'SIN_SALES_AGENT_EMAIL'
+        WHEN team_lead_email IS NULL THEN 'SIN_MATCH_TEAM_LEAD_POR_PARENT_ID'
+        WHEN manager_email IS NULL THEN 'SIN_MATCH_MANAGER_POR_PARENT_ID'
+        ELSE 'JERARQUIA_COMERCIAL_RESUELTA'
+    END AS estado_jerarquia_comercial,
+    CASE
+        WHEN hub_custom_id IS NULL THEN 'SIN_HUB_CUSTOM_ID'
+        WHEN hub_manager_email IS NULL THEN 'SIN_MANAGER_EMAIL_HUB'
+        ELSE 'HUB_RESUELTO'
+    END AS estado_jerarquia_hub,
+    dim_client_updated_at,
+    merchant_enrich_loaded_at,
+    merchant_enrich_1tx_loaded_at,
+    georeference_loaded_at,
+    terminales_loaded_at,
+    hub_location_loaded_at,
+    current_timestamp AS record_updated_at
+FROM base_enriquecida
+ORDER BY merchant_id
