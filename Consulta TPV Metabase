@@ -1,0 +1,995 @@
+SELECT
+  "__mb_source"."merchant_id" AS "merchant_id",
+  "__mb_source"."sales_source" AS "sales_source",
+  "__mb_source"."category_id" AS "category_id",
+  "__mb_source"."subcategory_id" AS "subcategory_id",
+  "__mb_source"."manual_verification_status_code" AS "manual_verification_status_code",
+  "__mb_source"."status_code" AS "status_code",
+  "__mb_source"."address" AS "address",
+  "__mb_source"."city_code" AS "city_code",
+  "__mb_source"."onboarding_end_date" AS "onboarding_end_date",
+  "__mb_source"."_1st_transaction_approved_date" AS "_1st_transaction_approved_date",
+  "__mb_source"."_1st_link_transaction_approved_date" AS "_1st_link_transaction_approved_date",
+  "__mb_source"."_1st_mpos_transaction_approved_date" AS "_1st_mpos_transaction_approved_date",
+  "__mb_source"."_1st_btn_transaction_approved_date" AS "_1st_btn_transaction_approved_date",
+  "__mb_source"."_1st_nequi_transaction_approved_date" AS "_1st_nequi_transaction_approved_date",
+  "__mb_source"."_1st_qr_bold_transaction_approved_date" AS "_1st_qr_bold_transaction_approved_date",
+  "__mb_source"."match_date" AS "match_date",
+  "__mb_source"."mes_m1" AS "mes_m1",
+  "__mb_source"."merchant_name" AS "merchant_name",
+  "__mb_source"."document_number" AS "document_number",
+  "__mb_source"."document_type" AS "document_type",
+  "__mb_source"."email" AS "email",
+  "__mb_source"."cellphone_number" AS "cellphone_number",
+  "__mb_source"."sales_agent_email" AS "sales_agent_email",
+  "__mb_source"."tpv_m0_1tx_mpos" AS "tpv_m0_1tx_mpos",
+  "__mb_source"."tpv_m1_1tx_mpos" AS "tpv_m1_1tx_mpos",
+  "__mb_source"."tpv_m2_1tx_mpos" AS "tpv_m2_1tx_mpos",
+  "__mb_source"."tpv_m0_1tx_boton" AS "tpv_m0_1tx_boton",
+  "__mb_source"."tpv_m1_1tx_boton" AS "tpv_m1_1tx_boton",
+  "__mb_source"."tpv_m2_1tx_boton" AS "tpv_m2_1tx_boton",
+  "__mb_source"."tpv_m0_1tx_link" AS "tpv_m0_1tx_link",
+  "__mb_source"."tpv_m1_1tx_link" AS "tpv_m1_1tx_link",
+  "__mb_source"."tpv_m2_1tx_link" AS "tpv_m2_1tx_link",
+  "__mb_source"."tpv_m0_1tx_nequi" AS "tpv_m0_1tx_nequi",
+  "__mb_source"."tpv_m1_1tx_nequi" AS "tpv_m1_1tx_nequi",
+  "__mb_source"."tpv_m2_1tx_nequi" AS "tpv_m2_1tx_nequi",
+  "__mb_source"."tpv_m0_1tx_qr" AS "tpv_m0_1tx_qr",
+  "__mb_source"."tpv_m1_1tx_qr" AS "tpv_m1_1tx_qr",
+  "__mb_source"."tpv_m2_1tx_qr" AS "tpv_m2_1tx_qr",
+  "__mb_source"."net_revenues_m0_1tx" AS "net_revenues_m0_1tx",
+  "__mb_source"."net_revenues_m1_1tx" AS "net_revenues_m1_1tx",
+  "__mb_source"."net_revenues_m2_1tx" AS "net_revenues_m2_1tx",
+  "__mb_source"."net_revenues_m3_1tx" AS "net_revenues_m3_1tx",
+  "__mb_source"."tx_m0_1tx" AS "tx_m0_1tx",
+  "__mb_source"."tx_m1_1tx" AS "tx_m1_1tx",
+  "__mb_source"."tx_m2_1tx" AS "tx_m2_1tx",
+  "__mb_source"."tx_m3_1tx" AS "tx_m3_1tx",
+  "__mb_source"."tpv_m0_1tx" AS "tpv_m0_1tx",
+  "__mb_source"."tpv_m1_1tx" AS "tpv_m1_1tx",
+  "__mb_source"."tpv_m2_1tx" AS "tpv_m2_1tx",
+  "__mb_source"."tpv_m3_1tx" AS "tpv_m3_1tx",
+  "__mb_source"."tpv_m4_1tx" AS "tpv_m4_1tx",
+  "__mb_source"."tpv_m5_1tx" AS "tpv_m5_1tx",
+  "__mb_source"."tpv_m6_1tx" AS "tpv_m6_1tx",
+  "__mb_source"."tpv_m7_1tx" AS "tpv_m7_1tx",
+  "__mb_source"."tpv_m8_1tx" AS "tpv_m8_1tx",
+  "__mb_source"."tpv_m9_1tx" AS "tpv_m9_1tx",
+  "__mb_source"."tpv_m10_1tx" AS "tpv_m10_1tx",
+  "__mb_source"."tpv_m11_1tx" AS "tpv_m11_1tx",
+  "__mb_source"."tpv_m12_1tx" AS "tpv_m12_1tx",
+  "__mb_source"."tpv_m13_1tx" AS "tpv_m13_1tx",
+  "__mb_source"."tpv_m14_1tx" AS "tpv_m14_1tx",
+  "__mb_source"."tpv_m15_1tx" AS "tpv_m15_1tx",
+  "__mb_source"."tpv_m16_1tx" AS "tpv_m16_1tx",
+  "__mb_source"."tpv_m17_1tx" AS "tpv_m17_1tx",
+  "__mb_source"."tpv_m18_1tx" AS "tpv_m18_1tx",
+  "__mb_source"."tpv_m19_1tx" AS "tpv_m19_1tx",
+  "__mb_source"."tpv_m20_1tx" AS "tpv_m20_1tx",
+  "__mb_source"."tpv_m21_1tx" AS "tpv_m21_1tx",
+  "__mb_source"."tpv_m22_1tx" AS "tpv_m22_1tx",
+  "__mb_source"."tpv_m23_1tx" AS "tpv_m23_1tx",
+  "__mb_source"."tpv_m24_1tx" AS "tpv_m24_1tx"
+FROM
+  (
+    -- ------------------------------------------------------------------------------------------------------------------------------
+    -- ------------------------------------------------------------------------------------------------------------------------------
+    -- reporte outbound V3
+    -- ------------------------------------------------------------------------------------------------------------------------------
+    -- ------------------------------------------------------------------------------------------------------------------------------
+    -- tabla de vinculaciones de terminales
+    with base_match as (
+      select
+        ter_match.terminal_serial,
+        ter_match.merchant_id,
+        ter_match.datetime_temrinal_merchant,
+        ter_match.cuenta_match_serial,
+        ter_match.cuenta_match_merchant,
+        max(ter_match.cuenta_match_serial) over (partition by ter_match.terminal_serial) as total_match_serial,
+        max(ter_match.cuenta_match_merchant) over (partition by ter_match.merchant_id) as total_match_merchant
+      from
+        (
+          select
+            --*
+            terminal_serial,
+            current_merchant_id as merchant_id,
+            last_modification_datetime as datetime_temrinal_merchant,
+            row_number() over (
+              partition by terminal_serial
+              order by
+                last_modification_datetime asc
+            ) as cuenta_match_serial,
+            row_number() over (
+              partition by current_merchant_id
+              order by
+                last_modification_datetime
+            ) as cuenta_match_merchant
+          from
+            bold_gold_terminals.fact_terminal_history
+          where
+            terminal_status = 'BINDED'
+        ) ter_match
+    ),
+    primera_vinculacion_comercio as (
+      select
+        terminal_serial,
+        merchant_id,
+        datetime_temrinal_merchant,
+        cuenta_match_serial,
+        cuenta_match_merchant,
+        total_match_serial,
+        total_match_merchant
+      from
+        base_match
+      where
+        cuenta_match_merchant = 1
+    ),
+    master_merchant_linaje_enrich as (
+      SELECT
+        merchant_id,
+        ARRAY_JOIN(
+          ARRAY_AGG(
+            CONCAT(
+              merchant_id,
+              ' | ',
+              parent_merchant_id,
+              '=[',
+              reason_changed,
+              ']'
+            )
+          ),
+          ' -> '
+        ) AS merged_reason,
+        sum(
+          case
+            when reason_changed like '%TERMINAL%' then 1
+            else 0
+          end
+        ) as terminal_master_merchant_flag,
+        sum(
+          case
+            when reason_changed like '%CELLPHONE%' then 1
+            else 0
+          end
+        ) as cellphone_master_merchant_flag,
+        sum(
+          case
+            when reason_changed like '%B_SHARED_DOCUMENT_MERCHANT%' then 1
+            else 0
+          end
+        ) as document_master_merchant_flag,
+        sum(
+          case
+            when reason_changed like '%REPRESENTATIVE%' then 1
+            else 0
+          end
+        ) as legal_representative_master_merchant_flag,
+        sum(
+          case
+            when ltrim(rtrim(reason_changed)) = 'C_SHARED_DOCUMENT_LEGAL_REPRESENTATIVE,' then 1
+            else 0
+          end
+        ) as flag_shared_doc_legal_representative
+      FROM
+        bold_gold_growth.mart_master_merchant_lineage --WHERE merchant_id in('110CQEMN2Q', '2UREJO0MMK')
+      GROUP BY
+        merchant_id
+    ),
+    info_pricing as (
+      -- pendeinte de que la info este OK
+      select
+        merchant_id,
+        bundle_name,
+        plan_name,
+        profile_id,
+        applied_date
+      from
+        (
+          select
+            --*
+            merchant_id,
+            bundle_name,
+            plan_name,
+            profile_id,
+            applied_date,
+            row_number() over (
+              partition by merchant_id
+              order by
+                applied_date desc
+            ) as order_
+          from
+            bold_gold_accounting.fact_historical_pricing
+        )
+      where
+        order_ = 1
+    ),
+    merchant_contacto as (
+      select
+        m.id as merchant_id,
+        p.name as nombre_legal_representative,
+        p.last_name as apellido_legal_representative,
+        p.cellphone_number as telefono_legal_representative,
+        p.email as email_legal_representative,
+        m.name as nombre_comercio,
+        m.address as direccion_comercio,
+        m.category__slug as categoria,
+        m.category__subcategory__slug as subcategoria,
+        m.manual_verification_status__reason_code as verification_status_code,
+        m.status__status_code as status_code,
+        m.sales_agent_email,
+        m.sales_reference,
+        m.location_city__code as departamento,
+        case
+          when m.sales_source IN ('INBOUND', NULL) then 'INBOUND'
+          when m.sales_source = 'REFERRED' then 'REFERRED'
+          when m.sales_source = 'RETAIL' then 'RETAIL'
+          when m.sales_source IN ('HUBS', 'OUTBOUND', 'STANDS', 'BOLD_STORE', 'EVENTS') then 'HUBS'
+          when m.sales_source IN ('DISTRIBUTOR', 'ALLIANCE') then 'DISTRIBUTOR'
+          when m.sales_source = 'SMB' then 'SMB'
+          when m.sales_source in ('ENTERPRISE') then 'ENTERPRISE'
+          when m.sales_source in ('ONLINE_PAYM') then 'ONLINE_PAYMENTS'
+          else m.sales_source
+        end as sales_source
+      from
+        bold_gold_payments.dim_merchant m
+        LEFT join bold_gold_growth.dim_person p on m.id = p.merchant_id
+        and m.legal_representative_id = p.id
+    ),
+    atributos_calculados as (
+      select
+        en.merchant_id,
+        en.master_merchant_id,
+        date_diff(
+          'month',
+          date_trunc('month', en.kyc_verification_status_date),
+          date_trunc('month', current_date)
+        ) as M_kyc,
+        m_lin.merged_reason as reason_changed,
+        case
+          when m_lin.merged_reason LIKE '%NO_CHANGE%' then 1
+          when m_lin.merged_reason is null then 1
+          when m_lin.merged_reason = '' then 1
+          ELSE 0
+        END flag_master_merchant,
+        m.document_number,
+        m.document_type,
+        m_lin.terminal_master_merchant_flag,
+        m_lin.cellphone_master_merchant_flag,
+        m_lin.document_master_merchant_flag,
+        m_lin.legal_representative_master_merchant_flag,
+        m_lin.flag_shared_doc_legal_representative,
+        en.kyc_verification_status_date as kyc_date,
+        t_vinc.datetime_temrinal_merchant as _1st_terminal_match,
+        en._1st_transaction_approved_date as _1st_tx_date,
+        en._1st_transaction_approved_date as _1st_tx_date_hora,
+        en._1st_mpos_transaction_approved_date as _1st_tx_mpos_date,
+        en._1st_link_transaction_approved_date as _1st_tx_link_date,
+        en._1st_btn_transaction_approved_date as _1st_tx_boton_date,
+        en._1st_nequi_transaction_approved_date as _1st_tx_nequi_date,
+        en._1st_qr_transaction_approved_date as _1st_tx_qr_date,
+        en._1st_match_date as match_date,
+        date_add(
+          'month',
+          1,
+          DATE_TRUNC(
+            'month',
+            cast(en.kyc_verification_status_date as date)
+          )
+        ) AS mes_m1,
+        m.onboarding_end_date,
+        row_number() over (
+          partition by m.document_number,
+          m.document_type
+          order by
+            en.kyc_verification_status_date
+        ) as order_,
+        row_number() over (
+          partition by m.document_number,
+          m.document_type
+          order by
+            t_vinc.datetime_temrinal_merchant
+        ) as flag_first_merchant_active_vinc,
+        row_number() over (
+          partition by m.document_number,
+          m.document_type
+          order by
+            en._1st_link_transaction_approved_date
+        ) as flag_first_merchant_active_link,
+        case
+          when en.merchant_id = en.master_merchant_id then 1
+          else 0
+        end as flag_first_merchant_active,
+        case
+          when t_vinc.cuenta_match_serial = t_vinc.cuenta_match_merchant then 1
+          else 0
+        end as flag_new_terminal_match,
+        case
+          when en._1st_link_transaction_approved_date is not null
+          and (
+            t_vinc.datetime_temrinal_merchant is null
+            or en._1st_link_transaction_approved_date < t_vinc.datetime_temrinal_merchant
+          ) then 1
+          when en._1st_nequi_transaction_approved_date is not null
+          and (
+            t_vinc.datetime_temrinal_merchant is null
+            or en._1st_nequi_transaction_approved_date < t_vinc.datetime_temrinal_merchant
+          ) then 1 --		   when en._1st_qr_transaction_approved_date is not null and
+          --				(t_vinc.datetime_temrinal_merchant is null or
+          --				en._1st_qr_transaction_approved_date < t_vinc.datetime_temrinal_merchant)
+          --				then 1
+          --		   when en._1st_btn_transaction_approved_date is not null and
+          --				(t_vinc.datetime_temrinal_merchant is null or
+          --				en._1st_btn_transaction_approved_date < t_vinc.datetime_temrinal_merchant)
+          --				then 1
+          else 0
+        end as flag_new_link_match --flag_new_online_match
+,
+        case
+          when en._1st_link_transaction_approved_date is not null
+          and (
+            t_vinc.datetime_temrinal_merchant is null
+            or (
+              en._1st_link_transaction_approved_date < t_vinc.datetime_temrinal_merchant
+              and date_trunc('month', en._1st_link_transaction_approved_date) = date_trunc('month', t_vinc.datetime_temrinal_merchant)
+            )
+          ) then 1
+          when en._1st_nequi_transaction_approved_date is not null
+          and (
+            t_vinc.datetime_temrinal_merchant is null
+            or (
+              en._1st_nequi_transaction_approved_date < t_vinc.datetime_temrinal_merchant
+              and date_trunc('month', en._1st_nequi_transaction_approved_date) = date_trunc('month', t_vinc.datetime_temrinal_merchant)
+            )
+          ) then 1 --			when en._1st_qr_transaction_approved_date is not null and
+          --	            (t_vinc.datetime_temrinal_merchant is null or
+          --				(en._1st_qr_transaction_approved_date < t_vinc.datetime_temrinal_merchant and
+          --				date_trunc('month', en._1st_qr_transaction_approved_date) = date_trunc('month', t_vinc.datetime_temrinal_merchant)))
+          --				then 1
+          --			when en._1st_btn_transaction_approved_date is not null and
+          --	            (t_vinc.datetime_temrinal_merchant is null or
+          --				(en._1st_btn_transaction_approved_date < t_vinc.datetime_temrinal_merchant and
+          --				date_trunc('month', en._1st_btn_transaction_approved_date) = date_trunc('month', t_vinc.datetime_temrinal_merchant)))
+          --				then 1
+          else 0
+        end as flag_link_match_same_month --flag_online_match_same_month
+,
+        t_vinc.total_match_merchant
+      from
+        bold_gold_growth.mart_merchant_enrich en
+        left join primera_vinculacion_comercio t_vinc on en.merchant_id = t_vinc.merchant_id
+        left join bold_gold_payments.dim_merchant m on en.merchant_id = m.id --left join bold_gold_growth.mart_master_merchant_linaje m_lin
+        --on en.merchant_id = m_lin.merchant_id
+        left join master_merchant_linaje_enrich m_lin on en.merchant_id = m_lin.merchant_id
+    ),
+    all_general_tx as (
+      select
+        t.merchant_id,
+        at_.kyc_date,
+        at_._1st_terminal_match,
+        at_._1st_tx_date,
+        at_._1st_tx_mpos_date,
+        at_._1st_tx_link_date,
+        at_._1st_tx_boton_date,
+        at_._1st_tx_nequi_date,
+        at_._1st_tx_qr_date,
+        date_diff(
+          'month',
+          date_trunc('month', at_.kyc_date),
+          date_trunc('month', d.date)
+        ) as m_kyc,
+        date_diff(
+          'month',
+          date_trunc('month', at_._1st_tx_date),
+          date_trunc('month', d.date)
+        ) as m_1TX,
+        date_diff(
+          'month',
+          date_trunc('month', at_._1st_terminal_match),
+          date_trunc('month', d.date)
+        ) as m_vinc_serial,
+        date_diff(
+          'month',
+          date_trunc('month', at_._1st_tx_mpos_date),
+          date_trunc('month', d.date)
+        ) as m_1TX_mpos,
+        date_diff(
+          'month',
+          date_trunc('month', at_._1st_tx_link_date),
+          date_trunc('month', d.date)
+        ) as m_1TX_link,
+        date_diff(
+          'month',
+          date_trunc('month', at_._1st_tx_boton_date),
+          date_trunc('month', d.date)
+        ) as m_1TX_boton,
+        date_diff(
+          'month',
+          date_trunc('month', at_._1st_tx_nequi_date),
+          date_trunc('month', d.date)
+        ) as m_1TX_nequi,
+        date_diff(
+          'month',
+          date_trunc('month', at_._1st_tx_qr_date),
+          date_trunc('month', d.date)
+        ) as m_1TX_qr,
+        date_diff(
+          'day',
+          date_trunc('day', at_.kyc_date),
+          date_trunc('day', d.date)
+        ) as day_kyc,
+        date_diff(
+          'day',
+          date_trunc('day', at_._1st_tx_date),
+          date_trunc('day', d.date)
+        ) as day_1TX,
+        t.transaction_id,
+        d.date,
+        CASE
+          when t.payment_type = 'PAY_BY_LINK' then 'LINK'
+          when t.payment_type = 'PAY_BY_BTN' then 'BOTON'
+          when t.payment_method__type in ('NEQUI', 'DAVIPLATA') then 'WALLETS' --when t.payment_type = 'POS' AND t.model = 'ET389'                        	                then 'DATAFONO' --'SONO QR'
+          when t.payment_method__type in ('QR_BOLD') then 'QR' --when t.payment_type = 'PAY_BY_LINK'                                                        then 'LINK'
+          --when t.payment_type = 'PAY_BY_BTN'                                                      	then 'BOTON'
+          when t.payment_type in ('SOFT_POS') then 'DATAFONO' --'SOFTPOS'
+          when t.payment_type in ('POS')
+          and t.model in ('QPOS', 'QPOS_CUTE', 'QPOS_MINI') then 'DATAFONO' --'NEO'
+          when t.payment_type in ('POS')
+          and t.model in ('QPOS_PLUS') then 'DATAFONO' --'PLUS'
+          when t.payment_type in ('POS')
+          and t.model in ('D20') then 'DATAFONO' --'SMART'
+          when t.payment_type in ('POS')
+          and t.model in ('N86') then 'DATAFONO' --'SMART_PRO'
+          else t.payment_type
+        end as dispositivo_transaccional,
+        t.tpv,
+        t.mdr,
+        t.processing_cost,
+        (t.mdr - t.processing_cost) as net_revenues
+      from
+        bold_gold_finance.mart_tpv_daily_by_transaction t
+        left join atributos_calculados at_ on t.merchant_id = at_.merchant_id
+        inner join bold_gold_core.dim_date d on t.date_key = d.date_key
+    ),
+    info_tpv_agregada as (
+      select
+        merchant_id as merchant_id_tpv --, sum(tpv) as total_tpv
+        --, sum(mdr) as total_mdr
+        --, sum(processing_cost) as total_processing_cost
+        --, sum(net_revenues) as total_net_revenues
+        --, cast((cast(sum(net_revenues) as real)/cast(sum(tpv) as real)) as real)*100 as ntr
+,
+        sum(
+          case
+            when m_1tx = 0 then tpv
+          end
+        ) as tpv_m0_1tx,
+        sum(
+          case
+            when m_1tx = 1 then tpv
+          end
+        ) as tpv_m1_1tx,
+        sum(
+          case
+            when m_1tx = 2 then tpv
+          end
+        ) as tpv_m2_1tx,
+        sum(
+          case
+            when m_1tx = 3 then tpv
+          end
+        ) as tpv_m3_1tx,
+        sum(
+          case
+            when m_1tx = 4 then tpv
+          end
+        ) as tpv_m4_1tx,
+        sum(
+          case
+            when m_1tx = 5 then tpv
+          end
+        ) as tpv_m5_1tx,
+        sum(
+          case
+            when m_1tx = 6 then tpv
+          end
+        ) as tpv_m6_1tx,
+        sum(
+          case
+            when m_1tx = 7 then tpv
+          end
+        ) as tpv_m7_1tx,
+        sum(
+          case
+            when m_1tx = 8 then tpv
+          end
+        ) as tpv_m8_1tx,
+        sum(
+          case
+            when m_1tx = 9 then tpv
+          end
+        ) as tpv_m9_1tx,
+        sum(
+          case
+            when m_1tx = 10 then tpv
+          end
+        ) as tpv_m10_1tx,
+        sum(
+          case
+            when m_1tx = 11 then tpv
+          end
+        ) as tpv_m11_1tx,
+        sum(
+          case
+            when m_1tx = 12 then tpv
+          end
+        ) as tpv_m12_1tx,
+        sum(
+          case
+            when m_1tx = 13 then tpv
+          end
+        ) as tpv_m13_1tx,
+        sum(
+          case
+            when m_1tx = 14 then tpv
+          end
+        ) as tpv_m14_1tx,
+        sum(
+          case
+            when m_1tx = 15 then tpv
+          end
+        ) as tpv_m15_1tx,
+        sum(
+          case
+            when m_1tx = 16 then tpv
+          end
+        ) as tpv_m16_1tx,
+        sum(
+          case
+            when m_1tx = 17 then tpv
+          end
+        ) as tpv_m17_1tx,
+        sum(
+          case
+            when m_1tx = 18 then tpv
+          end
+        ) as tpv_m18_1tx,
+        sum(
+          case
+            when m_1tx = 19 then tpv
+          end
+        ) as tpv_m19_1tx,
+        sum(
+          case
+            when m_1tx = 20 then tpv
+          end
+        ) as tpv_m20_1tx,
+        sum(
+          case
+            when m_1tx = 21 then tpv
+          end
+        ) as tpv_m21_1tx,
+        sum(
+          case
+            when m_1tx = 22 then tpv
+          end
+        ) as tpv_m22_1tx,
+        sum(
+          case
+            when m_1tx = 23 then tpv
+          end
+        ) as tpv_m23_1tx,
+        sum(
+          case
+            when m_1tx = 24 then tpv
+          end
+        ) as tpv_m24_1tx,
+        sum(
+          case
+            when m_1tx = 0 then net_revenues
+          end
+        ) as net_revenues_m0_1tx,
+        sum(
+          case
+            when m_1tx = 1 then net_revenues
+          end
+        ) as net_revenues_m1_1tx,
+        sum(
+          case
+            when m_1tx = 2 then net_revenues
+          end
+        ) as net_revenues_m2_1tx,
+        sum(
+          case
+            when m_1tx = 3 then net_revenues
+          end
+        ) as net_revenues_m3_1tx,
+        count(
+          distinct(
+            case
+              when m_1tX = 0 then transaction_id
+            end
+          )
+        ) as tx_m0_1tx,
+        count(
+          distinct(
+            case
+              when m_1tx = 1 then transaction_id
+            end
+          )
+        ) as tx_m1_1tx,
+        count(
+          distinct(
+            case
+              when m_1tx = 2 then transaction_id
+            end
+          )
+        ) as tx_m2_1tx,
+        count(
+          distinct(
+            case
+              when m_1tx = 3 then transaction_id
+            end
+          )
+        ) as tx_m3_1tx,
+        sum(
+          case
+            when m_vinc_serial = 0 then tpv
+          end
+        ) as tpv_m0_vinc_serial,
+        sum(
+          case
+            when m_vinc_serial = 1 then tpv
+          end
+        ) as tpv_m1_vinc_serial,
+        sum(
+          case
+            when m_vinc_serial = 2 then tpv
+          end
+        ) as tpv_m2_vinc_serial,
+        sum(
+          case
+            when m_vinc_serial = 3 then tpv
+          end
+        ) as tpv_m3_vinc_serial,
+        sum(
+          case
+            when m_vinc_serial = 0 then net_revenues
+          end
+        ) as net_revenues_m0_vinc_serial,
+        sum(
+          case
+            when m_vinc_serial = 1 then net_revenues
+          end
+        ) as net_revenues_m1_vinc_serial,
+        sum(
+          case
+            when m_vinc_serial = 2 then net_revenues
+          end
+        ) as net_revenues_m2_vinc_serial,
+        sum(
+          case
+            when m_vinc_serial = 3 then net_revenues
+          end
+        ) as net_revenues_m3_vinc_serial,
+        count(
+          distinct(
+            case
+              when m_vinc_serial = 1 then transaction_id
+            end
+          )
+        ) as tx_m0_vinc_serial,
+        count(
+          distinct(
+            case
+              when m_vinc_serial = 1 then transaction_id
+            end
+          )
+        ) as tx_m1_vinc_serial,
+        count(
+          distinct(
+            case
+              when m_vinc_serial = 2 then transaction_id
+            end
+          )
+        ) as tx_m2_vinc_serial,
+        count(
+          distinct(
+            case
+              when m_vinc_serial = 3 then transaction_id
+            end
+          )
+        ) as tx_m3_vinc_serial,
+        sum(
+          case
+            when m_1tx_mpos = 0
+            and dispositivo_transaccional = 'DATAFONO' then tpv
+          end
+        ) as tpv_m0_1tx_mpos,
+        sum(
+          case
+            when m_1tx_mpos = 1
+            and dispositivo_transaccional = 'DATAFONO' then tpv
+          end
+        ) as tpv_m1_1tx_mpos,
+        sum(
+          case
+            when m_1tx_mpos = 2
+            and dispositivo_transaccional = 'DATAFONO' then tpv
+          end
+        ) as tpv_m2_1tx_mpos,
+        sum(
+          case
+            when m_1tx_mpos = 3
+            and dispositivo_transaccional = 'DATAFONO' then tpv
+          end
+        ) as tpv_m3_1tx_mpos,
+        sum(
+          case
+            when m_1tx_mpos = 4
+            and dispositivo_transaccional = 'DATAFONO' then tpv
+          end
+        ) as tpv_m4_1tx_mpos,
+        sum(
+          case
+            when m_1tx_mpos = 5
+            and dispositivo_transaccional = 'DATAFONO' then tpv
+          end
+        ) as tpv_m5_1tx_mpos,
+        sum(
+          case
+            when m_1tx_mpos = 6
+            and dispositivo_transaccional = 'DATAFONO' then tpv
+          end
+        ) as tpv_m6_1tx_mpos,
+        sum(
+          case
+            when m_1tx_link = 0
+            and dispositivo_transaccional = 'LINK' then tpv
+          end
+        ) as tpv_m0_1tx_link,
+        sum(
+          case
+            when m_1tx_link = 1
+            and dispositivo_transaccional = 'LINK' then tpv
+          end
+        ) as tpv_m1_1tx_link,
+        sum(
+          case
+            when m_1tx_link = 2
+            and dispositivo_transaccional = 'LINK' then tpv
+          end
+        ) as tpv_m2_1tx_link,
+        sum(
+          case
+            when m_1tx_link = 3
+            and dispositivo_transaccional = 'LINK' then tpv
+          end
+        ) as tpv_m3_1tx_link,
+        sum(
+          case
+            when m_1tx_link = 4
+            and dispositivo_transaccional = 'LINK' then tpv
+          end
+        ) as tpv_m4_1tx_link,
+        sum(
+          case
+            when m_1tx_link = 5
+            and dispositivo_transaccional = 'LINK' then tpv
+          end
+        ) as tpv_m5_1tx_link,
+        sum(
+          case
+            when m_1tx_link = 6
+            and dispositivo_transaccional = 'LINK' then tpv
+          end
+        ) as tpv_m6_1tx_link,
+        sum(
+          case
+            when m_1tx_boton = 0
+            and dispositivo_transaccional = 'BOTON' then tpv
+          end
+        ) as tpv_m0_1tx_boton,
+        sum(
+          case
+            when m_1tx_boton = 1
+            and dispositivo_transaccional = 'BOTON' then tpv
+          end
+        ) as tpv_m1_1tx_boton,
+        sum(
+          case
+            when m_1tx_boton = 2
+            and dispositivo_transaccional = 'BOTON' then tpv
+          end
+        ) as tpv_m2_1tx_boton,
+        sum(
+          case
+            when m_1tx_boton = 3
+            and dispositivo_transaccional = 'BOTON' then tpv
+          end
+        ) as tpv_m3_1tx_boton,
+        sum(
+          case
+            when m_1tx_boton = 4
+            and dispositivo_transaccional = 'BOTON' then tpv
+          end
+        ) as tpv_m4_1tx_boton,
+        sum(
+          case
+            when m_1tx_boton = 5
+            and dispositivo_transaccional = 'BOTON' then tpv
+          end
+        ) as tpv_m5_1tx_boton,
+        sum(
+          case
+            when m_1tx_boton = 6
+            and dispositivo_transaccional = 'BOTON' then tpv
+          end
+        ) as tpv_m6_1tx_boton,
+        sum(
+          case
+            when m_1tx_nequi = 0
+            and dispositivo_transaccional = 'WALLETS' then tpv
+          end
+        ) as tpv_m0_1tx_nequi,
+        sum(
+          case
+            when m_1tx_nequi = 1
+            and dispositivo_transaccional = 'WALLETS' then tpv
+          end
+        ) as tpv_m1_1tx_nequi,
+        sum(
+          case
+            when m_1tx_nequi = 2
+            and dispositivo_transaccional = 'WALLETS' then tpv
+          end
+        ) as tpv_m2_1tx_nequi,
+        sum(
+          case
+            when m_1tx_nequi = 3
+            and dispositivo_transaccional = 'WALLETS' then tpv
+          end
+        ) as tpv_m3_1tx_nequi,
+        sum(
+          case
+            when m_1tx_nequi = 4
+            and dispositivo_transaccional = 'WALLETS' then tpv
+          end
+        ) as tpv_m4_1tx_nequi,
+        sum(
+          case
+            when m_1tx_nequi = 5
+            and dispositivo_transaccional = 'WALLETS' then tpv
+          end
+        ) as tpv_m5_1tx_nequi,
+        sum(
+          case
+            when m_1tx_nequi = 6
+            and dispositivo_transaccional = 'WALLETS' then tpv
+          end
+        ) as tpv_m6_1tx_nequi,
+        sum(
+          case
+            when m_1tx_qr = 0
+            and dispositivo_transaccional = 'QR' then tpv
+          end
+        ) as tpv_m0_1tx_qr,
+        sum(
+          case
+            when m_1tx_qr = 1
+            and dispositivo_transaccional = 'QR' then tpv
+          end
+        ) as tpv_m1_1tx_qr,
+        sum(
+          case
+            when m_1tx_qr = 2
+            and dispositivo_transaccional = 'QR' then tpv
+          end
+        ) as tpv_m2_1tx_qr,
+        sum(
+          case
+            when m_1tx_qr = 3
+            and dispositivo_transaccional = 'QR' then tpv
+          end
+        ) as tpv_m3_1tx_qr,
+        sum(
+          case
+            when m_1tx_qr = 4
+            and dispositivo_transaccional = 'QR' then tpv
+          end
+        ) as tpv_m4_1tx_qr,
+        sum(
+          case
+            when m_1tx_qr = 5
+            and dispositivo_transaccional = 'QR' then tpv
+          end
+        ) as tpv_m5_1tx_qr,
+        sum(
+          case
+            when m_1tx_qr = 6
+            and dispositivo_transaccional = 'QR' then tpv
+          end
+        ) as tpv_m6_1tx_qr
+      from
+        all_general_tx
+      group by
+        1
+    )
+    select
+      t1.merchant_id -- info de contacto
+,
+      t1.sales_source,
+      t1.categoria as category_id,
+      t1.subcategoria as subcategory_id,
+      t1.verification_status_code as manual_verification_status_code,
+      t1.status_code,
+      t1.direccion_comercio as address,
+      t1.departamento as city_code,
+      t2.onboarding_end_date,
+      t2._1st_tx_date as _1st_transaction_approved_date,
+      t2._1st_tx_link_date as _1st_link_transaction_approved_date,
+      t2._1st_tx_mpos_date as _1st_mpos_transaction_approved_date,
+      t2._1st_tx_boton_date as _1st_btn_transaction_approved_date,
+      t2._1st_tx_nequi_date as _1st_nequi_transaction_approved_date,
+      t2._1st_tx_qr_date as _1st_qr_bold_transaction_approved_date,
+      t2.match_date,
+      t2.mes_m1,
+      t1.nombre_comercio as merchant_name,
+      t2.document_number,
+      t2.document_type,
+      t1.email_legal_representative as email,
+      t1.telefono_legal_representative as cellphone_number,
+      t1.sales_agent_email,
+      t4.tpv_m0_1tx_mpos,
+      t4.tpv_m1_1tx_mpos,
+      t4.tpv_m2_1tx_mpos,
+      t4.tpv_m0_1tx_boton,
+      t4.tpv_m1_1tx_boton,
+      t4.tpv_m2_1tx_boton,
+      t4.tpv_m0_1tx_link,
+      t4.tpv_m1_1tx_link,
+      t4.tpv_m2_1tx_link,
+      t4.tpv_m0_1tx_nequi,
+      t4.tpv_m1_1tx_nequi,
+      t4.tpv_m2_1tx_nequi,
+      t4.tpv_m0_1tx_qr,
+      t4.tpv_m1_1tx_qr,
+      t4.tpv_m2_1tx_qr,
+      t4.net_revenues_m0_1tx,
+      t4.net_revenues_m1_1tx,
+      t4.net_revenues_m2_1tx,
+      t4.net_revenues_m3_1tx,
+      t4.tx_m0_1tx,
+      t4.tx_m1_1tx,
+      t4.tx_m2_1tx,
+      t4.tx_m3_1tx,
+      t4.tpv_m0_1tx,
+      t4.tpv_m1_1tx,
+      t4.tpv_m2_1tx,
+      t4.tpv_m3_1tx,
+      t4.tpv_m4_1tx,
+      t4.tpv_m5_1tx,
+      t4.tpv_m6_1tx,
+      t4.tpv_m7_1tx,
+      t4.tpv_m8_1tx,
+      t4.tpv_m9_1tx,
+      t4.tpv_m10_1tx,
+      t4.tpv_m11_1tx,
+      t4.tpv_m12_1tx,
+      t4.tpv_m13_1tx,
+      t4.tpv_m14_1tx,
+      t4.tpv_m15_1tx,
+      t4.tpv_m16_1tx,
+      t4.tpv_m17_1tx,
+      t4.tpv_m18_1tx,
+      t4.tpv_m19_1tx,
+      t4.tpv_m20_1tx,
+      t4.tpv_m21_1tx,
+      t4.tpv_m22_1tx,
+      t4.tpv_m23_1tx,
+      t4.tpv_m24_1tx
+    from
+      merchant_contacto t1
+      left join atributos_calculados t2 on t1.merchant_id = t2.merchant_id
+      left join info_pricing t3 on t1.merchant_id = t3.merchant_id
+      left join info_tpv_agregada t4 on t1.merchant_id = t4.merchant_id_tpv --where t1.merchant_id = 'QCYLMKO28H'
+  ) AS "__mb_source"
