@@ -31,7 +31,7 @@ base_mensual (merchant_id) AS (
         ('PWUP9OQUQ9'),
         ('INRLL9A4UN'),
         ('H8PIGM8B5C')
-),
+)
 
 payments_merchant_ranked AS (
     SELECT
@@ -488,7 +488,7 @@ base_integrada AS (
     SELECT
         bm.merchant_id,
         c.client_id,
-        coalesce(c.merchant_name, pm.merchant_name_payments) AS merchant_name,
+        coalesce(pm.merchant_name_payments, c.merchant_name) AS merchant_name,
         c.merchant_person_type,
         coalesce(c.document_type, pm.document_type_payments) AS document_type,
         coalesce(c.document_number, pm.document_number_payments) AS document_number,
@@ -536,15 +536,15 @@ base_integrada AS (
         coalesce(c.economic_activity_category_id, o.economic_activity_category_id, pm.category_id_payments) AS category_id,
         pm.subcategory_id_payments AS subcategory_id,
         coalesce(pm.city_code_payments, g.dane_code, g.municipality) AS city_code,
-        g.municipality AS city_name,
+        coalesce(g.municipality, pm.city_code_payments) AS city_name,
         coalesce(c.location_address_department_code, o.address_department_code, g.department) AS department_code,
         g.department AS department_name,
         coalesce(pm.address_payments, g.standardized_address) AS address,
         pm.manual_verification_status_code,
         pm.merchant_status_code,
         pm.sales_reference,
-        coalesce(o.contact_info_email, pm.email_legal_representative) AS email,
-        coalesce(o.contact_info_phone_number, pm.cellphone_legal_representative) AS cellphone_number,
+        coalesce(pm.email_legal_representative, o.contact_info_email) AS email,
+        coalesce(pm.cellphone_legal_representative, o.contact_info_phone_number) AS cellphone_number,
         coalesce(c.sales_agent_email, o.acquisition_channel_sales_agent_email, pm.sales_agent_email_payments) AS sales_agent_email,
         g.hub_custom_id,
         hu.email AS hub_manager_email,
