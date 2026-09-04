@@ -31,7 +31,7 @@ base_mensual (merchant_id) AS (
         ('PWUP9OQUQ9'),
         ('INRLL9A4UN'),
         ('H8PIGM8B5C')
-)
+),
 
 payments_merchant_ranked AS (
     SELECT
