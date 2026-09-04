@@ -1,0 +1,39 @@
+Sí, puedes compartirle la 35a desde Metabase, pero yo se la compartiría como consulta de validación sample, no como consulta final productiva.
+
+Puedes decirle algo así:
+
+> Tati, te comparto esta consulta en Metabase como muestra validada con 20 merchants de la base de Marzo. La idea es que veas la estructura final del dataset que alimentaría el dashboard en Next.js.  
+>
+> Esta consulta no decide qué comercios entran al handoff: recibe los `merchant_id` que negocio entrega mensualmente y solo los enriquece con información disponible en Athena/Metabase.
+>
+> Probamos la muestra y validamos que devuelve una fila por `merchant_id`, sin duplicados ni pérdida de comercios. También validamos que coinciden contra la Sheet publicada los datos base del comercio, ciudad, dirección, contacto legal, sales agent y TPV M0–M5.
+
+Y sobre lo que encontramos/cambiamos:
+
+> Encontramos que la columna `MERCHANT ID` de la Sheet venía vacía, pero `master_merchant_id` sí venía completo; por eso usamos `master_merchant_id` como entrada del proceso.
+>
+> También encontramos que para esta base era mejor priorizar datos desde `bold_gold_payments.dim_merchant`, porque coincide con el reporte usado por negocio. Por eso la consulta prioriza desde Payments:
+>
+> - nombre del comercio;
+> - documento;
+> - categoría y subcategoría;
+> - dirección;
+> - código de ciudad;
+> - contacto legal;
+> - sales source original.
+>
+> Para TPV usamos `bold_gold_finance.mart_tpv_daily_by_transaction`, calculando M0–M5 desde la primera transacción aprobada del comercio (`_1st_transaction_approved_date`).  
+>
+> `tpv_max` se calcula como el mayor TPV mensual entre M0 y M5.  
+>
+> Los meses sin TPV se devuelven como `0`, aunque en la Sheet aparezcan en blanco, para facilitar cálculos y visualización en el dashboard.
+
+Y muy importante para su mapa mental:
+
+> La consulta deja `sales_source` como campo visual/filtro, pero no hardcodea el canal SMB. Si el merchant viene en la base mensual, debe aparecer en el dashboard. El canal sirve para contexto, no para excluir registros.
+>
+> KAM asignado, mes de transferencia e información cualitativa no se calculan en esta consulta. Esos campos vienen del proceso mensual/formulario y luego se cruzan por `merchant_id`.
+
+Cierre recomendado:
+
+> La 35a es una muestra validada. Si te sirve la estructura, el siguiente paso es usar la consulta 35 completa con los 929 merchants de Marzo o convertir el CTE `base_mensual` en una tabla/input mensual para que B-maker/Next.js no dependa de pegar IDs manualmente.
