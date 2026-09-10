@@ -26,3 +26,21 @@ ORDER BY table_schema, table_name, ordinal_position
 5	bold_gold_payments	dim_merchant	onboarding_end_date	timestamp(3)
 6	bold_gold_payments	dim_merchant	document_number	varchar
 7	bold_gold_payments	dim_merchant	document_type	varchar
+
+
+
+SELECT
+    l.merchant_id,
+    l.parent_merchant_id
+FROM awsdatacatalog.bold_gold_growth.mart_master_merchant_lineage l
+WHERE l.merchant_id IN (
+    'TR2KLJUVZ6',
+    'GSYCJJ0ZMX',
+    '75H2G3UNCN',
+    '0XV9992C0O',
+    'GHTNMF7727',
+    'XMABPI8SDB',
+    'PL0B5ER5G3',
+    'JXLFJ824NO'
+)
+LIMIT 50
