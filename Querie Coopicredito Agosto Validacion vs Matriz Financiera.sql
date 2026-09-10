@@ -1,7 +1,7 @@
 WITH parametros AS (
     SELECT
-        DATE '2026-08-01' AS inicio_mes,
-        DATE '2026-09-01' AS fin_mes_exclusivo
+        TIMESTAMP '2026-08-01 00:00:00' AS inicio_mes,
+        TIMESTAMP '2026-09-01 00:00:00' AS fin_mes_exclusivo
 ),
 
 enterprise_merchants AS (
@@ -45,8 +45,8 @@ tpv_agosto AS (
     CROSS JOIN parametros p
     INNER JOIN enterprise_merchants e
         ON trim(cast(t.merchant_id AS varchar)) = e.merchant_id
-    WHERE t.creation_datetime >= cast(p.inicio_mes AS timestamp)
-      AND t.creation_datetime < cast(p.fin_mes_exclusivo AS timestamp)
+    WHERE t.creation_datetime >= p.inicio_mes
+      AND t.creation_datetime < p.fin_mes_exclusivo
     GROUP BY 1
 )
 
@@ -82,7 +82,4 @@ LEFT JOIN tpv_historico h
     ON h.merchant_id = e.merchant_id
 LEFT JOIN tpv_agosto a
     ON a.merchant_id = e.merchant_id
-WHERE date_trunc('month', e.merchant_creation_date) = DATE '2026-08-01'
-   OR date_trunc('month', h.primera_transaccion_historica) = DATE '2026-08-01'
-   OR a.merchant_id IS NOT NULL
 ORDER BY tpv_agosto DESC, e.merchant_id
