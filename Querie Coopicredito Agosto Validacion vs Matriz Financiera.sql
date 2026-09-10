@@ -83,3 +83,18 @@ LEFT JOIN tpv_historico h
 LEFT JOIN tpv_agosto a
     ON a.merchant_id = e.merchant_id
 ORDER BY tpv_agosto DESC, e.merchant_id
+
+
+
+----
+#	merchant_id	merchant_name	sales_source	sales_agent_email	merchant_creation_date	primera_transaccion_historica	primera_transaccion_agosto	ultima_transaccion_agosto	tpv_agosto	paid_tpv_agosto	net_tpv_agosto	transacciones_agosto	transacciones_historicas	merchant_status	onboarding_status	last_update_event_date	datos_actualizados_hasta	clasificacion_tpv_m0
+1	0GRNI5F4QF	Droguería San Antero 	ENTERPRISE	jeyson.salazar@bold.co	2026-09-05 14:48:29.483				0.0000	0.0000	0.0000	0	0	ENABLED	APPROVED	2026-09-05 15:21:26.994		SIN_TPV_AGOSTO
+2	1AZSEMKA27	Salud Family	ENTERPRISE		2026-08-15 12:25:15.276	2026-09-05 16:52:18.858000			0.0000	0.0000	0.0000	0	87	ENABLED	APPROVED	2026-09-07 17:59:04.211		SIN_TPV_AGOSTO
+3	BLGLVBLPF7	Drogueria Farma Pacho	ENTERPRISE		2026-08-24 16:32:32.699				0.0000	0.0000	0.0000	0	0	ENABLED	APPROVED	2026-09-07 17:52:51.748		SIN_TPV_AGOSTO
+4	C9IQZXGV5Z	FarMarce la 15	ENTERPRISE		2026-08-27 16:16:46.149	2026-09-03 14:13:14.010000			0.0000	0.0000	0.0000	0	31	ENABLED	APPROVED	2026-09-07 17:57:15.508		SIN_TPV_AGOSTO
+5	F9KOCP2I9P	Negocio de Marleny	ENTERPRISE	jeyson.salazar@bold.co	2026-09-04 15:52:17.705	2026-09-08 17:02:52.836982			0.0000	0.0000	0.0000	0	12	ENABLED	APPROVED	2026-09-08 18:09:26.622		SIN_TPV_AGOSTO
+6	IDM1B3H7F5	Droguería Pharmalife Centro	ENTERPRISE		2026-08-31 16:36:05.498				0.0000	0.0000	0.0000	0	0	ENABLED	APPROVED	2026-09-07 17:55:50.766		SIN_TPV_AGOSTO
+7	KSZEX7BW2B	Negocio de Alfonso Rafael	ENTERPRISE	jeyson.salazar@bold.co	2026-09-05 15:17:54.675				0.0000	0.0000	0.0000	0	0	ENABLED	APPROVED	2026-09-05 18:44:26.762		SIN_TPV_AGOSTO
+8	L7H1W2PHU6	Negocio de Mónica Yohana	ENTERPRISE		2026-08-19 15:20:59.769				0.0000	0.0000	0.0000	0	0	ENABLED	APPROVED	2026-09-07 17:55:55.146		SIN_TPV_AGOSTO
+9			ENTERPRISE		2026-09-02 18:29:25.355				0.0000	0.0000	0.0000	0	0		FULFILLED	2026-09-09 14:40:28.673		SIN_TPV_AGOSTO
+
