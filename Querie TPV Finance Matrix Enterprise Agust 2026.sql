@@ -25,18 +25,6 @@ lineage AS (
         ON trim(cast(l.merchant_id AS varchar)) = s.merchant_id
 ),
 
-payment_dim AS (
-    SELECT
-        trim(cast(d.merchant_id AS varchar)) AS merchant_id,
-        d.onboarding_end_date,
-        d.document_type,
-        d.document_number,
-        d.merchant_category_key
-    FROM awsdatacatalog.bold_gold_payments.dim_merchant d
-    INNER JOIN merchant_scope s
-        ON trim(cast(d.merchant_id AS varchar)) = s.merchant_id
-),
-
 client_current AS (
     SELECT *
     FROM (
@@ -97,10 +85,6 @@ SELECT
     c.sales_source,
     c.sales_agent_email,
     c.merchant_creation_date,
-    p.onboarding_end_date,
-    p.document_type,
-    p.document_number,
-    p.merchant_category_key,
     h.primera_transaccion_historica,
     a.primera_transaccion_agosto,
     a.ultima_transaccion_agosto,
@@ -116,10 +100,10 @@ SELECT
     CASE
         WHEN upper(trim(c.sales_source)) = 'ENTERPRISE'
              AND date_trunc('month', h.primera_transaccion_historica) = DATE '2026-08-01'
-             AND date_trunc('month', coalesce(p.onboarding_end_date, c.merchant_creation_date)) = DATE '2026-08-01'
+             AND date_trunc('month', c.merchant_creation_date) = DATE '2026-08-01'
             THEN 'M0_NUEVO_ENTERPRISE_ESTRICTO'
         WHEN date_trunc('month', h.primera_transaccion_historica) = DATE '2026-08-01'
-             AND date_trunc('month', coalesce(p.onboarding_end_date, c.merchant_creation_date)) = DATE '2026-08-01'
+             AND date_trunc('month', c.merchant_creation_date) = DATE '2026-08-01'
             THEN 'M0_NUEVO_PERO_CANAL_NO_ENTERPRISE'
         WHEN date_trunc('month', h.primera_transaccion_historica) = DATE '2026-08-01'
             THEN 'M0_PRIMERA_TX_AGOSTO_NO_NUEVO_CLIENTE'
@@ -129,8 +113,6 @@ SELECT
 FROM merchant_scope s
 LEFT JOIN lineage l
     ON l.merchant_id = s.merchant_id
-LEFT JOIN payment_dim p
-    ON p.merchant_id = s.merchant_id
 LEFT JOIN client_current c
     ON c.merchant_id = s.merchant_id
 LEFT JOIN tpv_historico h
