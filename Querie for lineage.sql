@@ -17,3 +17,12 @@ WHERE table_schema IN ('bold_gold_growth', 'bold_gold_payments')
       OR lower(column_name) LIKE '%creation%'
   )
 ORDER BY table_schema, table_name, ordinal_position
+
+#	table_schema	table_name	column_name	data_type
+1	bold_gold_growth	mart_master_merchant_lineage	merchant_id	varchar
+2	bold_gold_growth	mart_master_merchant_lineage	parent_merchant_id	varchar
+3	bold_gold_payments	dim_merchant	merchant_category_key	varchar
+4	bold_gold_payments	dim_merchant	merchant_key	varchar
+5	bold_gold_payments	dim_merchant	onboarding_end_date	timestamp(3)
+6	bold_gold_payments	dim_merchant	document_number	varchar
+7	bold_gold_payments	dim_merchant	document_type	varchar
