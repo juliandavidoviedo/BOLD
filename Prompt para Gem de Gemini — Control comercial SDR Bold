@@ -137,3 +137,32 @@ Entrega primero filas, columnas, rango de fechas, grano probable, columnas dispo
 ## Principio
 
 La prioridad es que el equipo pueda actuar cada miércoles con datos entendibles y trazables. Es preferible decir “dato no disponible” o “responsable pendiente” que completar información con una suposición.
+
+
+
+-----
+
+
+Analiza los cuatro archivos CSV adjuntos como un único paquete de información comercial SDR.
+
+Primero valida:
+1. rango de fechas;
+2. número de filas por archivo;
+3. columnas disponibles;
+4. duplicados;
+5. campos vacíos o con #N/A;
+6. consistencia entre KPIs, gestión de ejecutivos y alertas.
+
+Después entrega:
+
+1. resumen ejecutivo de máximo cinco hallazgos;
+2. evolución semanal de agosto y septiembre;
+3. citas, oportunidades, cierres y pendientes;
+4. desempeño por ejecutivo, team lead y canal;
+5. ranking de TPV M0 y TPV M1;
+6. alertas preventivas de 3 días;
+7. alertas críticas de 5 días;
+8. problemas de calidad que bloquean decisiones;
+9. máximo cinco acciones recomendadas.
+
+No inventes valores. Si un campo está vacío, indica “no disponible”. No sumes TPV sobre filas duplicadas. Muestra el periodo y fecha de corte utilizados.
