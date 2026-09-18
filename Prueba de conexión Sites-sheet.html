@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prueba de conexión Google Sheets</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 32px;
+      color: #172033;
+      background: #f6f8fb;
+    }
+
+    .card {
+      max-width: 900px;
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.08);
+    }
+
+    .status {
+      padding: 14px;
+      border-radius: 8px;
+      margin: 16px 0;
+      white-space: pre-wrap;
+    }
+
+    .loading { background: #fff7d6; }
+    .success { background: #dcfce7; color: #166534; }
+    .error { background: #fee2e2; color: #991b1b; }
+    .warning { background: #ffedd5; color: #9a3412; }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+      font-size: 13px;
+      overflow-x: auto;
+      display: block;
+    }
+
+    th, td {
+      border: 1px solid #dbe1ea;
+      padding: 8px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #eef2f7;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      background: #123b68;
+      color: white;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background: #0d2d50;
+    }
+
+    code {
+      background: #eef2f7;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>Prueba de conexión con Google Sheets</h1>
+
+    <p>
+      Esta prueba intenta leer el archivo usando el contexto autenticado del Site.
+    </p>
+
+    <button id="retryButton">Probar conexión</button>
+
+    <div id="status" class="status loading">
+      Preparando prueba...
+    </div>
+
+    <div id="summary"></div>
+    <div id="preview"></div>
+  </div>
+
+  <script>
+    const SPREADSHEET_ID =
+      "1L7ChPpwxKFEGCJG43INqd9SMLIltLSe7dBwvQeoVAFI";
+
+    const SHEET_GID = "191427973";
+
+    /*
+     * Este endpoint devuelve valores de la pestaña indicada.
+     * Requiere que la identidad autenticada tenga acceso al Sheet.
+     */
+    const SHEET_ENDPOINT =
+      `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq` +
+      `?gid=${SHEET_GID}&tqx=out:json`;
+
+    const statusEl = document.getElementById("status");
+    const summaryEl = document.getElementById("summary");
+    const previewEl = document.getElementById("preview");
+    const retryButton = document.getElementById("retryButton");
+
+    function setStatus(message, type = "loading") {
+      statusEl.className = `status ${type}`;
+      statusEl.textContent = message;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function parseGoogleVisualizationResponse(text) {
+      const prefix = "google.visualization.Query.setResponse(";
+
+      if (!text.startsWith(prefix)) {
+        throw new Error(
+          "La respuesta no tiene el formato esperado de Google Sheets."
+        );
+      }
+
+      const jsonText = text
+        .slice(prefix.length)
+        .replace(/\);?\s*$/, "");
+
+      return JSON.parse(jsonText);
+    }
+
+    function renderTable(dataTable) {
+      const columns = dataTable.cols || [];
+      const rows = dataTable.rows || [];
+
+      const headers = columns.map((column, index) => {
+        return column.label || column.id || `Columna ${index + 1}`;
+      });
+
+      const body = rows.slice(0, 10).map(row => {
+        const cells = row.c || [];
+
+        return `
+          <tr>
+            ${headers.map((_, index) => {
+              const cell = cells[index];
+              const value = cell ? (cell.f ?? cell.v ?? "") : "";
+              return `<td>${escapeHtml(value)}</td>`;
+            }).join("")}
+          </tr>
+        `;
+      }).join("");
+
+      previewEl.innerHTML = `
+        <h2>Vista previa</h2>
+        <p>Se muestran las primeras ${Math.min(rows.length, 10)} filas.</p>
+        <table>
+          <thead>
+            <tr>${headers.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
+          </thead>
+          <tbody>${body}</tbody>
+        </table>
+      `;
+    }
+
+    async function testConnection() {
+      summaryEl.innerHTML = "";
+      previewEl.innerHTML = "";
+
+      setStatus("Intentando leer Google Sheets...", "loading");
+
+      try {
+        const response = await fetch(SHEET_ENDPOINT, {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store"
+        });
+
+        const responseText = await response.text();
+
+        if (!response.ok) {
+          throw new Error(
+            `HTTP ${response.status}. ${response.statusText || "Acceso denegado"}`
+          );
+        }
+
+        if (
+          responseText.includes("<!DOCTYPE html") ||
+          responseText.includes("<html")
+        ) {
+          throw new Error(
+            "Google devolvió una página HTML en lugar de datos. " +
+            "La sesión corporativa o el acceso autenticado no están disponibles para este Site."
+          );
+        }
+
+        const result = parseGoogleVisualizationResponse(responseText);
+
+        if (result.status === "error") {
+          throw new Error(
+            result.errors?.map(error => error.detailed_message || error.message).join("\n") ||
+            "Google Sheets devolvió un error."
+          );
+        }
+
+        const table = result.table;
+        const rows = table.rows || [];
+        const columns = table.cols || [];
+
+        const entityTypeIndex = columns.findIndex(column =>
+          ["entity_type", "tipo_entidad", "entityType"].includes(
+            String(column.label || column.id || "").toLowerCase()
+          )
+        );
+
+        let entitySummary = "";
+
+        if (entityTypeIndex >= 0) {
+          const counts = {};
+
+          for (const row of rows) {
+            const value = row.c?.[entityTypeIndex]?.v || "VACÍO";
+            counts[value] = (counts[value] || 0) + 1;
+          }
+
+          entitySummary = `
+            <p><strong>Distribución por entidad:</strong>
+            ${escapeHtml(JSON.stringify(counts))}</p>
+          `;
+        }
+
+        summaryEl.innerHTML = `
+          <div class="status success">
+            Conexión exitosa.
+          </div>
+          <p><strong>Columnas:</strong> ${columns.length}</p>
+          <p><strong>Filas recibidas:</strong> ${rows.length}</p>
+          <p><strong>Spreadsheet ID:</strong> ${SPREADSHEET_ID}</p>
+          <p><strong>GID:</strong> ${SHEET_GID}</p>
+          ${entitySummary}
+        `;
+
+        renderTable(table);
+
+      } catch (error) {
+        setStatus(
+          "La conexión no pudo validarse.\n\n" +
+          error.message +
+          "\n\n" +
+          "Revisa la consola del navegador y la pestaña Network para confirmar si el error es 401, 403, CORS o una respuesta HTML.",
+          "error"
+        );
+
+        summaryEl.innerHTML = `
+          <p><strong>Endpoint probado:</strong></p>
+          <code>${escapeHtml(SHEET_ENDPOINT)}</code>
+        `;
+
+        console.error("Detalle de conexión:", error);
+      }
+    }
+
+    retryButton.addEventListener("click", testConnection);
+    testConnection();
+  </script>
+</body>
+</html>
