@@ -1,0 +1,105 @@
+Actúa como Analytics Engineer especializado en Google Sheets y diseño de fuentes para dashboards.
+
+Tenemos dos resultados exportados desde consultas de CRM en Athena/Metabase:
+
+1. Leads SMB creados entre el 1 y el 30 de septiembre de 2026.
+2. Oportunidades SMB creadas entre el 1 y el 30 de septiembre de 2026.
+
+Ambos resultados ya fueron preparados seleccionando el último registro por entidad mediante ROW_NUMBER() = 1.
+
+Objetivo:
+Construir un Google Sheet limpio, auditable y apto para conectarse como fuente de alimentación de un dashboard en Sites.
+
+Reglas:
+- No inventes registros, métricas, definiciones ni relaciones entre leads y oportunidades.
+- Conserva los datos de detalle en pestañas separadas.
+- No incluyas teléfonos, documentos de identidad, direcciones, archivos, fotografías ni correos personales innecesarios.
+- Mantén únicamente los campos necesarios para análisis comercial.
+- No mezcles leads y oportunidades en una misma población.
+- Mantén SMB como filtro obligatorio.
+- Conserva la fecha de creación y la fecha del último estado.
+- Documenta todos los supuestos.
+- No declares una métrica oficial sin indicar su fórmula, población y fuente.
+- Si detectas inconsistencias, crea una alerta en la pestaña data_quality y no corrijas silenciosamente el dato.
+
+Crea estas pestañas:
+
+1. leads_detail
+Columnas:
+lead_id, lead_status, creation_date, last_status_date,
+sales_channel, lead_origin_name, company_size, company_name,
+owner_id, manager_email, is_existing_client, discard_reason.
+
+2. opportunities_detail
+Columnas:
+opportunity_id, opportunity_status, creation_date,
+last_status_date, sales_channel, lead_origin_name,
+company_size, company_name, product_type, owner_id,
+manager_email, approved_amount, amount_disbursed,
+discard_reason.
+
+3. funnel_metrics
+Calcula:
+- conteo de leads por estado;
+- conteo de oportunidades por estado;
+- monto aprobado por estado de oportunidad;
+- monto desembolsado por estado de oportunidad;
+- canal;
+- período;
+- fecha de actualización.
+
+4. breakdowns
+Calcula desgloses por:
+- origen;
+- tamaño de empresa;
+- producto;
+- manager;
+- estado.
+
+5. data_quality
+Incluye controles para:
+- duplicados por ID;
+- IDs nulos;
+- estados nulos;
+- fechas nulas;
+- registros fuera de SMB;
+- montos negativos;
+- estados no catalogados;
+- diferencias entre el total de detalle y el total agregado.
+
+6. data_dictionary
+Para cada columna y métrica documenta:
+- nombre;
+- definición;
+- tipo;
+- fuente;
+- fórmula;
+- granularidad;
+- limitaciones;
+- fecha de actualización.
+
+Genera también una tabla de métricas para Sites con:
+- leads totales;
+- leads calificados;
+- leads convertidos;
+- leads descartados;
+- oportunidades totales;
+- oportunidades iniciadas;
+- oportunidades en negociación;
+- oportunidades ganadas;
+- oportunidades perdidas;
+- monto aprobado;
+- monto desembolsado;
+- tasa de calificación;
+- tasa de conversión;
+- tasa de ganadas.
+
+Calcula las tasas únicamente cuando el denominador sea mayor que cero y devuelve NULL cuando no sea posible calcularlas.
+
+Antes de terminar:
+1. Verifica que todos los registros sean SMB.
+2. Verifica unicidad de lead_id y opportunity_id.
+3. Verifica que los agregados reconcilien con las pestañas de detalle.
+4. Reporta cualquier campo faltante o inconsistente.
+5. Entrega un resumen de la estructura final y de las métricas disponibles para Sites.
+6. No conectes ni publiques el Sheet en Sites hasta que los owners aprueben la estructura.
