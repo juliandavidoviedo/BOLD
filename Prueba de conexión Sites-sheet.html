@@ -92,19 +92,33 @@
     <div id="preview"></div>
   </div>
 
-  <script>
-    const SPREADSHEET_ID =
-      "1L7ChPpwxKFEGCJG43INqd9SMLIltLSe7dBwvQeoVAFI";
+<script>
+  const spreadsheetId =
+    "1L7ChPpwxKFEGCJG43INqd9SMLIltLSe7dBwvQeoVAFI";
 
-    const SHEET_GID = "191427973";
+  const gid = "191427973";
 
-    /*
-     * Este endpoint devuelve valores de la pestaña indicada.
-     * Requiere que la identidad autenticada tenga acceso al Sheet.
-     */
-    const SHEET_ENDPOINT =
-      `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq` +
-      `?gid=${SHEET_GID}&tqx=out:json`;
+  window.handleSheetResponse = function(response) {
+    document.getElementById("output").textContent =
+      JSON.stringify(response, null, 2);
+  };
+
+  const script = document.createElement("script");
+
+  script.src =
+    `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq` +
+    `?gid=${gid}` +
+    `&tqx=responseHandler:handleSheetResponse`;
+
+  script.onerror = function() {
+    document.getElementById("output").textContent =
+      "No fue posible cargar la fuente mediante JSONP.";
+  };
+
+  document.head.appendChild(script);
+</script>
+
+<pre id="output">Probando conexión...</pre>
 
     const statusEl = document.getElementById("status");
     const summaryEl = document.getElementById("summary");
