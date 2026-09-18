@@ -1,0 +1,49 @@
+Actúa como Analytics Engineer y Data Architect. Tienes acceso al archivo fuente crudo con los datos de CRM SMB de leads y oportunidades.
+
+Objetivo:
+Preparar los archivos sanitizados y estructurados que alimentarán una PoC de Sites para managers y líderes comerciales.
+
+No construyas todavía el Site ni publiques los archivos. Primero genera las fuentes de consumo y entrega una validación para aprobación de los owners.
+
+## Arquitectura requerida
+
+Conserva el archivo fuente crudo sin modificar y crea:
+
+1. Un archivo de control interno:
+   `crm_smb_master_control`
+
+2. Un archivo de consumo para Sites:
+   `crm_smb_leads_sites`
+
+3. Un archivo de consumo para Sites:
+   `crm_smb_opportunities_sites`
+
+Los archivos de consumo deben ser independientes porque leads y oportunidades tienen granos diferentes.
+
+---
+
+# 1. Archivo de control interno
+
+Nombre:
+`crm_smb_master_control`
+
+Conserva los datos originales y crea estas pestañas:
+
+## `leads_raw`
+
+Copia los leads desde la fuente, sin alterar los valores originales.
+
+## `opportunities_raw`
+
+Copia las oportunidades desde la fuente, sin alterar los valores originales.
+
+## `lead_opportunity_bridge`
+
+Construye una tabla con:
+
+```text
+lead_id
+opportunity_id
+parent_type
+relationship_valid_flag
+relationship_issue
