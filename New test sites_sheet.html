@@ -1,0 +1,27 @@
+<script>
+  const spreadsheetId =
+    "1L7ChPpwxKFEGCJG43INqd9SMLIltLSe7dBwvQeoVAFI";
+
+  const gid = "191427973";
+
+  window.handleSheetResponse = function(response) {
+    document.getElementById("output").textContent =
+      JSON.stringify(response, null, 2);
+  };
+
+  const script = document.createElement("script");
+
+  script.src =
+    `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq` +
+    `?gid=${gid}` +
+    `&tqx=responseHandler:handleSheetResponse`;
+
+  script.onerror = function() {
+    document.getElementById("output").textContent =
+      "No fue posible cargar la fuente mediante JSONP.";
+  };
+
+  document.head.appendChild(script);
+</script>
+
+<pre id="output">Probando conexión...</pre>
