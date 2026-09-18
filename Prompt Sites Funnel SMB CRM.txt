@@ -1,0 +1,123 @@
+Actúa como Analytics Engineer y desarrollador de Sites para construir una PoC privada de gestión comercial.
+
+Ya existe un Google Sheet corporativo con acceso restringido. No publiques el Sheet en la web ni cambies su configuración de privacidad. Usa directamente la URL o el ID del Google Sheet como fuente autorizada.
+
+Objetivo:
+Crear un dashboard para managers y líderes comerciales que permita gestionar el rendimiento de leads, oportunidades y tareas del canal SMB.
+
+Fuente:
+El Google Sheet contiene estas pestañas:
+- leads_detail
+- opportunities_detail
+- tasks_detail
+- funnel_metrics
+- breakdowns
+- data_quality
+- data_dictionary
+
+Antes de construir:
+1. Inspecciona las pestañas disponibles.
+2. Valida nombres de columnas, tipos, fechas y granularidad.
+3. Identifica si las columnas de owner y manager están disponibles.
+4. Verifica que todos los registros correspondan al canal SMB.
+5. Verifica la fecha de actualización.
+6. Reporta columnas faltantes o inconsistencias antes de crear métricas nuevas.
+
+Audiencia:
+- Managers comerciales.
+- Líderes comerciales.
+- Owners del producto y Analytics Engineering.
+
+Filtros globales:
+- Manager.
+- Responsable comercial.
+- Estado del lead.
+- Estado de la oportunidad.
+- Origen.
+- Tamaño de empresa.
+- Tipo de producto.
+- Tipo de tarea.
+- Estado de tarea.
+- Fecha de creación.
+- Fecha de última actividad.
+
+Vista principal:
+1. Título: Funnel comercial SMB.
+2. Fecha y hora de última actualización.
+3. KPIs:
+   - Leads.
+   - Leads calificados.
+   - Leads convertidos.
+   - Oportunidades.
+   - Oportunidades ganadas.
+   - Oportunidades perdidas.
+   - Monto aprobado.
+   - Monto desembolsado.
+   - Tareas pendientes.
+   - Tareas vencidas.
+4. Funnel de leads.
+5. Funnel de oportunidades.
+6. Rendimiento por manager.
+7. Rendimiento por responsable comercial.
+8. Distribución por origen y producto.
+9. Tabla de gestión priorizada.
+
+Tabla de gestión:
+Mostrar:
+- Tipo de entidad.
+- ID.
+- Empresa.
+- Manager.
+- Responsable.
+- Estado.
+- Origen.
+- Producto.
+- Fecha de creación.
+- Última actividad.
+- Días sin actividad.
+- Próxima tarea.
+- Estado de tarea.
+- Monto aprobado.
+- Monto desembolsado.
+- Indicador de riesgo.
+
+Ordenar la tabla priorizando:
+1. Tareas vencidas.
+2. Oportunidades sin actividad reciente.
+3. Oportunidades en negociación.
+4. Mayor monto aprobado.
+
+Privacidad:
+- No mostrar teléfonos.
+- No mostrar documentos de identidad.
+- No mostrar direcciones.
+- No mostrar correos personales.
+- No mostrar fotografías ni archivos.
+- Se permite mostrar owner y manager corporativos porque son dimensiones necesarias de gestión.
+- Si se usan correos corporativos, mostrar preferiblemente nombre o ID de usuario en la interfaz.
+
+Reglas de métricas:
+- No mezclar leads y oportunidades en el mismo denominador.
+- No calcular conversión lead → oportunidad si no existe una llave validada.
+- Calcular monto aprobado y desembolsado solo para oportunidades.
+- Las tareas pendientes deben identificarse según task_status.
+- Las tareas vencidas deben calcularse comparando task_date con la fecha actual.
+- Los días sin actividad deben calcularse a partir de last_status_date o last_activity_date.
+- Devolver NULL cuando no exista denominador válido.
+- No inventar probabilidades ni pipeline ponderado si la fuente no las incluye.
+
+Experiencia:
+- Diseñar una superficie operativa, no una página de marketing.
+- Mostrar primero KPIs, funnel y prioridades de gestión.
+- Permitir interacción por filtros.
+- Mantener consistencia entre KPIs, gráficos y tabla.
+- Mostrar estados de carga, datos vacíos y errores de fuente.
+- Mostrar una alerta visible si data_quality contiene errores críticos.
+
+Antes de publicar:
+1. Reconciliar los KPIs contra funnel_metrics.
+2. Validar que los filtros actualicen gráficos y tabla.
+3. Validar que manager y responsable filtren correctamente.
+4. Confirmar que no se expongan datos personales.
+5. Presentar un resumen de la arquitectura, métricas y limitaciones.
+6. Esperar aprobación de los owners antes de publicar o compartir el Site.
