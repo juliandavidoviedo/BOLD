@@ -1,0 +1,238 @@
+SELECT
+  "__mb_source"."lead_id" AS "lead_id",
+  "__mb_source"."max" AS "max",
+  "Fact Crm Leads Status Change - Lead"."task_contact_second_last_name" AS "Tarea - Contacto - Segundo Apellido",
+  CASE
+    WHEN "Fact Crm Leads Status Change - Lead"."status" = 'CREATED' THEN 'Creado'
+    WHEN "Fact Crm Leads Status Change - Lead"."status" = 'QUALIFIED' THEN 'Calificado'
+    WHEN "Fact Crm Leads Status Change - Lead"."status" = 'CONVERTED' THEN 'Convertido'
+    WHEN "Fact Crm Leads Status Change - Lead"."status" = 'DISCARDED' THEN 'Descartado'
+  END AS "Estado",
+  CASE
+    WHEN "Fact Crm Leads Status Change - Lead"."reassign_reason" = 'EXECUTIVE_NO_LONGER_IN_THE_COMPANY' THEN 'Ejecutivo ya no está en la empresa'
+    WHEN "Fact Crm Leads Status Change - Lead"."reassign_reason" = 'EXECUTIVE_ABSENT_FOR_MEDICAL_REASONS' THEN 'Ejecutivo ausente por razones médicas'
+    WHEN "Fact Crm Leads Status Change - Lead"."reassign_reason" = 'EXECUTIVE_CHANGED_ROL_OR_AREA' THEN 'Ejecutivo cambió de rol o área'
+    WHEN "Fact Crm Leads Status Change - Lead"."reassign_reason" = 'REASSIGNMENT_GENERATED_BY_SDR' THEN 'Reasignación generada por SDR'
+    WHEN "Fact Crm Leads Status Change - Lead"."reassign_reason" = 'OTHER' THEN 'Otro'
+  END AS "Razón de reasignación",
+  "Fact Crm Leads Status Change - Lead"."contact_landline_number" AS "Contacto - Teléfono fijo",
+  "Fact Crm Leads Status Change - Lead"."task_description" AS "Tarea - Descripción",
+  "Fact Crm Leads Status Change - Lead"."contact_second_last_name" AS "Contacto - Segundo Apellido",
+  "Fact Crm Leads Status Change - Lead"."contact_address_department_code" AS "Contacto - Dirección - Departamento",
+  "Fact Crm Leads Status Change - Lead"."contact_address_city_code" AS "Contacto - Dirección - Ciudad",
+  "Fact Crm Leads Status Change - Lead"."contact_phone" AS "Contacto - Teléfono",
+  "Fact Crm Leads Status Change - Lead"."contact_middle_name" AS "Contacto - Segundo Nombre",
+  "Fact Crm Leads Status Change - Lead"."task_finished_date" AS "Tarea - Fecha de Finalización",
+  "Fact Crm Leads Status Change - Lead"."company_address_department_code" AS "Dirección - Departamento",
+  CASE
+    WHEN "Fact Crm Leads Status Change - Lead"."company_size" = 'NANO' THEN 'De $0 a $3M'
+    WHEN "Fact Crm Leads Status Change - Lead"."company_size" = 'MICRO' THEN 'Más de $3M a $20M'
+    WHEN "Fact Crm Leads Status Change - Lead"."company_size" = 'SMALL' THEN 'Más de $20M a $100M'
+    WHEN "Fact Crm Leads Status Change - Lead"."company_size" = 'SMALL1' THEN 'Más de $20M a $40M'
+    WHEN "Fact Crm Leads Status Change - Lead"."company_size" = 'SMALL2' THEN 'Más de $40M a $60M'
+    WHEN "Fact Crm Leads Status Change - Lead"."company_size" = 'SMALL3' THEN 'Más de $60M a $80M'
+    WHEN "Fact Crm Leads Status Change - Lead"."company_size" = 'SMALL4' THEN 'Más de $80M a $100M'
+    WHEN "Fact Crm Leads Status Change - Lead"."company_size" = 'MEDIUM' THEN 'Más de $100M a $200M'
+    WHEN "Fact Crm Leads Status Change - Lead"."company_size" = 'LARGE' THEN 'Más de $200M'
+  END AS "Tamaño del lead",
+  "Fact Crm Leads Status Change - Lead"."creation_type" AS "Tipo de creación",
+  "Fact Crm Leads Status Change - Lead"."task_contact_phone" AS "Tarea - Contacto - Teléfono",
+  "Fact Crm Leads Status Change - Lead"."task_date" AS "Tarea - Fecha Creación",
+  "Fact Crm Leads Status Change - Lead"."contact_first_name" AS "Contacto - Primer Nombre",
+  "Fact Crm Leads Status Change - Lead"."company_address_city_code" AS "Dirección - Ciudad",
+  "Fact Crm Leads Status Change - Lead"."sales_channel" AS "Canal",
+  "Fact Crm Leads Status Change - Lead"."task_type" AS "Tarea - Tipo",
+  CASE
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'BRAND_ACTIVATION' THEN 'Activación de marca'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'ALLIANCE' THEN 'Alianza'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'DATABASE' THEN 'Base de datos'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'MARKETING_CAMPAIGN' THEN 'Campaña'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'FAIR' THEN 'Ferias o eventos'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'GOOGLE_MAPS' THEN 'Google maps'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'SOCIAL_NETWORK' THEN 'Redes sociales'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'REFERRED' THEN 'Referido'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'REFERRED_BY_TEAM_LEAD' THEN 'Referido por team lead'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'SPIDER' THEN 'Spider'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'COLD_VISIT' THEN 'Visita en frío'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'UNSPECIFIED' THEN 'No especificado'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'ECOMMERCE' THEN 'E-commerce'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'ONBOARDING' THEN 'Onboarding'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'PHONE' THEN 'Teléfono'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'WEBSITE' THEN 'Sitio web'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'LQT_MARKETING' THEN 'LQT Marketing'
+    WHEN "Fact Crm Leads Status Change - Lead"."lead_origin_name" = 'OTHER' THEN 'Otro'
+  END AS "Origen del Lead",
+  "Fact Crm Leads Status Change - Lead"."contact_last_name" AS "Contacto - Primer Apellido",
+  "Fact Crm Leads Status Change - Lead"."previous_channel" AS "Canal previo",
+  "Fact Crm Leads Status Change - Lead"."company_address_street" AS "Dirección - Calle",
+  "Fact Crm Leads Status Change - Lead"."is_existing_client" AS "Es cliente existente",
+  "Fact Crm Leads Status Change - Lead"."metadata_is_campaign" AS "Es campaña",
+  "Fact Crm Leads Status Change - Lead"."task_contact_first_name" AS "Tarea - Contacto - Primer Nombre",
+  "Fact Crm Leads Status Change - Lead"."contact_address_street" AS "Contacto - Dirección - Calle",
+  "Fact Crm Leads Status Change - Lead"."task_contact_landline_number" AS "Tarea - Contacto - Fijo",
+  "Fact Crm Leads Status Change - Lead"."previous_user" AS "Usuario previo",
+  "Fact Crm Leads Status Change - Lead"."task_contact_middle_name" AS "Tarea - Contacto - Segundo Nombre",
+  "Fact Crm Leads Status Change - Lead"."task_contact_last_name" AS "Tarea - Contacto - Primer Apellido",
+  "Fact Crm Leads Status Change - Lead"."idempotency_hash" AS "Fact Crm Leads Status Change - Lead__idempotency_hash",
+  "Fact Crm Leads Status Change - Lead"."lead_id" AS "Fact Crm Leads Status Change - Lead__lead_id",
+  "Fact Crm Leads Status Change - Lead"."status" AS "Fact Crm Leads Status Change - Lead__status",
+  "Fact Crm Leads Status Change - Lead"."user_id" AS "Fact Crm Leads Status Change - Lead__user_id",
+  "Fact Crm Leads Status Change - Lead"."event_timestamp" AS "Fact Crm Leads Status Change - Lead__event_timestamp",
+  "Fact Crm Leads Status Change - Lead"."last_update_date" AS "Fact Crm Leads Status Change - Lead__last_update_date",
+  "Fact Crm Leads Status Change - Lead"."creation_date" AS "Fact Crm Leads Status Change - Lead__creation_date",
+  "Fact Crm Leads Status Change - Lead"."user_email" AS "Fact Crm Leads Status Change - Lead__user_email",
+  "Fact Crm Leads Status Change - Lead"."lead_email" AS "Fact Crm Leads Status Change - Lead__lead_email",
+  "Fact Crm Leads Status Change - Lead"."manager_email" AS "Fact Crm Leads Status Change - Lead__manager_email",
+  "Fact Crm Leads Status Change - Lead"."company_size" AS "Fact Crm Leads Status Change - Lead__company_size",
+  "Fact Crm Leads Status Change - Lead"."sales_channel" AS "Fact Crm Leads Status Change - Lead__sales_channel",
+  "Fact Crm Leads Status Change - Lead"."company_name" AS "Fact Crm Leads Status Change - Lead__company_name",
+  "Fact Crm Leads Status Change - Lead"."lead_origin_name" AS "Fact Crm Leads Status Change - Lead__lead_origin_name",
+  "Fact Crm Leads Status Change - Lead"."economic_activity_name" AS "Fact Crm Leads Status Change - Lead__economic_activity_name",
+  "Fact Crm Leads Status Change - Lead"."company_identification_document_type" AS "Fact Crm Leads Status Change - Lead__company_identi_2e8acbe2",
+  "Fact Crm Leads Status Change - Lead"."company_identification_document_number" AS "Fact Crm Leads Status Change - Lead__company_identi_47276cea",
+  "Fact Crm Leads Status Change - Lead"."discard_reason_reason" AS "Fact Crm Leads Status Change - Lead__discard_reason_reason",
+  "Fact Crm Leads Status Change - Lead"."discard_reason_description" AS "Fact Crm Leads Status Change - Lead__discard_reason_f03181c0",
+  "Fact Crm Leads Status Change - Lead"."company_address_street" AS "Fact Crm Leads Status Change - Lead__company_address_street",
+  "Fact Crm Leads Status Change - Lead"."company_address_city_code" AS "Fact Crm Leads Status Change - Lead__company_addres_ab4ebdcb",
+  "Fact Crm Leads Status Change - Lead"."company_address_department_code" AS "Fact Crm Leads Status Change - Lead__company_addres_e385adb7",
+  "Fact Crm Leads Status Change - Lead"."company_address_country_code" AS "Fact Crm Leads Status Change - Lead__company_addres_5100fb61",
+  "Fact Crm Leads Status Change - Lead"."company_address_complementary_address" AS "Fact Crm Leads Status Change - Lead__company_addres_76687556",
+  "Fact Crm Leads Status Change - Lead"."company_picture" AS "Fact Crm Leads Status Change - Lead__company_picture",
+  "Fact Crm Leads Status Change - Lead"."creator_user_id" AS "Fact Crm Leads Status Change - Lead__creator_user_id",
+  "Fact Crm Leads Status Change - Lead"."is_existing_client" AS "Fact Crm Leads Status Change - Lead__is_existing_client",
+  "Fact Crm Leads Status Change - Lead"."creation_type" AS "Fact Crm Leads Status Change - Lead__creation_type",
+  "Fact Crm Leads Status Change - Lead"."metadata_campaign_end_date" AS "Fact Crm Leads Status Change - Lead__metadata_campa_c38e85bb",
+  "Fact Crm Leads Status Change - Lead"."metadata_campaign_key_points" AS "Fact Crm Leads Status Change - Lead__metadata_campa_ab165902",
+  "Fact Crm Leads Status Change - Lead"."metadata_campaign_name" AS "Fact Crm Leads Status Change - Lead__metadata_campaign_name",
+  "Fact Crm Leads Status Change - Lead"."metadata_campaign_start_date" AS "Fact Crm Leads Status Change - Lead__metadata_campa_12b26ccf",
+  "Fact Crm Leads Status Change - Lead"."metadata_client_id" AS "Fact Crm Leads Status Change - Lead__metadata_client_id",
+  "Fact Crm Leads Status Change - Lead"."metadata_client_is_key_account" AS "Fact Crm Leads Status Change - Lead__metadata_clien_1d317163",
+  "Fact Crm Leads Status Change - Lead"."metadata_client_type" AS "Fact Crm Leads Status Change - Lead__metadata_client_type",
+  "Fact Crm Leads Status Change - Lead"."metadata_client__id" AS "Fact Crm Leads Status Change - Lead__metadata_client__id",
+  "Fact Crm Leads Status Change - Lead"."previous_user" AS "Fact Crm Leads Status Change - Lead__previous_user",
+  "Fact Crm Leads Status Change - Lead"."previous_channel" AS "Fact Crm Leads Status Change - Lead__previous_channel",
+  "Fact Crm Leads Status Change - Lead"."reassign_reason" AS "Fact Crm Leads Status Change - Lead__reassign_reason",
+  "Fact Crm Leads Status Change - Lead"."priority" AS "Fact Crm Leads Status Change - Lead__priority",
+  "Fact Crm Leads Status Change - Lead"."metadata_is_campaign" AS "Fact Crm Leads Status Change - Lead__metadata_is_campaign",
+  "Fact Crm Leads Status Change - Lead"."contact_first_name" AS "Fact Crm Leads Status Change - Lead__contact_first_name",
+  "Fact Crm Leads Status Change - Lead"."contact_middle_name" AS "Fact Crm Leads Status Change - Lead__contact_middle_name",
+  "Fact Crm Leads Status Change - Lead"."contact_last_name" AS "Fact Crm Leads Status Change - Lead__contact_last_name",
+  "Fact Crm Leads Status Change - Lead"."contact_second_last_name" AS "Fact Crm Leads Status Change - Lead__contact_second_44dbd5da",
+  "Fact Crm Leads Status Change - Lead"."contact_phone" AS "Fact Crm Leads Status Change - Lead__contact_phone",
+  "Fact Crm Leads Status Change - Lead"."contact_landline_number" AS "Fact Crm Leads Status Change - Lead__contact_landline_number",
+  "Fact Crm Leads Status Change - Lead"."contact_address_street" AS "Fact Crm Leads Status Change - Lead__contact_address_street",
+  "Fact Crm Leads Status Change - Lead"."contact_address_city_code" AS "Fact Crm Leads Status Change - Lead__contact_addres_00708164",
+  "Fact Crm Leads Status Change - Lead"."contact_address_department_code" AS "Fact Crm Leads Status Change - Lead__contact_addres_aac76618",
+  "Fact Crm Leads Status Change - Lead"."task_type" AS "Fact Crm Leads Status Change - Lead__task_type",
+  "Fact Crm Leads Status Change - Lead"."task_description" AS "Fact Crm Leads Status Change - Lead__task_description",
+  "Fact Crm Leads Status Change - Lead"."task_contact_first_name" AS "Fact Crm Leads Status Change - Lead__task_contact_first_name",
+  "Fact Crm Leads Status Change - Lead"."task_contact_middle_name" AS "Fact Crm Leads Status Change - Lead__task_contact_m_2ab6f6ef",
+  "Fact Crm Leads Status Change - Lead"."task_contact_last_name" AS "Fact Crm Leads Status Change - Lead__task_contact_last_name",
+  "Fact Crm Leads Status Change - Lead"."task_contact_second_last_name" AS "Fact Crm Leads Status Change - Lead__task_contact_s_594b7224",
+  "Fact Crm Leads Status Change - Lead"."task_contact_phone" AS "Fact Crm Leads Status Change - Lead__task_contact_phone",
+  "Fact Crm Leads Status Change - Lead"."task_contact_landline_number" AS "Fact Crm Leads Status Change - Lead__task_contact_l_83624e08",
+  "Fact Crm Leads Status Change - Lead"."task_date" AS "Fact Crm Leads Status Change - Lead__task_date",
+  "Fact Crm Leads Status Change - Lead"."task_finished_date" AS "Fact Crm Leads Status Change - Lead__task_finished_date",
+  "Fact Crm Leads Status Change - Lead"."event_partition" AS "Fact Crm Leads Status Change - Lead__event_partition"
+FROM
+  (
+    SELECT
+      "bold_gold_sales"."fact_crm_leads_status_change"."lead_id" AS "lead_id",
+      MAX(
+        "bold_gold_sales"."fact_crm_leads_status_change"."event_timestamp"
+      ) AS "max"
+    FROM
+      "bold_gold_sales"."fact_crm_leads_status_change"
+    WHERE
+      (
+        (
+          "bold_gold_sales"."fact_crm_leads_status_change"."user_email" <> 'nohora.meneses@bold.co'
+        )
+        OR (
+          "bold_gold_sales"."fact_crm_leads_status_change"."user_email" IS NULL
+        )
+      )
+      AND (
+        (
+          "bold_gold_sales"."fact_crm_leads_status_change"."user_email" <> 'rafael.gonzalez@bold.co'
+        )
+        OR (
+          "bold_gold_sales"."fact_crm_leads_status_change"."user_email" IS NULL
+        )
+      )
+    GROUP BY
+      "bold_gold_sales"."fact_crm_leads_status_change"."lead_id"
+    ORDER BY
+      "bold_gold_sales"."fact_crm_leads_status_change"."lead_id" ASC
+  ) AS "__mb_source"
+  LEFT JOIN (
+    SELECT
+      "bold_gold_sales"."fact_crm_leads_status_change"."idempotency_hash" AS "idempotency_hash",
+      "bold_gold_sales"."fact_crm_leads_status_change"."lead_id" AS "lead_id",
+      "bold_gold_sales"."fact_crm_leads_status_change"."status" AS "status",
+      "bold_gold_sales"."fact_crm_leads_status_change"."user_id" AS "user_id",
+      "bold_gold_sales"."fact_crm_leads_status_change"."event_timestamp" AS "event_timestamp",
+      "bold_gold_sales"."fact_crm_leads_status_change"."last_update_date" AS "last_update_date",
+      "bold_gold_sales"."fact_crm_leads_status_change"."creation_date" AS "creation_date",
+      "bold_gold_sales"."fact_crm_leads_status_change"."user_email" AS "user_email",
+      "bold_gold_sales"."fact_crm_leads_status_change"."lead_email" AS "lead_email",
+      "bold_gold_sales"."fact_crm_leads_status_change"."manager_email" AS "manager_email",
+      "bold_gold_sales"."fact_crm_leads_status_change"."company_size" AS "company_size",
+      "bold_gold_sales"."fact_crm_leads_status_change"."sales_channel" AS "sales_channel",
+      "bold_gold_sales"."fact_crm_leads_status_change"."company_name" AS "company_name",
+      "bold_gold_sales"."fact_crm_leads_status_change"."lead_origin_name" AS "lead_origin_name",
+      "bold_gold_sales"."fact_crm_leads_status_change"."economic_activity_name" AS "economic_activity_name",
+      "bold_gold_sales"."fact_crm_leads_status_change"."company_identification_document_type" AS "company_identification_document_type",
+      "bold_gold_sales"."fact_crm_leads_status_change"."company_identification_document_number" AS "company_identification_document_number",
+      "bold_gold_sales"."fact_crm_leads_status_change"."discard_reason_reason" AS "discard_reason_reason",
+      "bold_gold_sales"."fact_crm_leads_status_change"."discard_reason_description" AS "discard_reason_description",
+      "bold_gold_sales"."fact_crm_leads_status_change"."company_address_street" AS "company_address_street",
+      "bold_gold_sales"."fact_crm_leads_status_change"."company_address_city_code" AS "company_address_city_code",
+      "bold_gold_sales"."fact_crm_leads_status_change"."company_address_department_code" AS "company_address_department_code",
+      "bold_gold_sales"."fact_crm_leads_status_change"."company_address_country_code" AS "company_address_country_code",
+      "bold_gold_sales"."fact_crm_leads_status_change"."company_address_complementary_address" AS "company_address_complementary_address",
+      "bold_gold_sales"."fact_crm_leads_status_change"."company_picture" AS "company_picture",
+      "bold_gold_sales"."fact_crm_leads_status_change"."creator_user_id" AS "creator_user_id",
+      "bold_gold_sales"."fact_crm_leads_status_change"."is_existing_client" AS "is_existing_client",
+      "bold_gold_sales"."fact_crm_leads_status_change"."creation_type" AS "creation_type",
+      "bold_gold_sales"."fact_crm_leads_status_change"."metadata_campaign_end_date" AS "metadata_campaign_end_date",
+      "bold_gold_sales"."fact_crm_leads_status_change"."metadata_campaign_key_points" AS "metadata_campaign_key_points",
+      "bold_gold_sales"."fact_crm_leads_status_change"."metadata_campaign_name" AS "metadata_campaign_name",
+      "bold_gold_sales"."fact_crm_leads_status_change"."metadata_campaign_start_date" AS "metadata_campaign_start_date",
+      "bold_gold_sales"."fact_crm_leads_status_change"."metadata_client_id" AS "metadata_client_id",
+      "bold_gold_sales"."fact_crm_leads_status_change"."metadata_client_is_key_account" AS "metadata_client_is_key_account",
+      "bold_gold_sales"."fact_crm_leads_status_change"."metadata_client_type" AS "metadata_client_type",
+      "bold_gold_sales"."fact_crm_leads_status_change"."metadata_client__id" AS "metadata_client__id",
+      "bold_gold_sales"."fact_crm_leads_status_change"."previous_user" AS "previous_user",
+      "bold_gold_sales"."fact_crm_leads_status_change"."previous_channel" AS "previous_channel",
+      "bold_gold_sales"."fact_crm_leads_status_change"."reassign_reason" AS "reassign_reason",
+      "bold_gold_sales"."fact_crm_leads_status_change"."priority" AS "priority",
+      "bold_gold_sales"."fact_crm_leads_status_change"."metadata_is_campaign" AS "metadata_is_campaign",
+      "bold_gold_sales"."fact_crm_leads_status_change"."contact_first_name" AS "contact_first_name",
+      "bold_gold_sales"."fact_crm_leads_status_change"."contact_middle_name" AS "contact_middle_name",
+      "bold_gold_sales"."fact_crm_leads_status_change"."contact_last_name" AS "contact_last_name",
+      "bold_gold_sales"."fact_crm_leads_status_change"."contact_second_last_name" AS "contact_second_last_name",
+      "bold_gold_sales"."fact_crm_leads_status_change"."contact_phone" AS "contact_phone",
+      "bold_gold_sales"."fact_crm_leads_status_change"."contact_landline_number" AS "contact_landline_number",
+      "bold_gold_sales"."fact_crm_leads_status_change"."contact_address_street" AS "contact_address_street",
+      "bold_gold_sales"."fact_crm_leads_status_change"."contact_address_city_code" AS "contact_address_city_code",
+      "bold_gold_sales"."fact_crm_leads_status_change"."contact_address_department_code" AS "contact_address_department_code",
+      "bold_gold_sales"."fact_crm_leads_status_change"."task_type" AS "task_type",
+      "bold_gold_sales"."fact_crm_leads_status_change"."task_description" AS "task_description",
+      "bold_gold_sales"."fact_crm_leads_status_change"."task_contact_first_name" AS "task_contact_first_name",
+      "bold_gold_sales"."fact_crm_leads_status_change"."task_contact_middle_name" AS "task_contact_middle_name",
+      "bold_gold_sales"."fact_crm_leads_status_change"."task_contact_last_name" AS "task_contact_last_name",
+      "bold_gold_sales"."fact_crm_leads_status_change"."task_contact_second_last_name" AS "task_contact_second_last_name",
+      "bold_gold_sales"."fact_crm_leads_status_change"."task_contact_phone" AS "task_contact_phone",
+      "bold_gold_sales"."fact_crm_leads_status_change"."task_contact_landline_number" AS "task_contact_landline_number",
+      "bold_gold_sales"."fact_crm_leads_status_change"."task_date" AS "task_date",
+      "bold_gold_sales"."fact_crm_leads_status_change"."task_finished_date" AS "task_finished_date",
+      "bold_gold_sales"."fact_crm_leads_status_change"."event_partition" AS "event_partition"
+    FROM
+      "bold_gold_sales"."fact_crm_leads_status_change"
+  ) AS "Fact Crm Leads Status Change - Lead" ON (
+    "__mb_source"."lead_id" = "Fact Crm Leads Status Change - Lead"."lead_id"
+  )
+  AND (
+    "__mb_source"."max" = "Fact Crm Leads Status Change - Lead"."event_timestamp"
+  )
