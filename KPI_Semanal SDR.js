@@ -1,34 +1,83 @@
 const rows = $input.all().map(item => item.json);
 const groups = {};
 
+// Para producción, reemplazar por CFG_Parametros.fecha_corte
+const SNAPSHOT_DATE = new Date();
+
 function getWeekStart(isoDate) {
   const date = new Date(isoDate);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
   const day = date.getUTCDay() || 7;
+
   date.setUTCDate(date.getUTCDate() - day + 1);
+
   return date.toISOString().slice(0, 10);
 }
 
-function percentage(a, b) {
-  return b === 0 ? 0 : Number(((a / b) * 100).toFixed(2));
+function percentage(numerator, denominator) {
+  if (!denominator) return 0;
+
+  return Number(
+    ((numerator / denominator) * 100).toFixed(2)
+  );
+}
+
+function asBoolean(value) {
+  return (
+    value === true ||
+    value === 'true' ||
+    value === 1 ||
+    value === '1'
+  );
+}
+
+function normalizeStatus(value) {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function toNumber(value) {
+  const number = Number(value || 0);
+
+  return Number.isFinite(number) ? number : 0;
 }
 
 for (const row of rows) {
   if (!row.fecha_cita_iso) continue;
 
   const weekStart = getWeekStart(row.fecha_cita_iso);
-  const key = `${weekStart}|${row.periodo_analisis}`;
+
+  if (!weekStart) continue;
+
+  const periodo = row.periodo_analisis || 'Sin periodo';
+  const key = `${weekStart}|${periodo}`;
 
   if (!groups[key]) {
     groups[key] = {
       semana_inicio: weekStart,
-      periodo_analisis: row.periodo_analisis,
+      periodo_analisis: periodo,
+
       citas_agendadas: 0,
       citas_realizadas: 0,
+      citas_futuras: 0,
+
       oportunidades: 0,
       cierres: 0,
       perdidas: 0,
       pendientes: 0,
       sin_gestion: 0,
+
+      excepciones: 0,
+      outliers_embudo: 0,
+      inconsistencias_realizacion: 0,
+
       tpv_m0: 0,
       tpv_m1: 0
     };
@@ -38,15 +87,43 @@ for (const row of rows) {
 
   kpi.citas_agendadas++;
 
-  if (row.cita_realizada === true) {
+  const fechaCita = new Date(row.fecha_cita_iso);
+  const fechaCitaValida = !Number.isNaN(fechaCita.getTime());
+
+  const citaFutura =
+    asBoolean(row.cita_futura) ||
+    (fechaCitaValida && fechaCita > SNAPSHOT_DATE);
+
+  if (citaFutura) {
+    kpi.citas_futuras++;
+  } else if (asBoolean(row.cita_realizada)) {
     kpi.citas_realizadas++;
   }
 
-  if (row.estado_comercial === 'Oportunidad') {
+  /*
+   * El embudo utiliza flags independientes.
+   * Un cierre también cuenta como oportunidad.
+   */
+  const estadoOP = normalizeStatus(row.estado_oportunidad);
+
+  const esOportunidad =
+    row.es_oportunidad !== undefined
+      ? asBoolean(row.es_oportunidad)
+      : toNumber(row.conteo_op) > 0 ||
+        ['ganada', 'cerrada', 'perdida'].includes(estadoOP);
+
+  const esCierre =
+    row.es_cierre !== undefined
+      ? asBoolean(row.es_cierre)
+      : toNumber(row.conteo_cierre) > 0 ||
+        row.estado_comercial === 'Cierre' ||
+        row.estado_cita === 'Cierre Exitoso';
+
+  if (esOportunidad) {
     kpi.oportunidades++;
   }
 
-  if (row.estado_comercial === 'Cierre') {
+  if (esCierre) {
     kpi.cierres++;
   }
 
@@ -62,216 +139,45 @@ for (const row of rows) {
     kpi.sin_gestion++;
   }
 
-  kpi.tpv_m0 += Number(row.tpv_m0 || 0);
-  kpi.tpv_m1 += Number(row.tpv_m1 || 0);
+  if (asBoolean(row.registro_excepcion)) {
+    kpi.excepciones++;
+  }
+
+  if (asBoolean(row.outlier_embudo)) {
+    kpi.outliers_embudo++;
+  }
+
+  if (asBoolean(row.inconsistencia_realizacion)) {
+    kpi.inconsistencias_realizacion++;
+  }
+
+  kpi.tpv_m0 += toNumber(row.tpv_m0);
+  kpi.tpv_m1 += toNumber(row.tpv_m1);
 }
 
-return Object.values(groups).map(kpi => ({
-  json: {
-    ...kpi,
-    tasa_realizacion: percentage(
-      kpi.citas_realizadas,
-      kpi.citas_agendadas
-    ),
-    tasa_cita_oportunidad: percentage(
-      kpi.oportunidades,
-      kpi.citas_agendadas
-    ),
-    tasa_oportunidad_cierre: percentage(
-      kpi.cierres,
-      kpi.oportunidades
-    ),
-    fecha_proceso: new Date().toISOString()
-  }
-}));
+return Object.values(groups)
+  .sort((a, b) =>
+    a.semana_inicio.localeCompare(b.semana_inicio)
+  )
+  .map(kpi => ({
+    json: {
+      ...kpi,
 
+      tasa_realizacion: percentage(
+        kpi.citas_realizadas,
+        kpi.citas_agendadas - kpi.citas_futuras
+      ),
 
-[
-  {
-    "semana_inicio": "2026-06-01",
-    "periodo_analisis": "2026-06 a 2026-12",
-    "citas_agendadas": 204,
-    "citas_realizadas": 94,
-    "oportunidades": 36,
-    "cierres": 114,
-    "perdidas": 21,
-    "pendientes": 3,
-    "sin_gestion": 30,
-    "tpv_m0": 1147255297,
-    "tpv_m1": 1601956545,
-    "tasa_realizacion": 46.08,
-    "tasa_cita_oportunidad": 17.65,
-    "tasa_oportunidad_cierre": 316.67,
-    "fecha_proceso": "2026-09-25T17:33:47.781Z"
-  },
-  {
-    "semana_inicio": "2026-07-20",
-    "periodo_analisis": "2026-06 a 2026-12",
-    "citas_agendadas": 196,
-    "citas_realizadas": 75,
-    "oportunidades": 36,
-    "cierres": 112,
-    "perdidas": 23,
-    "pendientes": 5,
-    "sin_gestion": 20,
-    "tpv_m0": 321166681,
-    "tpv_m1": 978351263.0799999,
-    "tasa_realizacion": 38.27,
-    "tasa_cita_oportunidad": 18.37,
-    "tasa_oportunidad_cierre": 311.11,
-    "fecha_proceso": "2026-09-25T17:33:47.782Z"
-  },
-  {
-    "semana_inicio": "2026-06-29",
-    "periodo_analisis": "2026-06 a 2026-12",
-    "citas_agendadas": 116,
-    "citas_realizadas": 57,
-    "oportunidades": 17,
-    "cierres": 66,
-    "perdidas": 15,
-    "pendientes": 3,
-    "sin_gestion": 15,
-    "tpv_m0": 342423155,
-    "tpv_m1": 430282337,
-    "tasa_realizacion": 49.14,
-    "tasa_cita_oportunidad": 14.66,
-    "tasa_oportunidad_cierre": 388.24,
-    "fecha_proceso": "2026-09-25T17:33:47.782Z"
-  },
-  {
-    "semana_inicio": "2026-09-28",
-    "periodo_analisis": "2026-06 a 2026-12",
-    "citas_agendadas": 2,
-    "citas_realizadas": 2,
-    "oportunidades": 0,
-    "cierres": 0,
-    "perdidas": 1,
-    "pendientes": 1,
-    "sin_gestion": 0,
-    "tpv_m0": 0,
-    "tpv_m1": 0,
-    "tasa_realizacion": 100,
-    "tasa_cita_oportunidad": 0,
-    "tasa_oportunidad_cierre": 0,
-    "fecha_proceso": "2026-09-25T17:33:47.782Z"
-  },
-  {
-    "semana_inicio": "2026-11-02",
-    "periodo_analisis": "2026-06 a 2026-12",
-    "citas_agendadas": 1,
-    "citas_realizadas": 1,
-    "oportunidades": 0,
-    "cierres": 0,
-    "perdidas": 1,
-    "pendientes": 0,
-    "sin_gestion": 0,
-    "tpv_m0": 0,
-    "tpv_m1": 0,
-    "tasa_realizacion": 100,
-    "tasa_cita_oportunidad": 0,
-    "tasa_oportunidad_cierre": 0,
-    "fecha_proceso": "2026-09-25T17:33:47.782Z"
-  },
-  {
-    "semana_inicio": "2026-06-08",
-    "periodo_analisis": "2026-06 a 2026-12",
-    "citas_agendadas": 184,
-    "citas_realizadas": 86,
-    "oportunidades": 32,
-    "cierres": 88,
-    "perdidas": 23,
-    "pendientes": 11,
-    "sin_gestion": 30,
-    "tpv_m0": 314709142,
-    "tpv_m1": 746548456,
-    "tasa_realizacion": 46.74,
-    "tasa_cita_oportunidad": 17.39,
-    "tasa_oportunidad_cierre": 275,
-    "fecha_proceso": "2026-09-25T17:33:47.782Z"
-  },
-  {
-    "semana_inicio": "2026-06-22",
-    "periodo_analisis": "2026-06 a 2026-12",
-    "citas_agendadas": 188,
-    "citas_realizadas": 90,
-    "oportunidades": 27,
-    "cierres": 111,
-    "perdidas": 24,
-    "pendientes": 4,
-    "sin_gestion": 22,
-    "tpv_m0": 756547731,
-    "tpv_m1": 1541728151.5,
-    "tasa_realizacion": 47.87,
-    "tasa_cita_oportunidad": 14.36,
-    "tasa_oportunidad_cierre": 411.11,
-    "fecha_proceso": "2026-09-25T17:33:47.782Z"
-  },
-  {
-    "semana_inicio": "2026-06-15",
-    "periodo_analisis": "2026-06 a 2026-12",
-    "citas_agendadas": 140,
-    "citas_realizadas": 61,
-    "oportunidades": 28,
-    "cierres": 72,
-    "perdidas": 16,
-    "pendientes": 3,
-    "sin_gestion": 21,
-    "tpv_m0": 239560176,
-    "tpv_m1": 700900954.2,
-    "tasa_realizacion": 43.57,
-    "tasa_cita_oportunidad": 20,
-    "tasa_oportunidad_cierre": 257.14,
-    "fecha_proceso": "2026-09-25T17:33:47.782Z"
-  },
-  {
-    "semana_inicio": "2026-07-06",
-    "periodo_analisis": "2026-06 a 2026-12",
-    "citas_agendadas": 173,
-    "citas_realizadas": 82,
-    "oportunidades": 21,
-    "cierres": 110,
-    "perdidas": 23,
-    "pendientes": 3,
-    "sin_gestion": 16,
-    "tpv_m0": 878977235,
-    "tpv_m1": 1089043321,
-    "tasa_realizacion": 47.4,
-    "tasa_cita_oportunidad": 12.14,
-    "tasa_oportunidad_cierre": 523.81,
-    "fecha_proceso": "2026-09-25T17:33:47.782Z"
-  },
-  {
-    "semana_inicio": "2026-07-27",
-    "periodo_analisis": "2026-06 a 2026-12",
-    "citas_agendadas": 191,
-    "citas_realizadas": 88,
-    "oportunidades": 58,
-    "cierres": 78,
-    "perdidas": 18,
-    "pendientes": 10,
-    "sin_gestion": 27,
-    "tpv_m0": 514368173,
-    "tpv_m1": 719603228,
-    "tasa_realizacion": 46.07,
-    "tasa_cita_oportunidad": 30.37,
-    "tasa_oportunidad_cierre": 134.48,
-    "fecha_proceso": "2026-09-25T17:33:47.782Z"
-  },
-  {
-    "semana_inicio": "2026-07-13",
-    "periodo_analisis": "2026-06 a 2026-12",
-    "citas_agendadas": 196,
-    "citas_realizadas": 89,
-    "oportunidades": 43,
-    "cierres": 116,
-    "perdidas": 14,
-    "pendientes": 3,
-    "sin_gestion": 20,
-    "tpv_m0": 378897787,
-    "tpv_m1": 879413352,
-    "tasa_realizacion": 45.41,
-    "tasa_cita_oportunidad": 21.94,
-    "tasa_oportunidad_cierre": 269.77,
-    "fecha_proceso": "2026-09-25T17:33:47.782Z"
-  }
-]
+      tasa_cita_oportunidad: percentage(
+        kpi.oportunidades,
+        kpi.citas_agendadas
+      ),
+
+      tasa_oportunidad_cierre: percentage(
+        kpi.cierres,
+        kpi.oportunidades
+      ),
+
+      fecha_proceso: new Date().toISOString()
+    }
+  }));
