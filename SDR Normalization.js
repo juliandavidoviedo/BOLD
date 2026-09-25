@@ -1,5 +1,5 @@
 // n8n Code node
-// Modo: Run Once for All Items
+// Mode: Run Once for All Items
 
 function clean(value) {
   if (value === null || value === undefined) return null;
@@ -26,14 +26,8 @@ function normalizeText(value) {
     .replace(/[\u0300-\u036f]/g, '');
 }
 
-function normalizeStatus(value) {
-  return normalizeText(value);
-}
-
 function parseNumber(value) {
-  if (value === null || value === undefined || value === '') {
-    return 0;
-  }
+  if (value === null || value === undefined || value === '') return 0;
 
   let text = String(value)
     .replace(/\$/g, '')
@@ -42,21 +36,15 @@ function parseNumber(value) {
 
   if (!text || text === '-') return 0;
 
-  // Formato colombiano: 1.234.567,89
   if (text.includes('.') && text.includes(',')) {
     text = text.replace(/\./g, '').replace(',', '.');
-  }
-  // Formato con coma decimal: 1234,56
-  else if (text.includes(',')) {
+  } else if (text.includes(',')) {
     text = text.replace(',', '.');
-  }
-  // Formato con puntos de miles: 1.234.567
-  else if (/^\d{1,3}(\.\d{3})+$/.test(text)) {
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(text)) {
     text = text.replace(/\./g, '');
   }
 
   const number = Number(text);
-
   return Number.isFinite(number) ? number : 0;
 }
 
@@ -73,23 +61,68 @@ function parseDate(value) {
     return {
       original: null,
       iso: null,
-      valid: false
+      valid: false,
+      error: false
     };
   }
 
   const text = original.trim();
 
-  // ISO o formato reconocido directamente por JavaScript
-  const directDate = new Date(text);
+  /*
+   * 1. Fechas numéricas colombianas.
+   * Se procesa primero para evitar que JavaScript interprete
+   * 4/12/2025 como 12 de abril en lugar de 4 de diciembre.
+   */
+  const numericDate = text.match(
+    /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/
+  );
 
-  if (!Number.isNaN(directDate.getTime())) {
+  if (numericDate) {
+    const [
+      ,
+      day,
+      month,
+      year,
+      hour = '0',
+      minute = '0',
+      second = '0'
+    ] = numericDate;
+
+    const date = new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hour),
+      Number(minute),
+      Number(second)
+    );
+
+    const validDate =
+      date.getFullYear() === Number(year) &&
+      date.getMonth() === Number(month) - 1 &&
+      date.getDate() === Number(day);
+
+    if (validDate) {
+      return {
+        original,
+        iso: date.toISOString(),
+        valid: true,
+        error: false
+      };
+    }
+
     return {
       original,
-      iso: directDate.toISOString(),
-      valid: true
+      iso: null,
+      valid: false,
+      error: true
     };
   }
 
+  /*
+   * 2. Fechas en español.
+   * Ejemplo: 2 jun 2026 11:30:00
+   */
   const months = {
     ene: 0,
     enero: 0,
@@ -118,7 +151,6 @@ function parseDate(value) {
     diciembre: 11
   };
 
-  // Ejemplo: 2 jun 2026 11:30:00
   const spanishDate = text.toLowerCase().match(
     /^(\d{1,2})\s+([a-záéíóú]+)\s+(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/
   );
@@ -146,46 +178,42 @@ function parseDate(value) {
         Number(second)
       );
 
-      if (!Number.isNaN(date.getTime())) {
+      const validDate =
+        date.getFullYear() === Number(year) &&
+        date.getMonth() === month &&
+        date.getDate() === Number(day);
+
+      if (validDate) {
         return {
           original,
           iso: date.toISOString(),
-          valid: true
+          valid: true,
+          error: false
         };
       }
     }
+
+    return {
+      original,
+      iso: null,
+      valid: false,
+      error: true
+    };
   }
 
-  // Ejemplos: 15/05/2026 o 15-05-2026
-  const numericDate = text.match(
-    /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/
-  );
-
-  if (numericDate) {
-    const [
-      ,
-      day,
-      month,
-      year,
-      hour = '0',
-      minute = '0',
-      second = '0'
-    ] = numericDate;
-
-    const date = new Date(
-      Number(year),
-      Number(month) - 1,
-      Number(day),
-      Number(hour),
-      Number(minute),
-      Number(second)
-    );
+  /*
+   * 3. ISO.
+   * Sólo se permite parseo automático si comienza con YYYY-MM-DD.
+   */
+  if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
+    const date = new Date(text);
 
     if (!Number.isNaN(date.getTime())) {
       return {
         original,
         iso: date.toISOString(),
-        valid: true
+        valid: true,
+        error: false
       };
     }
   }
@@ -193,12 +221,13 @@ function parseDate(value) {
   return {
     original,
     iso: null,
-    valid: false
+    valid: false,
+    error: true
   };
 }
 
-function getValue(row, possibleNames) {
-  for (const name of possibleNames) {
+function getValue(row, names) {
+  for (const name of names) {
     if (Object.prototype.hasOwnProperty.call(row, name)) {
       return row[name];
     }
@@ -217,28 +246,29 @@ for (let index = 0; index < $input.all().length; index++) {
   const idComercio = clean(row['Documento NIT / CC']);
 
   const empresa = clean(row['Empresa']);
+  const ejecutivoSDR = clean(row['Executive SDR / LTQ']);
+  const ejecutivoAsignado = clean(row['Ejecutivo asignado']);
+  const teamLead = clean(row['Team Lead']);
+  const manager = clean(row['Manager']);
+
   const fechaCita = parseDate(row['Fecha de la cita']);
   const fechaAgendo = parseDate(row['Fecha agendo']);
   const fechaCierre = parseDate(row['Fecha de cierre venta']);
   const fechaUltimaActividadOP = parseDate(row['Dia Ultima Act OP']);
   const fechaPrimeraTRX = parseDate(row['Fecha 1 TRX general']);
 
-  const ejecutivoSDR = clean(row['Executive SDR / LTQ']);
-  const ejecutivoAsignado = clean(row['Ejecutivo asignado']);
-  const teamLead = clean(row['Team Lead']);
-  const manager = clean(row['Manager']);
-
   const estadoCita = clean(row['Estado Cita']);
   const estadoOPOriginal = clean(row['Ultimo estado OP']);
-  const estadoOP = normalizeStatus(estadoOPOriginal);
+  const estadoOP = normalizeText(estadoOPOriginal);
+
+  const realizada = isYes(row['Realizaste la cita']);
 
   const conteoOP = parseNumber(row['Conteo OP']);
   const conteoCierre = parseNumber(row['Conteo Cierre']);
 
+  const tpvEsperado = parseNumber(row['TPV Esperado']);
   const tpvM0 = parseNumber(row['TPV M0']);
   const tpvM1 = parseNumber(row['TPV M1']);
-
-  const realizada = isYes(row['Realizaste la cita']);
 
   const calificacionRaw = row['Calificación Cita'];
   const calificacion =
@@ -248,8 +278,6 @@ for (let index = 0; index < $input.all().length; index++) {
       ? null
       : parseNumber(calificacionRaw);
 
-  // El ID de la fuente puede contener "Calificado".
-  // No se utiliza como identificador.
   const idCita =
     idEvento ||
     [
@@ -260,9 +288,12 @@ for (let index = 0; index < $input.all().length; index++) {
       .filter(Boolean)
       .join('|');
 
+  /*
+   * La prioridad es intencional:
+   * Cierre > Perdida > Oportunidad > Pendiente > Sin gestión
+   */
   let estadoComercial;
 
-  // El orden es importante: Perdida debe prevalecer sobre Conteo OP.
   if (conteoCierre > 0 || fechaCierre.valid) {
     estadoComercial = 'Cierre';
   } else if (estadoOP === 'perdida') {
@@ -286,12 +317,27 @@ for (let index = 0; index < $input.all().length; index++) {
   const faltaTeamLead = !teamLead;
   const faltaFechaTRX = !fechaPrimeraTRX.valid;
 
-  const calidadRegistro =
+  const errorFechaCita = fechaCita.error;
+  const errorFechaAgendo = fechaAgendo.error;
+  const errorFechaCierre = fechaCierre.error;
+  const errorFechaActividadOP = fechaUltimaActividadOP.error;
+  const errorFechaTRX = fechaPrimeraTRX.error;
+
+  const registroRequiereRevision =
     faltaEmpresa ||
     faltaIdentificador ||
     faltaEjecutivo ||
-    faltaFechaCita
-      ? 'Revisar'
+    faltaFechaCita ||
+    errorFechaCita;
+
+  const calidadRegistro = registroRequiereRevision
+    ? 'Revisar'
+    : 'OK';
+
+  const nivelCalidad = registroRequiereRevision
+    ? 'Crítico'
+    : faltaFechaTRX
+      ? 'Advertencia'
       : 'OK';
 
   output.push({
@@ -302,27 +348,25 @@ for (let index = 0; index < $input.all().length; index++) {
       id_fuente: idFuente,
       id_comercio: idComercio,
 
-      // Datos del comercio
+      // Comercio
       empresa,
       ciudad: clean(row['Ciudad']),
       direccion: clean(row['Dirección']),
 
-      // Fechas originales e ISO
+      // Fechas originales
       fecha_cita_original: fechaCita.original,
-      fecha_cita_iso: fechaCita.iso,
-
       fecha_agendo_original: fechaAgendo.original,
-      fecha_agendo_iso: fechaAgendo.iso,
-
       fecha_cierre_original: fechaCierre.original,
-      fecha_cierre_iso: fechaCierre.iso,
-
       fecha_ultima_actividad_op_original:
         fechaUltimaActividadOP.original,
+      fecha_primera_trx_original: fechaPrimeraTRX.original,
+
+      // Fechas normalizadas ISO
+      fecha_cita_iso: fechaCita.iso,
+      fecha_agendo_iso: fechaAgendo.iso,
+      fecha_cierre_iso: fechaCierre.iso,
       fecha_ultima_actividad_op_iso:
         fechaUltimaActividadOP.iso,
-
-      fecha_primera_trx_original: fechaPrimeraTRX.original,
       fecha_primera_trx_iso: fechaPrimeraTRX.iso,
 
       // Responsables
@@ -354,29 +398,31 @@ for (let index = 0; index < $input.all().length; index++) {
       ),
       producto_interes: clean(row['Productos de interés:']),
 
-      // Gestión de la cita
+      // Cita
       estado_cita: estadoCita,
       cita_realizada: realizada,
       califica_cita: clean(row['Califica esta cita']),
       calificacion_cita: calificacion,
 
-      // Embudo comercial
+      // Embudo
       estado_oportunidad: estadoOPOriginal,
       estado_comercial: estadoComercial,
       conteo_op: conteoOP,
       conteo_cierre: conteoCierre,
 
       // TPV
-      tpv_esperado: parseNumber(row['TPV Esperado']),
+      tpv_esperado: tpvEsperado,
       tpv_m0: tpvM0,
       tpv_m1: tpvM1,
 
-      // Periodo y auditoría
+      // Control de ejecución
       periodo_analisis: '2026-06 a 2026-12',
       fecha_proceso: new Date().toISOString(),
 
       // Calidad
       calidad_registro: calidadRegistro,
+      nivel_calidad: nivelCalidad,
+
       calidad: {
         falta_empresa: faltaEmpresa,
         falta_identificador: faltaIdentificador,
@@ -384,12 +430,24 @@ for (let index = 0; index < $input.all().length; index++) {
         falta_fecha_cita: faltaFechaCita,
         falta_team_lead: faltaTeamLead,
         falta_fecha_primera_trx: faltaFechaTRX,
+
         fecha_cita_valida: fechaCita.valid,
         fecha_agendo_valida: fechaAgendo.valid,
         fecha_cierre_valida: fechaCierre.valid,
         fecha_ultima_actividad_op_valida:
           fechaUltimaActividadOP.valid,
-        fecha_primera_trx_valida: fechaPrimeraTRX.valid
+        fecha_primera_trx_valida: fechaPrimeraTRX.valid,
+
+        error_fecha_cita: errorFechaCita,
+        error_fecha_agendo: errorFechaAgendo,
+        error_fecha_cierre: errorFechaCierre,
+        error_fecha_ultima_actividad_op:
+          errorFechaActividadOP,
+        error_fecha_primera_trx: errorFechaTRX,
+
+        advertencia_sin_fecha_trx: faltaFechaTRX,
+        advertencia_cierre_sin_fecha:
+          estadoComercial === 'Cierre' && !fechaCierre.valid
       }
     }
   });
