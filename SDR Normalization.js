@@ -1,36 +1,24 @@
+// n8n Code node
+// Modo: Run Once for All Items
+
 function clean(value) {
   if (value === null || value === undefined) return null;
 
   const text = String(value).trim();
 
-  if (text === '' || text === '-' || text.toLowerCase() === 'n/a') {
+  if (
+    text === '' ||
+    text === '-' ||
+    text.toLowerCase() === 'n/a' ||
+    text.toLowerCase() === '#n/a'
+  ) {
     return null;
   }
 
   return text;
 }
 
-function numberValue(value) {
-  if (value === null || value === undefined || value === '') return 0;
-
-  const normalized = String(value)
-    .replace(/\$/g, '')
-    .replace(/\./g, '')
-    .replace(/,/g, '.')
-    .trim();
-
-  const number = Number(normalized);
-
-  return Number.isFinite(number) ? number : 0;
-}
-
-function yes(value) {
-  return ['si', 'sí', 'yes', 'true', '1'].includes(
-    String(value ?? '').trim().toLowerCase()
-  );
-}
-
-function normalizeStatus(value) {
+function normalizeText(value) {
   return String(value ?? '')
     .trim()
     .toLowerCase()
@@ -38,82 +26,373 @@ function normalizeStatus(value) {
     .replace(/[\u0300-\u036f]/g, '');
 }
 
-return $input.all().map((item, index) => {
-  const r = item.json;
+function normalizeStatus(value) {
+  return normalizeText(value);
+}
 
-  const fechaCita = clean(r['Fecha de la cita']);
-  const estadoCita = normalizeStatus(r['Estado Cita']);
-  const estadoOP = normalizeStatus(r['Ultimo estado OP']);
+function parseNumber(value) {
+  if (value === null || value === undefined || value === '') {
+    return 0;
+  }
 
-  const conteoOP = numberValue(r['Conteo OP']);
-  const conteoCierre = numberValue(r['Conteo Cierre']);
-  const tpvM0 = numberValue(r['TPV M0']);
-  const tpvM1 = numberValue(r['TPV M1']);
-  const calificacion = numberValue(r['Calificación Cita']);
+  let text = String(value)
+    .replace(/\$/g, '')
+    .replace(/\s/g, '')
+    .trim();
 
-  const realizada = yes(r['Realizaste la cita']);
+  if (!text || text === '-') return 0;
 
-  let estadoComercial = 'Pendiente de clasificar';
+  // Formato colombiano: 1.234.567,89
+  if (text.includes('.') && text.includes(',')) {
+    text = text.replace(/\./g, '').replace(',', '.');
+  }
+  // Formato con coma decimal: 1234,56
+  else if (text.includes(',')) {
+    text = text.replace(',', '.');
+  }
+  // Formato con puntos de miles: 1.234.567
+  else if (/^\d{1,3}(\.\d{3})+$/.test(text)) {
+    text = text.replace(/\./g, '');
+  }
 
-  if (conteoCierre > 0 || clean(r['Fecha de cierre venta'])) {
-    estadoComercial = 'Cierre';
-  } else if (conteoOP > 0 || estadoOP === 'ganada') {
-    estadoComercial = 'Oportunidad';
-  } else if (estadoOP === 'perdida') {
-    estadoComercial = 'Perdida';
-  } else if (realizada) {
-    estadoComercial = 'Pendiente';
+  const number = Number(text);
+
+  return Number.isFinite(number) ? number : 0;
+}
+
+function isYes(value) {
+  return ['si', 'sí', 'yes', 'true', '1'].includes(
+    normalizeText(value)
+  );
+}
+
+function parseDate(value) {
+  const original = clean(value);
+
+  if (!original) {
+    return {
+      original: null,
+      iso: null,
+      valid: false
+    };
+  }
+
+  const text = original.trim();
+
+  // ISO o formato reconocido directamente por JavaScript
+  const directDate = new Date(text);
+
+  if (!Number.isNaN(directDate.getTime())) {
+    return {
+      original,
+      iso: directDate.toISOString(),
+      valid: true
+    };
+  }
+
+  const months = {
+    ene: 0,
+    enero: 0,
+    feb: 1,
+    febrero: 1,
+    mar: 2,
+    marzo: 2,
+    abr: 3,
+    abril: 3,
+    may: 4,
+    mayo: 4,
+    jun: 5,
+    junio: 5,
+    jul: 6,
+    julio: 6,
+    ago: 7,
+    agosto: 7,
+    sep: 8,
+    sept: 8,
+    septiembre: 8,
+    oct: 9,
+    octubre: 9,
+    nov: 10,
+    noviembre: 10,
+    dic: 11,
+    diciembre: 11
+  };
+
+  // Ejemplo: 2 jun 2026 11:30:00
+  const spanishDate = text.toLowerCase().match(
+    /^(\d{1,2})\s+([a-záéíóú]+)\s+(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/
+  );
+
+  if (spanishDate) {
+    const [
+      ,
+      day,
+      monthText,
+      year,
+      hour = '0',
+      minute = '0',
+      second = '0'
+    ] = spanishDate;
+
+    const month = months[monthText];
+
+    if (month !== undefined) {
+      const date = new Date(
+        Number(year),
+        month,
+        Number(day),
+        Number(hour),
+        Number(minute),
+        Number(second)
+      );
+
+      if (!Number.isNaN(date.getTime())) {
+        return {
+          original,
+          iso: date.toISOString(),
+          valid: true
+        };
+      }
+    }
+  }
+
+  // Ejemplos: 15/05/2026 o 15-05-2026
+  const numericDate = text.match(
+    /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/
+  );
+
+  if (numericDate) {
+    const [
+      ,
+      day,
+      month,
+      year,
+      hour = '0',
+      minute = '0',
+      second = '0'
+    ] = numericDate;
+
+    const date = new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hour),
+      Number(minute),
+      Number(second)
+    );
+
+    if (!Number.isNaN(date.getTime())) {
+      return {
+        original,
+        iso: date.toISOString(),
+        valid: true
+      };
+    }
   }
 
   return {
+    original,
+    iso: null,
+    valid: false
+  };
+}
+
+function getValue(row, possibleNames) {
+  for (const name of possibleNames) {
+    if (Object.prototype.hasOwnProperty.call(row, name)) {
+      return row[name];
+    }
+  }
+
+  return null;
+}
+
+const output = [];
+
+for (let index = 0; index < $input.all().length; index++) {
+  const row = $input.all()[index].json;
+
+  const idFuente = clean(row['ID']);
+  const idEvento = clean(row['ID del evento']);
+  const idComercio = clean(row['Documento NIT / CC']);
+
+  const empresa = clean(row['Empresa']);
+  const fechaCita = parseDate(row['Fecha de la cita']);
+  const fechaAgendo = parseDate(row['Fecha agendo']);
+  const fechaCierre = parseDate(row['Fecha de cierre venta']);
+  const fechaUltimaActividadOP = parseDate(row['Dia Ultima Act OP']);
+  const fechaPrimeraTRX = parseDate(row['Fecha 1 TRX general']);
+
+  const ejecutivoSDR = clean(row['Executive SDR / LTQ']);
+  const ejecutivoAsignado = clean(row['Ejecutivo asignado']);
+  const teamLead = clean(row['Team Lead']);
+  const manager = clean(row['Manager']);
+
+  const estadoCita = clean(row['Estado Cita']);
+  const estadoOPOriginal = clean(row['Ultimo estado OP']);
+  const estadoOP = normalizeStatus(estadoOPOriginal);
+
+  const conteoOP = parseNumber(row['Conteo OP']);
+  const conteoCierre = parseNumber(row['Conteo Cierre']);
+
+  const tpvM0 = parseNumber(row['TPV M0']);
+  const tpvM1 = parseNumber(row['TPV M1']);
+
+  const realizada = isYes(row['Realizaste la cita']);
+
+  const calificacionRaw = row['Calificación Cita'];
+  const calificacion =
+    calificacionRaw === null ||
+    calificacionRaw === undefined ||
+    calificacionRaw === ''
+      ? null
+      : parseNumber(calificacionRaw);
+
+  // El ID de la fuente puede contener "Calificado".
+  // No se utiliza como identificador.
+  const idCita =
+    idEvento ||
+    [
+      idComercio,
+      fechaCita.original,
+      ejecutivoAsignado || ejecutivoSDR
+    ]
+      .filter(Boolean)
+      .join('|');
+
+  let estadoComercial;
+
+  // El orden es importante: Perdida debe prevalecer sobre Conteo OP.
+  if (conteoCierre > 0 || fechaCierre.valid) {
+    estadoComercial = 'Cierre';
+  } else if (estadoOP === 'perdida') {
+    estadoComercial = 'Perdida';
+  } else if (
+    conteoOP > 0 ||
+    estadoOP === 'ganada' ||
+    estadoOP === 'cerrada'
+  ) {
+    estadoComercial = 'Oportunidad';
+  } else if (realizada) {
+    estadoComercial = 'Pendiente';
+  } else {
+    estadoComercial = 'Sin gestión';
+  }
+
+  const faltaEmpresa = !empresa;
+  const faltaIdentificador = !idComercio;
+  const faltaEjecutivo = !ejecutivoSDR && !ejecutivoAsignado;
+  const faltaFechaCita = !fechaCita.valid;
+  const faltaTeamLead = !teamLead;
+  const faltaFechaTRX = !fechaPrimeraTRX.valid;
+
+  const calidadRegistro =
+    faltaEmpresa ||
+    faltaIdentificador ||
+    faltaEjecutivo ||
+    faltaFechaCita
+      ? 'Revisar'
+      : 'OK';
+
+  output.push({
     json: {
-      id_registro: clean(r['ID']) || `fila_${index + 1}`,
-      id_evento: clean(r['ID del evento']),
-      id_comercio: clean(r['Documento NIT / CC']),
-      empresa: clean(r['Empresa']),
+      // Identificación
+      id_cita: idCita || `fila_${index + 1}`,
+      id_evento: idEvento,
+      id_fuente: idFuente,
+      id_comercio: idComercio,
 
-      fecha_cita: fechaCita,
-      fecha_agendo: clean(r['Fecha agendo']),
-      fecha_cierre: clean(r['Fecha de cierre venta']),
-      fecha_ultima_actividad_op: clean(r['Dia Ultima Act OP']),
-      fecha_primera_trx: clean(r['Fecha 1 TRX general']),
+      // Datos del comercio
+      empresa,
+      ciudad: clean(row['Ciudad']),
+      direccion: clean(row['Dirección']),
 
-      ejecutivo_sdr: clean(r['Executive SDR / LTQ']),
-      ejecutivo_asignado: clean(r['Ejecutivo asignado']),
-      team_lead: clean(r['Team Lead']),
-      manager: clean(r['Manager']),
+      // Fechas originales e ISO
+      fecha_cita_original: fechaCita.original,
+      fecha_cita_iso: fechaCita.iso,
 
-      correo_manager: clean(r['Correo Manager']),
-      correo_team_lead: clean(r['Correo TL']),
-      correo_tl_sdr: clean(r['Correo TL SDR']),
+      fecha_agendo_original: fechaAgendo.original,
+      fecha_agendo_iso: fechaAgendo.iso,
 
-      canal: clean(r['Canal actual de la venta']),
-      origen_lead: clean(r['ORIGEN LEAD']),
-      equipo: clean(r['Equipo']),
+      fecha_cierre_original: fechaCierre.original,
+      fecha_cierre_iso: fechaCierre.iso,
 
-      estado_cita: clean(r['Estado Cita']),
-      estado_oportunidad: clean(r['Ultimo estado OP']),
-      estado_comercial: estadoComercial,
+      fecha_ultima_actividad_op_original:
+        fechaUltimaActividadOP.original,
+      fecha_ultima_actividad_op_iso:
+        fechaUltimaActividadOP.iso,
 
+      fecha_primera_trx_original: fechaPrimeraTRX.original,
+      fecha_primera_trx_iso: fechaPrimeraTRX.iso,
+
+      // Responsables
+      ejecutivo_sdr: ejecutivoSDR,
+      ejecutivo_asignado: ejecutivoAsignado,
+      team_lead: teamLead,
+      manager,
+
+      correo_manager: clean(row['Correo Manager']),
+      correo_team_lead: clean(row['Correo TL']),
+      correo_tl_sdr: clean(row['Correo TL SDR']),
+
+      // Segmentación
+      equipo: clean(row['Equipo']),
+      modelo_cita: clean(row['Modelo de la cita']),
+      canal: clean(
+        getValue(row, [
+          'Canal actual de la venta',
+          'Canal',
+          'Canal de venta'
+        ])
+      ),
+      origen_lead: clean(
+        getValue(row, [
+          'ORIGEN LEAD',
+          'Origen Lead',
+          'Origen del lead'
+        ])
+      ),
+      producto_interes: clean(row['Productos de interés:']),
+
+      // Gestión de la cita
+      estado_cita: estadoCita,
       cita_realizada: realizada,
-      calificacion_cita: calificacion || null,
+      califica_cita: clean(row['Califica esta cita']),
+      calificacion_cita: calificacion,
 
+      // Embudo comercial
+      estado_oportunidad: estadoOPOriginal,
+      estado_comercial: estadoComercial,
       conteo_op: conteoOP,
       conteo_cierre: conteoCierre,
+
+      // TPV
+      tpv_esperado: parseNumber(row['TPV Esperado']),
       tpv_m0: tpvM0,
       tpv_m1: tpvM1,
 
+      // Periodo y auditoría
       periodo_analisis: '2026-06 a 2026-12',
       fecha_proceso: new Date().toISOString(),
 
-      _calidad: {
-        falta_empresa: !clean(r['Empresa']),
-        falta_identificador: !clean(r['Documento NIT / CC']),
-        falta_ejecutivo: !clean(r['Ejecutivo asignado']) &&
-                         !clean(r['Executive SDR / LTQ']),
-        falta_fecha_cita: !fechaCita,
-        falta_team_lead: !clean(r['Team Lead'])
+      // Calidad
+      calidad_registro: calidadRegistro,
+      calidad: {
+        falta_empresa: faltaEmpresa,
+        falta_identificador: faltaIdentificador,
+        falta_ejecutivo: faltaEjecutivo,
+        falta_fecha_cita: faltaFechaCita,
+        falta_team_lead: faltaTeamLead,
+        falta_fecha_primera_trx: faltaFechaTRX,
+        fecha_cita_valida: fechaCita.valid,
+        fecha_agendo_valida: fechaAgendo.valid,
+        fecha_cierre_valida: fechaCierre.valid,
+        fecha_ultima_actividad_op_valida:
+          fechaUltimaActividadOP.valid,
+        fecha_primera_trx_valida: fechaPrimeraTRX.valid
       }
     }
-  };
-});
+  });
+}
+
+return output;
