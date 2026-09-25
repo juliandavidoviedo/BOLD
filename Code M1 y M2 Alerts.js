@@ -307,3 +307,53 @@ Cuando confirmemos que el contenido y la clasificación son correctos, reemplaza
 ```
 
 El siguiente paso, después de validar el correo, será agregar una hoja `ALERTAS_ENVIADAS` para evitar que el mismo comercio reciba alertas repetidas diariamente.
+
+
+
+  <h2>Alerta de churn - Prueba</h2>
+
+<p>Se generó una alerta para un comercio asignado a un ejecutivo.</p>
+
+<table border="1" cellpadding="6" cellspacing="0">
+  <tr>
+    <td><strong>Tipo de alerta</strong></td>
+    <td>{{ $json.alert_type }}</td>
+  </tr>
+  <tr>
+    <td><strong>Prioridad</strong></td>
+    <td>{{ $json.priority }}</td>
+  </tr>
+  <tr>
+    <td><strong>Comercio</strong></td>
+    <td>{{ $json.merchant_name }}</td>
+  </tr>
+  <tr>
+    <td><strong>ID comercio</strong></td>
+    <td>{{ $json.master_merchant_id }}</td>
+  </tr>
+  <tr>
+    <td><strong>Ejecutivo asignado</strong></td>
+    <td>{{ $json.sales_agent_email }}</td>
+  </tr>
+  <tr>
+    <td><strong>Canal</strong></td>
+    <td>{{ $json.sales_source }}</td>
+  </tr>
+  <tr>
+    <td><strong>Días de vida</strong></td>
+    <td>{{ $json.dias_de_vida }}</td>
+  </tr>
+  <tr>
+    <td><strong>TPV M1</strong></td>
+    <td>{{ $json.tpv_m1 }}</td>
+  </tr>
+  <tr>
+    <td><strong>TPV M2</strong></td>
+    <td>{{ $json.tpv_m2 }}</td>
+  </tr>
+</table>
+
+<p>
+  <strong>Acción recomendada:</strong>
+  {{ $json.recommended_action }}
+</p>
