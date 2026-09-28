@@ -1,0 +1,84 @@
+[
+  {
+    "etapa": "diagnostico",
+    "fecha_ejecucion": "2026-09-28T15:38:44.545Z",
+    "total_registros": 8808,
+    "distribucion_por_mes": {
+      "2026-06": 826,
+      "2026-07": 923,
+      "2026-08": 937,
+      "2026-10": 2,
+      "2026-01": 842,
+      "2026-11": 2,
+      "2026-02": 1063,
+      "2026-04": 1035,
+      "2026-03": 1044,
+      "2026-05": 849,
+      "2026-09": 1285
+    },
+    "distribucion_campo_anio": {
+      "2026": 8808
+    },
+    "fechas_invalidas": 0,
+    "muestras_fechas_invalidas": [],
+    "muestras_por_mes": {
+      "2026-06": {
+        "fecha_cita": "2 jun 2026 11:30:00",
+        "anio_campo": 2026,
+        "empresa": "BSTEAK RESTAURANTE PARRILLA BAR S.A.S."
+      },
+      "2026-07": {
+        "fecha_cita": "21 jul 2026 16:00:00",
+        "anio_campo": 2026,
+        "empresa": "Pizzeria Café Madrid"
+      },
+      "2026-08": {
+        "fecha_cita": "5 ago 2026 11:00:00",
+        "anio_campo": 2026,
+        "empresa": "ZORBA S.A.S"
+      },
+      "2026-10": {
+        "fecha_cita": "2 oct 2026 10:00:00",
+        "anio_campo": 2026,
+        "empresa": "UNIFORM STOCK S.A.S."
+      },
+      "2026-01": {
+        "fecha_cita": "16 ene 2026 11:00:00",
+        "anio_campo": 2026,
+        "empresa": "Golosinas Helados Y Amasijos Belen"
+      },
+      "2026-11": {
+        "fecha_cita": "4 nov 2026 10:00:00",
+        "anio_campo": 2026,
+        "empresa": "ELGALLO.CC S A S"
+      },
+      "2026-02": {
+        "fecha_cita": "12 feb 2026 15:00:00",
+        "anio_campo": 2026,
+        "empresa": "HACIENDA EVENTOS PORTAL CAJICA"
+      },
+      "2026-04": {
+        "fecha_cita": "1 abr 2026 15:00:00",
+        "anio_campo": 2026,
+        "empresa": "FARMALKOSTO"
+      },
+      "2026-03": {
+        "fecha_cita": "23 mar 2026 15:17:00",
+        "anio_campo": 2026,
+        "empresa": "KAISHA FIGO SAS"
+      },
+      "2026-05": {
+        "fecha_cita": "4 may 2026 14:30:00",
+        "anio_campo": 2026,
+        "empresa": "TIENDAS 24/7"
+      },
+      "2026-09": {
+        "fecha_cita": "3 sept 2026 11:00:00",
+        "anio_campo": 2026,
+        "empresa": "INVERSIONES COLORADO S.A.S."
+      }
+    },
+    "total_jun_sep_2026": 3971,
+    "total_jun_dic_2026": 3975
+  }
+]
