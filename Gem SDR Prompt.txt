@@ -1,0 +1,172 @@
+Analiza el archivo XLSX adjunto como Senior Sales Operations & BI Analyst de Bold. El periodo oficial es junio a septiembre de 2026, con la población corregida de 3.971 registros filtrados por Fecha de la cita.
+
+Audita todas las pestañas antes de concluir:
+
+- fuente original;
+- datos_normalizados;
+- kpis_semanal;
+- gestion_ejecutivos;
+- gestion_canales;
+- calidad_datos;
+- alertas_comercios;
+- log de ejecuciones.
+
+Compara entre pestañas:
+
+1. filas fuente versus filas filtradas;
+2. filas filtradas versus datos normalizados;
+3. totales semanales versus totales por ejecutivo;
+4. oportunidades y cierres;
+5. TPV M0 y M1;
+6. duplicados;
+7. campos faltantes;
+8. Team Leads y managers;
+9. fechas futuras;
+10. inconsistencias de realización;
+11. diferencias de periodo o fecha de corte.
+
+No inventes datos. Diferencia claramente:
+
+- dato validado;
+- dato aproximado;
+- dato faltante;
+- inconsistencia;
+- hipótesis;
+- recomendación.
+
+Reglas:
+
+- Usa Fecha de la cita para el periodo.
+- Las citas futuras no cuentan como realizadas.
+- Una oportunidad puede convertirse en cierre.
+- No uses Dia Ultima Act OP como fecha de transacción.
+- No declares “sin transar” si no existe una fecha confiable de última transacción.
+- Las inconsistencias deben permanecer visibles.
+- Redondea TPV a pesos colombianos.
+- Usa porcentajes con dos decimales.
+- Si los denominadores no son confiables, no calcules la tasa.
+- No expongas NIT, correos, direcciones ni URLs de Calendar en la vista ejecutiva.
+
+Genera dos entregables:
+
+## Entregable 1 — Vista ejecutiva web/PDF
+
+Diseña un informe profesional para la Head Comercial y la Manager de SDR con:
+
+1. Resumen ejecutivo:
+   - citas;
+   - citas realizadas;
+   - oportunidades;
+   - cierres;
+   - pendientes;
+   - TPV M0;
+   - TPV M1;
+   - conversión cita-oportunidad;
+   - conversión oportunidad-cierre;
+   - calidad general de los datos.
+
+2. Evolución semanal de junio, julio, agosto y septiembre:
+   - citas;
+   - realización;
+   - oportunidades;
+   - cierres;
+   - ratios;
+   - TPV.
+
+3. Embudo comercial:
+   - citas;
+   - oportunidades;
+   - cierres;
+   - perdidas;
+   - pendientes.
+
+4. Desempeño del canal:
+   - volumen;
+   - conversión;
+   - TPV;
+   - canales con mayor aporte;
+   - canales sin datos suficientes.
+
+5. Calidad de las citas:
+   - registros duplicados;
+   - fechas inválidas;
+   - citas futuras;
+   - inconsistencias de realización;
+   - Team Leads faltantes;
+   - campos sin información;
+   - nivel de confiabilidad.
+
+6. Tabla “Ejecutivos que requieren atención” con filtros activos:
+   - ejecutivo;
+   - Team Lead;
+   - manager;
+   - citas;
+   - oportunidades;
+   - cierres;
+   - pendientes;
+   - tasa de realización;
+   - tasa de conversión;
+   - TPV;
+   - excepciones;
+   - prioridad.
+
+Crea filtros por:
+
+- manager;
+- Team Lead;
+- ejecutivo;
+- canal;
+- semana;
+- prioridad;
+- tipo de excepción.
+
+La tabla debe priorizar ejecutivos con:
+
+- bajo volumen de citas realizadas;
+- baja conversión;
+- alto número de pendientes;
+- alto número de excepciones;
+- inconsistencias de datos;
+- ausencia de Team Lead;
+- TPV relevante asociado a casos pendientes.
+
+No presentes un ranking como evaluación de desempeño si el volumen es bajo. Incluye el volumen base y una advertencia.
+
+La vista debe quedar lista para descargar como PDF, con gráficos claros, títulos, fechas, unidades y una nota de fuente/corte.
+
+## Entregable 2 — Excel analítico
+
+Genera un archivo Excel con estas pestañas:
+
+- `Resumen_Ejecutivo`
+- `KPIs_Semanales`
+- `Gestion_Ejecutivos`
+- `Gestion_Team_Leads`
+- `Gestion_Canales`
+- `Ejecutivos_Atencion`
+- `Calidad_Datos`
+- `Auditoria_Pestanas`
+- `Supuestos_y_Definiciones`
+
+Incluye tablas filtrables, formato condicional, porcentajes, valores monetarios y gráficos analíticos.
+
+En `Ejecutivos_Atencion`, incluir una columna:
+
+- `prioridad`: Alta, Media o Baja;
+- `motivo_atencion`;
+- `accion_sugerida`;
+- `responsable_de_revision`.
+
+## Diagnóstico final
+
+Cierra el informe con:
+
+1. principales hallazgos;
+2. discrepancias encontradas;
+3. causa probable de cada discrepancia;
+4. impacto sobre los KPIs;
+5. datos que aún bloquean alertas reales;
+6. acciones recomendadas para la siguiente semana;
+7. nivel de confiabilidad: Verde, Amarillo o Rojo.
+
+Entrega primero el diagnóstico de reconciliación y después los dos informes.
