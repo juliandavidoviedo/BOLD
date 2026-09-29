@@ -17,16 +17,21 @@ merchant_enrich AS (
             PARTITION BY trim(cast(e.merchant_id AS varchar))
             ORDER BY e.last_transaction_approved_date DESC NULLS LAST,
                      e.first_match_date DESC NULLS LAST
-                     e._1st_match_date DESC NULLS LAST
         ) AS rn
     FROM awsdatacatalog.bold_gold_growth.mart_merchant_enrich e
+        trim(cast(me.merchant_id AS varchar)) AS merchant_id,
+        max(trim(cast(me.master_merchant_id AS varchar))) AS master_merchant_id
+    FROM awsdatacatalog.bold_gold_growth.mart_merchant_enrich me
     INNER JOIN merchant_scope s
         ON trim(cast(e.merchant_id AS varchar)) = s.merchant_id
+        ON trim(cast(me.merchant_id AS varchar)) = s.merchant_id
+    GROUP BY 1
 ),
 enrich_current AS (
     SELECT merchant_id, master_merchant_id
     FROM merchant_enrich
     WHERE rn = 1
+    SELECT merchant_id, master_merchant_id FROM merchant_enrich
 ),
 scope_ids AS (
     SELECT merchant_id FROM merchant_scope
