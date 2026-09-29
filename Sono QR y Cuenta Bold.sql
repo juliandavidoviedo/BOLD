@@ -94,3 +94,54 @@ ORDER BY 1, 2
 21	bold_gold_payments	dim_payments_merchant_history
 22	bold_gold_sales	dim_apolo_opportunities
 
+
+
+
+------
+SELECT
+    table_schema,
+    table_name,
+    ordinal_position,
+    column_name,
+    data_type
+FROM information_schema.columns
+WHERE table_schema = 'bold_gold_terminals'
+  AND table_name = 'mart_terminal_enrich'
+ORDER BY ordinal_position
+
+----
+SELECT
+    model_name_category,
+    terminal_model,
+    count(*) AS filas,
+    count(DISTINCT terminal_serial) AS terminales
+FROM awsdatacatalog.bold_gold_terminals.mart_terminal_enrich
+GROUP BY 1, 2
+ORDER BY filas DESC
+
+---
+
+SELECT
+    bank_account_name,
+    bank_account_type,
+    count(*) AS filas,
+    count(DISTINCT merchant_id) AS merchants
+FROM awsdatacatalog.bold_gold_growth.dim_merchant_onboarding
+GROUP BY 1, 2
+ORDER BY filas DESC
+
+---
+
+SELECT
+    bank_account_id,
+    bank_account_name,
+    bank_account_type,
+    count(DISTINCT merchant_id) AS merchants
+FROM awsdatacatalog.bold_gold_growth.dim_merchant_onboarding
+WHERE bank_account_id IS NOT NULL
+GROUP BY 1, 2, 3
+ORDER BY merchants DESC
+LIMIT 100
+
+
+
