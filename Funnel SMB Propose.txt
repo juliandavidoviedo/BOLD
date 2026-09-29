@@ -1,0 +1,189 @@
+Esta sí me parece una solicitud muy bien enfocada, porque responde exactamente a la pregunta que te hizo Kathe:
+
+> **"¿Cómo me ayuda esto a vender más?"**
+
+La respuesta no es "porque muestra un funnel", sino:
+
+> **"Porque reduce el tiempo entre detectar una oportunidad y actuar sobre ella, aumentando la conversión y mejorando la precisión del forecast."**
+
+Yo la presentaría así:
+
+---
+
+# CRM Funnel Management Hub (SMB)
+
+## Objetivo
+
+Desarrollar un producto de inteligencia comercial que centralice el seguimiento del funnel CRM del canal SMB, proporcionando visibilidad en tiempo real sobre el desempeño comercial y facilitando la toma de decisiones para mejorar la conversión, la velocidad de atención y la precisión del forecast.
+
+---
+
+## Problema de negocio
+
+Actualmente la información del funnel se encuentra distribuida entre múltiples vistas y reportes, dificultando responder rápidamente preguntas como:
+
+- ¿Dónde se están perdiendo oportunidades?
+- ¿Qué ejecutivos requieren apoyo?
+- ¿Qué oportunidades están estancadas?
+- ¿Qué tan confiable es el forecast?
+- ¿Qué acciones comerciales deben priorizarse hoy?
+
+---
+
+## Objetivos del producto
+
+- Centralizar el seguimiento del funnel comercial.
+- Reducir el tiempo de análisis operativo.
+- Incrementar la conversión entre etapas.
+- Identificar oportunidades con riesgo de pérdida.
+- Dar seguimiento al forecast comercial.
+- Priorizar acciones comerciales basadas en datos.
+
+---
+
+## Funcionalidades (MVP)
+
+### Funnel en tiempo real
+- Leads por etapa.
+- Oportunidades activas.
+- Conversión entre etapas.
+- Tiempo promedio por etapa.
+- Aging de oportunidades.
+
+### KPIs
+
+- Conversión Lead → Opportunity.
+- Conversión Opportunity → Closed Won.
+- Tiempo medio de atención.
+- Tiempo por etapa.
+- Forecast vs resultado.
+- Pipeline por Team Lead.
+- Pipeline por Ejecutivo.
+- Pipeline por región.
+
+### Alertas
+
+- Oportunidades sin gestión.
+- Oportunidades próximas a vencer.
+- Forecast con desviaciones.
+- Ejecutivos con bajo seguimiento.
+
+### Drill Down
+
+Desde cualquier KPI visualizar:
+
+Lead
+
+↓
+
+Oportunidad
+
+↓
+
+Ejecutivo
+
+↓
+
+Actividad
+
+↓
+
+Historial CRM
+
+---
+
+## Arquitectura
+
+```text
+CRM (EPIC)
+
+↓
+
+Athena / Metabase
+
+↓
+
+B-Maker
+
+↓
+
+n8n
+
+↓
+
+Supabase
+
+↓
+
+Slack + Looker Studio
+```
+
+---
+
+## Valor esperado
+
+**Para los Team Leads**
+- Mayor visibilidad del pipeline.
+- Priorización de acompañamiento.
+- Mejor seguimiento del forecast.
+
+**Para Managers**
+- Forecast más confiable.
+- Identificación temprana de desviaciones.
+- Seguimiento del desempeño comercial.
+
+**Para Ejecutivos**
+- Mejor organización del trabajo.
+- Seguimiento de oportunidades críticas.
+- Disminución de oportunidades olvidadas.
+
+---
+
+## Métricas de éxito
+
+- ↓ Tiempo para identificar oportunidades críticas.
+- ↓ Tiempo promedio de atención.
+- ↑ Conversión entre etapas.
+- ↑ Precisión del forecast.
+- ↑ Cumplimiento de actividades comerciales.
+- ↑ Adopción por Team Leads.
+
+---
+
+## Roadmap
+
+**Fase 1 (1-2 semanas)**
+- Funnel operativo.
+- KPIs principales.
+- Dashboard.
+
+**Fase 2 (2-3 semanas)**
+- Alertas automáticas.
+- Seguimiento de aging.
+- Forecast.
+
+**Fase 3**
+- Recomendaciones inteligentes.
+- Priorización automática.
+- Modelos predictivos de conversión.
+
+---
+
+## Un comentario estratégico
+
+Aquí es donde empezaría a construir tu portafolio con una lógica consistente. Ya no hablaría de "proyectos" aislados, sino de una **suite de productos de Commercial Intelligence**. Por ejemplo:
+
+| Producto | Objetivo |
+|----------|----------|
+| **CRM Funnel Management Hub** | Optimizar conversión y forecast del pipeline SMB. |
+| **Merchant Health Monitor** | Detectar y prevenir caídas de TPV en convenios Enterprise. |
+| **Enterprise Operations Hub** | Centralizar facturación, inventarios y novedades operativas. |
+| **Channel Management Center** | Automatizar cambios de canal y trazabilidad comercial. |
+
+Todos comparten la misma filosofía: **capturar datos → generar inteligencia → recomendar acciones → medir impacto**.
+
+Creo que esa es la narrativa que más valor puede darte dentro de Bold y también hacia afuera. Cuando en el futuro presentes tu experiencia, no dirás *"hice dashboards en Looker"*; podrás decir:
+
+> **"Diseñé y lideré el desarrollo de productos internos de Commercial Intelligence que integraban datos de CRM, Athena, automatización con n8n y aplicaciones sobre B-Maker para mejorar conversión comercial, seguimiento del forecast y monitoreo operativo de SMB y Enterprise."**
+
+Esa descripción refleja mucho mejor el alcance y el impacto del trabajo que estás construyendo.
